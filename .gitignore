@@ -1,0 +1,20 @@
+# Credenciales y ajustes del entorno: nunca al repositorio (config.ejemplo.php sí)
+/config/config.php
+
+# Salida estática generada por cron/publicar.php
+/publico/*
+!/publico/.gitkeep
+
+# Cachés en disco (robots.txt, feeds)
+/cache/*
+!/cache/.gitkeep
+
+# Registros locales
+*.log
+
+# Basura de sistema y editores
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
+*.swp

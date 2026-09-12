@@ -1,0 +1,67 @@
+# =============================================================================
+#  Bit & Breakfast - configuracion de Apache para la raiz de public_html
+#
+#  Todo el proyecto vive dentro de public_html, asi que este fichero hace dos
+#  trabajos: servir la web estatica de publico/ como si fuera la raiz, y dejar
+#  fuera del alcance del navegador todo lo que no es publico.
+#
+#  Comprueba que funciona pidiendo https://tudominio.com/config/config.php :
+#  tiene que devolver 403. Si devuelve el fichero, este .htaccess no se esta
+#  aplicando y NO debes subir credenciales al servidor.
+# =============================================================================
+
+Options -Indexes
+DirectoryIndex index.html index.php
+
+# --- Directorios privados ----------------------------------------------------
+RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
+
+# Ficheros que nunca deben servirse, esten donde esten.
+<FilesMatch "(^\.|\.(sql|md|tsv|log|ini|sh|bak|ejemplo\.php)$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# --- La web estatica se sirve desde publico/ ---------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # api/ y panel/ son PHP y se sirven tal cual.
+    RewriteCond %{REQUEST_URI} !^/(api|panel|publico)/
+    RewriteCond %{REQUEST_URI} !^/(robots\.txt|favicon\.ico|feed\.xml)$
+    RewriteRule ^(.*)$ publico/$1 [L]
+
+    # Los ficheros de la raiz del sitio generado.
+    RewriteRule ^(robots\.txt|favicon\.ico|feed\.xml)$ publico/$1 [L]
+</IfModule>
+
+# --- Cabeceras de seguridad --------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # Politica restrictiva: la web no carga nada de terceros. El buscador del
+    # archivo y los votos van en ficheros .js propios, nunca en linea.
+    Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+</IfModule>
+
+# --- Compresion y cache de la web estatica -----------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/xml application/javascript application/json
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    # El HTML no se cachea: una edicion se puede corregir despues de publicarse.
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
