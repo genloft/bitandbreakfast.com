@@ -31,9 +31,10 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # api/ y panel/ son PHP y se sirven tal cual.
+    # api/ y panel/ son PHP y se sirven tal cual. instalar.php tambien:
+    # es el instalador web, y se desarma solo en cuanto termina.
     RewriteCond %{REQUEST_URI} !^/(api|panel|publico)/
-    RewriteCond %{REQUEST_URI} !^/(robots\.txt|favicon\.ico|feed\.xml)$
+    RewriteCond %{REQUEST_URI} !^/(robots\.txt|favicon\.ico|feed\.xml|instalar\.php)$
     RewriteRule ^(.*)$ publico/$1 [L]
 
     # Los ficheros de la raiz del sitio generado.
@@ -50,6 +51,13 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
     # Politica restrictiva: la web no carga nada de terceros. El buscador del
     # archivo y los votos van en ficheros .js propios, nunca en linea.
     Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+
+    # El instalador lleva su hoja de estilos dentro del propio fichero, para
+    # poder ejecutarse aunque todavia no haya nada publicado. Se le permite
+    # solo a el, y solo el estilo: nunca script.
+    <Files "instalar.php">
+        Header always set Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    </Files>
 </IfModule>
 
 # --- Compresion y cache de la web estatica -----------------------------------

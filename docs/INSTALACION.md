@@ -1,291 +1,273 @@
-# Instalación de Bit & Breakfast en Hostinger
+# Instalación y despliegue en Hostinger
 
-Guía completa para dejar el sistema funcionando en un alojamiento compartido de
-Hostinger con hPanel. Está escrita para el escenario que hemos decidido: **todo
-el proyecto vive dentro de `public_html`** y los directorios privados se
-protegen con `.htaccess`.
+Despliegue por **Git** desde hPanel e instalación de la base de datos con el
+**instalador web**. No hace falta FTP ni tocar phpMyAdmin.
 
-Sustituye en todos los ejemplos:
+El orden es este y conviene no saltárselo:
 
-| Marcador | Qué es | Dónde lo ves |
-|---|---|---|
-| `uXXXXXXXXX` | tu identificador de usuario en el servidor | hPanel → Archivos → Administrador de archivos, en la ruta |
-| `bitandbreakfast.com` | tu dominio | hPanel → Dominios |
-| `uXXXXXXXXX_bitb` | nombre de la base de datos | lo eliges tú en el paso 2 |
+1. Preparar PHP.
+2. Crear la base de datos vacía.
+3. Conectar el repositorio en hPanel → GIT y desplegar.
+4. Armar y ejecutar `instalar.php`.
+5. Comprobar los cerrojos y crear la tarea cron.
 
----
-
-## 1. Comprobar el entorno
-
-En hPanel → **Avanzado → Configuración PHP**:
-
-1. Selecciona **PHP 8.1 o superior**.
-2. En la pestaña *Extensiones PHP*, asegúrate de que están activas:
-   `pdo_mysql`, `curl`, `mbstring`, `simplexml`, `openssl`, `json`.
-3. En la pestaña *Opciones PHP*, sube `max_execution_time` a 60 si te deja.
-   No es imprescindible: todos los procesos largos están troceados en lotes,
-   pero da margen.
-
-> El cron no usa esta configuración, sino la del PHP de línea de comandos, que
-> en Hostinger normalmente no tiene límite de tiempo. Aun así, el sistema está
-> diseñado para no depender de eso.
+Sustituye en los ejemplos `uXXXXXXXXX` por tu identificador de usuario (lo ves
+en la ruta del Administrador de archivos) y `bitandbreakfast.com` por tu dominio.
 
 ---
 
-## 2. Crear la base de datos
+## 1. Preparar PHP
 
-hPanel → **Bases de datos → MySQL**:
+hPanel → **Avanzado → Configuración PHP**:
 
-1. *Crear una nueva base de datos MySQL*.
-2. Nombre de la base: `bitb` (hPanel le antepone `uXXXXXXXXX_`).
-3. Usuario: `bitb` (queda como `uXXXXXXXXX_bitb`).
-4. Contraseña: genera una larga y guárdala; la necesitas en el paso 5.
-5. Anota el **host**: casi siempre `localhost`.
+- Versión **8.1 o superior**.
+- Pestaña *Extensiones PHP*: `pdo_mysql`, `curl`, `mbstring`, `simplexml`,
+  `openssl`, `json`. Sin `curl` ni `simplexml` la ingesta no arranca, y el
+  instalador te lo dirá antes de dejarte continuar.
 
 ---
 
-## 3. Importar el esquema y las semillas
+## 2. Crear la base de datos vacía
 
-hPanel → **Bases de datos → phpMyAdmin** → entra en la base recién creada →
-pestaña **Importar**. Sube y ejecuta **en este orden**:
+hPanel → **Bases de datos → MySQL** → *Crear una nueva base de datos*:
 
-1. `sql/esquema.sql` — crea las 16 tablas y rellena la tabla `ajustes`.
-2. `sql/semilla_fuentes.sql` — 59 fuentes verificadas.
-3. `sql/semilla_diccionario.sql` — términos de puntuación y filtro anti-publirreportaje.
+- Nombre de la base: `bitb` → queda como `uXXXXXXXXX_bitb`.
+- Usuario: `bitb` → queda como `uXXXXXXXXX_bitb`.
+- Contraseña: larga; la necesitas en el paso 4.
 
-Comprobación rápida, en la pestaña **SQL**:
+**No importes nada aquí.** De eso se encarga el instalador.
 
-```sql
-SELECT COUNT(*) AS fuentes FROM fuentes;        -- debe dar 59
-SELECT COUNT(*) AS terminos FROM diccionario;   -- debe dar 137 (117 positivos y 20 negativos)
-SELECT valor FROM ajustes WHERE clave = 'ingesta_puntero';  -- debe dar 0
+---
+
+## 3. Desplegar con Git
+
+hPanel → **Avanzado → GIT**.
+
+### 3.1 La carpeta de destino tiene que estar vacía
+
+Git se niega a clonar sobre una carpeta con contenido. Entra en el
+Administrador de archivos y vacía `public_html`: borra el `index.html` por
+defecto de Hostinger y cualquier cosa que hubieras subido antes a mano.
+
+### 3.2 Crear el repositorio
+
+- **Repositorio**: `https://github.com/genloft/bitandbreakfast.com.git`
+- **Rama**: `main`
+- **Directorio**: `public_html` (déjalo vacío o escribe `public_html`, según
+  te lo pida la pantalla)
+
+Si el repositorio es **privado**, hPanel te mostrará una clave SSH pública.
+Cópiala y añádela en GitHub → tu repositorio → *Settings* → *Deploy keys* →
+*Add deploy key*, con acceso de solo lectura. Después usa la dirección SSH
+`git@github.com:genloft/bitandbreakfast.com.git` en lugar de la `https`.
+
+Pulsa **Crear**. hPanel clona el repositorio dentro de `public_html`.
+
+### 3.3 Despliegue automático (opcional)
+
+En la misma pantalla, hPanel te da una **URL de despliegue automático**.
+Añádela en GitHub → *Settings* → *Webhooks* → *Add webhook*, con
+*Content type* `application/json` y el evento *push*. A partir de ahí, cada
+`git push` actualiza el servidor solo.
+
+Sin webhook, cada despliegue es pulsar **Deploy** en hPanel.
+
+---
+
+## 4. El instalador web
+
+### 4.1 Armarlo
+
+El instalador viene desarmado a propósito: como está en el repositorio, cada
+despliegue lo vuelve a dejar en el servidor, y una página capaz de escribir la
+configuración no puede quedarse accesible.
+
+Administrador de archivos → carpeta `config/` → **Nuevo archivo** → nombre
+exacto, sin extensión:
+
+```
+INSTALAR_PERMITIDO
 ```
 
----
+Déjalo vacío. Con eso queda armado.
 
-## 4. Subir los ficheros por FTP
+### 4.2 Ejecutarlo
 
-Sube el contenido del repositorio a `/home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/`,
-respetando esta estructura:
+Abre en el navegador:
 
 ```
-public_html/
-├── .htaccess              <- cabeceras de seguridad y bloqueo de directorios
-├── config/                <- PRIVADO
-│   └── config.php         <- lo creas tú en el paso 5, nunca viene del repositorio
-├── lib/                   <- PRIVADO
-├── cron/                  <- PRIVADO
-├── sql/                   <- PRIVADO
-├── docs/                  <- PRIVADO
-├── pruebas/               <- PRIVADO
-├── api/                   <- público
-├── panel/                 <- público, protegido por login
-├── plantillas/            <- PRIVADO
-└── publico/               <- la web estática generada
+https://bitandbreakfast.com/instalar.php
 ```
 
-**Permisos** (hPanel → Administrador de archivos → clic derecho → Permisos):
+Verás primero una tabla de comprobaciones del servidor: versión de PHP,
+extensiones, permisos de escritura de `config/`, `cache/` y `publico/`, y
+presencia de los tres ficheros SQL. Si algo sale en rojo, arréglalo antes de
+seguir.
 
-| Ruta | Permisos | Motivo |
-|---|---|---|
-| directorios en general | `755` | |
-| ficheros `.php` y `.sql` | `644` | |
-| `publico/` | `755` con escritura del usuario | lo reescribe `cron/publicar.php` |
-| `cache/` | `755` con escritura del usuario | guarda los `robots.txt` cacheados |
-| `config/config.php` | `600` | contiene credenciales |
+Después rellena:
 
-Crea a mano los directorios `publico/` y `cache/` si no han subido vacíos.
+| Campo | Qué poner |
+|---|---|
+| Servidor | `localhost` |
+| Nombre de la base | `uXXXXXXXXX_bitb` |
+| Usuario | `uXXXXXXXXX_bitb` |
+| Contraseña | la del paso 2 |
+| Dominio | `bitandbreakfast.com`, sin `https://` ni barra final |
+| Usuario del panel | opcional, hace falta en la fase 3 |
+| Contraseña del panel | mínimo 12 caracteres |
 
-### Los ficheros `.htaccess` no son opcionales
+Pulsa **Instalar**. El instalador:
 
-Como todo está dentro de `public_html`, lo único que impide que alguien lea
-`https://bitandbreakfast.com/config/config.php` es el `.htaccess`. Verifícalo
-**antes** de meter credenciales reales: abre esa URL en el navegador y confirma
-que devuelve **403 Forbidden**. Si devuelve el contenido del fichero, para y
-avísame: ese plan no respeta `.htaccess` y hay que cambiar de estrategia.
+1. Conecta con la base.
+2. Ejecuta `sql/esquema.sql`, `sql/semilla_fuentes.sql` y
+   `sql/semilla_diccionario.sql`.
+3. Genera los tres secretos con `random_bytes`.
+4. Escribe `config/config.php` con permisos 600.
+5. Crea el usuario del panel con `password_hash`.
+6. **Borra `config/INSTALAR_PERMITIDO`**, con lo que se desarma solo.
 
-Repite la comprobación con `/lib/db.php` y `/cron/ingesta.php`.
+Al terminar te enseña el recuento (59 fuentes, 137 términos, 24 ajustes), el
+token de la API y la línea de cron ya con tu ruta real. Cópiala.
 
----
-
-## 5. Crear `config/config.php`
-
-Copia `config/config.ejemplo.php` a `config/config.php` y rellénalo:
-
-```php
-'bd' => [
-    'host'    => 'localhost',
-    'nombre'  => 'uXXXXXXXXX_bitb',
-    'usuario' => 'uXXXXXXXXX_bitb',
-    'clave'   => 'la contraseña del paso 2',
-],
-```
-
-Genera los tres secretos con phpMyAdmin o con cualquier generador de claves de
-64 caracteres hexadecimales:
-
-- `secreto_hmac` — firma los enlaces de voto del correo.
-- `token_api` — autentica `api/candidatos.php` y `api/bits.php`.
-- `sal_hash` — sal para el hash de IP de los votos.
-
-`config/config.php` **no se sube al repositorio**. Ya está en `.gitignore`.
+> ⚠️ El esquema empieza con `DROP TABLE IF EXISTS`. Volver a ejecutar el
+> instalador sobre una base con datos los borra. Por eso, si ya existe
+> `config/config.php`, se niega a hacer nada.
 
 ---
 
-## 6. Crear tu usuario del panel
+## 5. Comprobar los cerrojos
 
-En phpMyAdmin, pestaña SQL. Primero genera el hash de tu contraseña: crea un
-fichero temporal `hash.php` en `public_html/`, ábrelo en el navegador, copia el
-resultado y **bórralo inmediatamente**.
+Abre en el navegador estas tres direcciones. Las tres tienen que devolver
+**403 Forbidden**:
 
-```php
-<?php echo password_hash('tu-contraseña-larga-aqui', PASSWORD_DEFAULT);
+```
+https://bitandbreakfast.com/config/config.ejemplo.php
+https://bitandbreakfast.com/lib/db.php
+https://bitandbreakfast.com/cron/ingesta.php
 ```
 
-Después:
-
-```sql
-INSERT INTO usuarios (usuario, hash_clave, nombre, activo)
-VALUES ('juan', '$2y$10$el-hash-que-has-copiado', 'Juan', 1);
-```
+Si alguna devuelve el contenido del fichero, el `.htaccess` no se está
+aplicando: borra `config/config.php` y no sigas hasta arreglarlo, porque ahí
+están tus credenciales.
 
 ---
 
-## 7. La tarea programada
+## 6. La tarea programada
 
-Has elegido el despachador único, así que **solo hace falta una entrada de
-cron**. `cron/tareas.php` mira el reloj y decide qué toca en cada ejecución:
-ingesta cada hora, procesado a continuación, mantenimiento de madrugada y
-publicación cuando hay bits nuevos. Cada tarea trabaja por lotes con puntero
-persistente, así que si una ejecución se queda a medias, la siguiente continúa
-donde lo dejó.
+Una sola entrada de cron: `cron/tareas.php` decide qué toca en cada ejecución.
 
 hPanel → **Avanzado → Trabajos cron** → *Crear nuevo trabajo cron*:
 
-- Tipo de comando: **Comando personalizado**.
-- Frecuencia: **Cada hora** (o el intervalo más corto que permita tu plan).
-- Comando, literal:
+- Tipo: **Comando personalizado**
+- Frecuencia: **Cada hora**
+- Comando: el que te dio el instalador, con esta forma:
 
 ```
 /usr/bin/php /home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/cron/tareas.php >> /home/uXXXXXXXXX/logs/bitb-cron.log 2>&1
 ```
 
-Si `/usr/bin/php` no fuese PHP 8.1, mira el que ofrece hPanel en el desplegable
-de la sección de cron (suele ser algo como `/opt/alt/php81/usr/bin/php`) y usa
-esa ruta.
+Crea antes la carpeta `logs/` colgando de `/home/uXXXXXXXXX/`, **fuera** de
+`public_html`, para que el registro no se pueda leer desde la web.
 
-Crea el directorio `logs/` fuera de `public_html` para que el registro no sea
-accesible desde la web:
+Si `/usr/bin/php` no fuese PHP 8.1, usa la ruta que ofrezca el desplegable de
+esa misma pantalla, del estilo `/opt/alt/php81/usr/bin/php`.
 
-```
-/home/uXXXXXXXXX/logs/
-```
+---
 
-### Comprobar que funciona sin esperar una hora
+## 7. Primera ejecución y criterio de aceptación
 
-Desde el navegador no se puede: `cron/` está bloqueado por `.htaccess`, y así
-debe seguir. Usa el **Terminal SSH** de hPanel si tu plan lo incluye:
+Para no esperar una hora, pon la tarea *cada minuto*, déjala correr tres o
+cuatro veces y devuélvela a *cada hora*. Con Terminal SSH es más directo:
 
 ```bash
 php /home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/cron/tareas.php ingesta
 ```
 
-Si no tienes SSH, crea temporalmente la tarea cron con frecuencia *cada minuto*,
-déjala correr tres veces, y devuélvela a *cada hora*.
+Y las pruebas, que conviene ejecutar al menos una vez:
 
-Criterio de aceptación de la fase 1, en phpMyAdmin:
+```bash
+php /home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/pruebas/texto.php
+php /home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/pruebas/canonica.php
+php /home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/pruebas/comprobar_feeds.php
+```
+
+En phpMyAdmin, la fase 1 está superada si esto cuadra:
 
 ```sql
-SELECT COUNT(*) FROM items;                      -- cientos de filas
-SELECT COUNT(*) - COUNT(DISTINCT hash_url) FROM items;  -- tiene que dar 0
-SELECT valor FROM ajustes WHERE clave = 'ingesta_puntero';  -- ha avanzado
-SELECT f.nombre, l.resultado, l.nuevos, l.mensaje
+SELECT COUNT(*) AS items FROM items;                      -- cientos
+SELECT COUNT(*) - COUNT(DISTINCT hash_url) AS dups FROM items;  -- 0
+SELECT valor AS puntero FROM ajustes WHERE clave = 'ingesta_puntero';  -- avanza
+
+SELECT f.nombre, l.resultado, l.nuevos, LEFT(l.mensaje, 60) AS mensaje
   FROM log_ingesta l JOIN fuentes f ON f.id = l.fuente_id
  ORDER BY l.inicio DESC LIMIT 20;
 ```
 
+Algún `error` suelto es normal. Una fuente que falla cinco veces seguidas se
+desactiva sola y deja el motivo en `fuentes.notas`.
+
 ---
 
-## 8. Registros DNS del correo
+## 8. Despliegues siguientes
 
-Esto es lo que decide si la newsletter llega a la bandeja de entrada o a correo
-no deseado. Documento los dos proveedores porque decidiremos en la fase 5.
+1. `git push` desde local.
+2. hPanel → GIT → **Deploy** (o automático, si pusiste el webhook).
 
-hPanel → **Dominios → DNS / Nameservers**.
+Qué sobrevive a cada despliegue, porque no está en el repositorio:
 
-> Los **valores** de DKIM los genera cada proveedor en su propio panel cuando
-> añades y verificas el dominio. Aquí están los nombres y la forma de cada
-> registro; el contenido exacto lo copias de allí. No te fíes de ningún valor
-> de DKIM que no venga del panel del proveedor.
+- `config/config.php` — tu configuración.
+- `publico/` — la web generada.
+- `cache/` — los `robots.txt` cacheados.
 
-### 8.1 SPF
+Si un despliegue trae SQL nuevo, lo ejecutas a mano en phpMyAdmin: el
+instalador no sirve para actualizar, solo para instalar desde cero.
 
-Solo puede existir **un** registro SPF en el dominio. Si ya tienes uno, añade el
-`include` al existente en vez de crear otro.
+---
+
+## 9. Registros DNS del correo (fase 5)
+
+Todavía no hace falta. Cuando decidas proveedor, en hPanel → **Dominios → DNS**:
+
+### SPF
+
+Solo puede existir un registro SPF. Si ya tienes uno, añade el `include`.
 
 | Proveedor | Tipo | Nombre | Valor |
 |---|---|---|---|
 | MailerLite | TXT | `@` | `v=spf1 include:_spf.mlsend.com ~all` |
 | Brevo | TXT | `@` | `v=spf1 include:spf.brevo.com ~all` |
-| Los dos a la vez | TXT | `@` | `v=spf1 include:_spf.mlsend.com include:spf.brevo.com ~all` |
+| Los dos | TXT | `@` | `v=spf1 include:_spf.mlsend.com include:spf.brevo.com ~all` |
 
-Usa `~all` (softfail) mientras pruebas y pasa a `-all` cuando lleves varios
-envíos limpios.
+### DKIM
 
-### 8.2 DKIM
+Los **valores** los genera cada proveedor en su panel al verificar el dominio.
+Aquí van solo los nombres de registro.
 
-| Proveedor | Tipo | Nombre | Valor |
-|---|---|---|---|
-| MailerLite | TXT | `ml._domainkey` | `k=rsa; p=…` el que te da MailerLite |
-| Brevo | TXT | `brevo._domainkey` | `k=rsa; p=…` el que te da Brevo |
-| Brevo (verificación) | TXT | `@` | `brevo-code:…` el que te da Brevo |
+| Proveedor | Tipo | Nombre |
+|---|---|---|
+| MailerLite | TXT | `ml._domainkey` |
+| Brevo | TXT | `brevo._domainkey` |
+| Brevo (verificación) | TXT | `@`, valor `brevo-code:…` |
 
-Si acabas usando los dos proveedores a la vez, no hay conflicto: cada uno firma
-con su propio selector.
-
-### 8.3 DMARC
-
-Un único registro:
+### DMARC
 
 | Tipo | Nombre | Valor |
 |---|---|---|
 | TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:dmarc@bitandbreakfast.com; adkim=r; aspf=r; pct=100` |
 
-Empieza con `p=none` durante al menos dos semanas y revisa los informes que
-lleguen a esa dirección. Cuando confirmes que todo el correo legítimo pasa SPF
-y DKIM, sube a `p=quarantine` y más tarde a `p=reject`. Poner `p=reject` desde
-el primer día es la forma más rápida de que tus propios envíos desaparezcan.
-
-### 8.4 Comprobación
-
-Después de propagar (de 15 minutos a 4 horas), verifica con
-`https://mxtoolbox.com/spf.aspx` y `https://mxtoolbox.com/dmarc.aspx`, o manda
-un correo de prueba a `check-auth@verifier.port25.com`.
+Empieza en `p=none` un par de semanas, revisa los informes y solo entonces sube
+a `p=quarantine`. Poner `p=reject` el primer día es la forma más rápida de que
+tus propios envíos desaparezcan.
 
 ---
 
-## 9. El rastreador y la buena ciudadanía
+## 10. Si algo falla
 
-El bot se identifica así:
-
-```
-Mozilla/5.0 (compatible; BitAndBreakfastBot/1.0; +https://bitandbreakfast.com/bot)
-```
-
-El prefijo `Mozilla/5.0 (compatible; …)` es el formato que usan los rastreadores
-legítimos (bingbot entre ellos) y evita que dos fuentes buenas nos devuelvan un
-403 automático. El nombre del bot y la URL de contacto siguen ahí, que es lo que
-importa.
-
-Cuando publiques la web (fase 4), la página `/bot` explicará qué es el
-rastreador y cómo pedir la exclusión. Hasta entonces, el sistema ya respeta
-`robots.txt` y espera un segundo entre peticiones al mismo dominio.
-
----
-
-## 10. Resumen de lo que hay que hacer en cada despliegue
-
-1. Subir por FTP los ficheros cambiados.
-2. Si hay SQL nuevo, ejecutarlo en phpMyAdmin.
-3. Comprobar el registro: `/home/uXXXXXXXXX/logs/bitb-cron.log`.
-4. Comprobar `log_ingesta` en busca de fuentes con `resultado = 'error'`.
+| Síntoma | Causa probable | Arreglo |
+|---|---|---|
+| `instalar.php` dice que está desarmado | falta `config/INSTALAR_PERMITIDO` | créalo en el Administrador de archivos |
+| `instalar.php` descarga el fichero en vez de ejecutarlo | PHP no está activo en ese dominio | revisa Configuración PHP |
+| Error de clave ajena al instalar | la base se creó en MyISAM | pídeme el esquema sin claves ajenas |
+| Error de colación `utf8mb4_unicode_ci` | MariaDB muy antigua | pídeme el esquema con `utf8mb4_general_ci` |
+| `/config/config.ejemplo.php` se descarga | el `.htaccess` no se aplica | borra `config/config.php` y avísame |
+| El cron no deja rastro en el log | ruta de PHP o de `logs/` equivocada | prueba con la ruta del desplegable de hPanel |
