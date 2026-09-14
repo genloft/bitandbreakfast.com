@@ -213,6 +213,41 @@ return [
 PHP;
 }
 
+/**
+ * Escribe una pagina provisional en publico/ si no hay ninguna.
+ *
+ * La raiz del dominio reescribe hacia publico/, y un directorio sin index y
+ * sin listado de ficheros devuelve 403. Esto evita que el sitio parezca roto
+ * entre la instalacion y la primera edicion publicada.
+ */
+function instalar_pagina_provisional(string $dominio): void
+{
+    $destino = RAIZ . '/publico/index.html';
+
+    if (is_file($destino)) {
+        return;   // ya hay algo publicado; no se toca
+    }
+
+    $html = '<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bit &amp; Breakfast</title>
+</head>
+<body style="margin:0;padding:4rem 1.5rem;background:#f6f5f2;color:#1b1b1a;font:16px/1.6 system-ui,sans-serif">
+<main style="max-width:32rem;margin:0 auto">
+<h1 style="font-size:1.6rem;margin:0 0 .5rem">Bit &amp; Breakfast</h1>
+<p style="color:#6b675e;margin:0">Radar de tecnolog&iacute;a hotelera. Cinco minutos de lectura a la semana.</p>
+<p style="color:#6b675e;margin-top:2rem">Pronto, la primera edici&oacute;n.</p>
+</main>
+</body>
+</html>
+';
+
+    @file_put_contents($destino, $html);
+}
+
 // -----------------------------------------------------------------------------
 // Comprobaciones del entorno
 // -----------------------------------------------------------------------------
@@ -328,6 +363,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $bloqueo === null) {
                     $datos['panel_usuario'],
                 ]);
             }
+
+            // Hasta la fase 4 no hay web generada, y publico/ vacio hace que
+            // Apache responda 403 en la raiz del dominio. Se deja una pagina
+            // provisional para que la raiz conteste algo con sentido.
+            instalar_pagina_provisional($datos['dominio']);
 
             $resultado = [
                 'sentencias'  => $ejecutadas,
