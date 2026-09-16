@@ -1,0 +1,93 @@
+# Bit & Breakfast - pruebas automaticas
+#
+# Corre en cada push y en cada pull request. Tres cosas, de la mas barata a la
+# mas cara:
+#
+#   1. php -l sobre todos los ficheros. Parece poco, pero es lo que atrapa el
+#      error de sintaxis que no se ve leyendo, y el proyecto se desarrolla en
+#      una maquina que no siempre tiene PHP instalado.
+#   2. Las pruebas que no tocan la base de datos.
+#   3. La prueba de humo: esquema, semillas y procesado completo contra un
+#      MariaDB de usar y tirar, la misma version que sirve Hostinger.
+#
+# Nada de esto necesita secretos ni toca el servidor de produccion.
+
+name: pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: raiz
+          MARIADB_DATABASE: bitb_prueba
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar PHP 8.1
+        uses: shivammathur/setup-php@v2
+        with:
+          # La misma version minima que exige el instalador.
+          php-version: '8.1'
+          extensions: pdo_mysql, curl, mbstring, simplexml, json
+          coverage: none
+
+      - name: Sintaxis de todos los ficheros PHP
+        run: |
+          find . -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+
+      - name: Pruebas sin base de datos
+        run: |
+          php pruebas/texto.php
+          php pruebas/canonica.php
+          php pruebas/instalacion.php
+          php pruebas/procesar.php
+
+      - name: Esperar a MariaDB
+        run: |
+          php -r '
+            for ($i = 0; $i < 30; $i++) {
+                try {
+                    new PDO("mysql:host=127.0.0.1;port=3306", "root", "raiz");
+                    exit(0);
+                } catch (Throwable $e) {
+                    sleep(2);
+                }
+            }
+            fwrite(STDERR, "MariaDB no ha arrancado\n");
+            exit(1);
+          '
+
+      - name: Prueba de humo contra la base de datos
+        env:
+          BITB_HUMO: '1'
+          BITB_BD_HOST: 127.0.0.1
+          BITB_BD_PUERTO: '3306'
+          BITB_BD_NOMBRE: bitb_prueba
+          BITB_BD_USUARIO: root
+          BITB_BD_CLAVE: raiz
+        run: php pruebas/humo.php
+
+      - name: Comprobar que no queda configuracion escrita
+        # La prueba de humo escribe un config/config.php de usar y tirar y lo
+        # borra al terminar. Si sobrevive, es que el borrado no funciona, y eso
+        # en el servidor de verdad seria un fichero con credenciales de mas.
+        run: |
+          test ! -f config/config.php || { echo "config/config.php no se ha limpiado"; exit 1; }

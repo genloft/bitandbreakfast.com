@@ -55,8 +55,18 @@ php pruebas/procesar.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las cuatro primeras no tocan la base de datos. La última sí la lee, y sale a la
+Las cuatro primeras no tocan la base de datos. La quinta sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
+
+Hay una sexta, `pruebas/humo.php`, que monta el esquema y las semillas desde
+cero, mete items de prueba y ejecuta el procesado entero. **Es destructiva**:
+empieza por un `DROP TABLE`. Exige `BITB_HUMO=1` y las credenciales por
+variables de entorno, y se niega a arrancar si existe `config/config.php`, así
+que no puede ejecutarse por accidente contra la base buena.
+
+Todo esto corre solo en cada push: `.github/workflows/pruebas.yml` pasa
+`php -l` a todos los ficheros, ejecuta las pruebas sin base de datos y levanta
+un MariaDB 10.6 para la de humo.
 
 ## Estado
 
