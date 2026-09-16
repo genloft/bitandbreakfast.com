@@ -518,6 +518,43 @@ comprobar(
     str_contains((string) ($descartado['motivo_descarte'] ?? ''), 'automatico')
 );
 
+// --- Revision de lo ya publicado --------------------------------------------
+//
+// Cuando suben los criterios, lo que se publico sin mirar se vuelve a pasar
+// por el filtro una sola vez. Es lo que arregla una edicion publicada con
+// reglas flojas en lugar de dejarla ahi para siempre.
+
+ajuste_guardar('auto_criterios', '0');
+ajuste_guardar('auto_min_diccionario', '500');   // nada puede pasar este filtro
+
+$antes = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE redactado_por = 'ia'")->fetchColumn();
+
+comprobar('hay algun bit automatico publicado', true, $antes > 0);
+
+$revision = auto_publicar_lote(microtime(true) + 20);
+
+comprobar(
+    'con criterios imposibles, lo automatico se retira',
+    0,
+    (int) bd()->query("SELECT COUNT(*) FROM bits WHERE redactado_por = 'ia'")->fetchColumn()
+);
+
+// Lo escrito por una persona no se toca nunca, pase lo que pase.
+comprobar(
+    'el bit escrito a mano sigue donde estaba',
+    1,
+    (int) bd()->query("SELECT COUNT(*) FROM bits WHERE redactado_por = 'humano'")->fetchColumn()
+);
+
+// Y la revision no se repite en la pasada siguiente.
+comprobar(
+    'la revision corre una sola vez',
+    0,
+    auto_publicar_lote(microtime(true) + 10)['revisados']
+);
+
+ajuste_guardar('auto_min_diccionario', '0');
+
 // Apagar el modo automatico tiene que bastar para que no vuelva a tocar nada.
 ajuste_guardar('auto_publicar', '0');
 

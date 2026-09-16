@@ -28,6 +28,16 @@ require_once dirname(__DIR__) . '/lib/puntuar.php';
 require_once dirname(__DIR__) . '/panel/datos.php';
 
 /**
+ * Version de los criterios automaticos.
+ *
+ * Cuando sube, lo ya publicado sin revision humana se vuelve a pasar por el
+ * filtro una sola vez. Sin esto, una edicion publicada con criterios flojos se
+ * queda ahi para siempre y solo mejora lo que venga despues, que es
+ * exactamente lo que paso con la primera.
+ */
+const AUTO_CRITERIOS = 2;
+
+/**
  * Una pasada de publicacion automatica.
  *
  * @param float $limite Marca de tiempo a partir de la cual no se empiezan
@@ -35,7 +45,7 @@ require_once dirname(__DIR__) . '/panel/datos.php';
  */
 function auto_publicar_lote(float $limite): array
 {
-    $resumen = ['estado' => 'nada que hacer', 'bits' => 0, 'descartados' => 0, 'cerrada' => 0];
+    $resumen = ['estado' => 'nada que hacer', 'bits' => 0, 'descartados' => 0, 'revisados' => 0, 'cerrada' => 0];
 
     // Por defecto encendido: es lo que pidio el dueno del sitio. Se apaga
     // poniendo el ajuste auto_publicar a 0 desde la base de datos.
@@ -44,6 +54,9 @@ function auto_publicar_lote(float $limite): array
 
         return $resumen;
     }
+
+    // Antes de escribir nada, se revisa lo que ya se publico sin mirar.
+    $resumen['revisados'] = auto_revisar_publicados();
 
     $tope     = max(1, (int) ajuste('edicion_max_bits', '20'));
     $umbral   = (int) ajuste('auto_umbral', '30');
@@ -81,9 +94,116 @@ function auto_publicar_lote(float $limite): array
         $resumen['cerrada'] = (int) $edicion['numero'];
     }
 
-    $resumen['estado'] = $resumen['bits'] > 0 || $resumen['cerrada'] > 0 ? 'publicado' : 'nada que hacer';
+    $resumen['estado'] = $resumen['bits'] > 0 || $resumen['cerrada'] > 0 || $resumen['revisados'] > 0
+        ? 'publicado'
+        : 'nada que hacer';
 
     return $resumen;
+}
+
+/**
+ * Vuelve a pasar por el filtro lo que se publico solo con criterios viejos.
+ *
+ * Corre una sola vez por cada version de criterios. Lo que ya no cumple se
+ * retira y su racimo se descarta; lo que sigue valiendo se reescribe con las
+ * reglas de ahora, que limpian la coletilla del feed, clasifican por el
+ * diccionario y prefieren el titular en espanol.
+ *
+ * Solo toca bits sin revisar escritos en automatico: lo que haya pasado por
+ * manos humanas no se toca jamas.
+ *
+ * @return int Cuantos bits se han revisado.
+ */
+function auto_revisar_publicados(): int
+{
+    if ((int) ajuste('auto_criterios', '0') >= AUTO_CRITERIOS) {
+        return 0;
+    }
+
+    $terminos = auto_terminos();
+    $minimo   = (int) ajuste('auto_min_diccionario', '8');
+
+    $bits = bd()->query(
+        "SELECT id, racimo_id, edicion_id FROM bits
+          WHERE redactado_por = 'ia' AND revisado = 0 AND racimo_id IS NOT NULL"
+    )->fetchAll();
+
+    $ediciones = [];
+    $tocados   = 0;
+
+    foreach ($bits as $bit) {
+        $ediciones[(int) $bit['edicion_id']] = true;
+
+        if (auto_revisar_bit($bit, $terminos, $minimo)) {
+            $tocados++;
+        }
+    }
+
+    // Una edicion que se ha quedado sin nada no puede seguir publicada: seria
+    // una portada vacia. Se borra y el modo automatico abrira otra.
+    foreach (array_keys($ediciones) as $edicion_id) {
+        if ($edicion_id <= 0) {
+            continue;
+        }
+
+        $st = bd()->prepare('SELECT COUNT(*) FROM bits WHERE edicion_id = ?');
+        $st->execute([$edicion_id]);
+
+        if ((int) $st->fetchColumn() === 0) {
+            bd()->prepare('DELETE FROM ediciones WHERE id = ?')->execute([$edicion_id]);
+        }
+    }
+
+    ajuste_guardar('auto_criterios', (string) AUTO_CRITERIOS);
+
+    // La web se regenera entera: los bits que sobreviven han cambiado de
+    // titular, de cuerpo y de categoria.
+    ajuste_guardar('publicar_firma', '');
+
+    return $tocados;
+}
+
+/**
+ * Revisa un bit automatico: lo reescribe si sigue valiendo, lo retira si no.
+ *
+ * @return bool true si se ha reescrito, false si se ha retirado.
+ */
+function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
+{
+    $racimo = datos_racimo((int) $bit['racimo_id']);
+    $items  = auto_items((int) $bit['racimo_id']);
+    $cuerpo = auto_cuerpo($items);
+
+    $titular = $racimo !== null ? (string) $racimo['titulo_representativo'] : '';
+    $senal   = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
+
+    if ($racimo === null
+        || $senal['puntos'] < $minimo
+        || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN
+    ) {
+        datos_borrar_bit((int) $bit['id']);
+
+        if ($racimo !== null) {
+            bd()->prepare("UPDATE racimos SET estado = 'descartado', motivo_descarte = ? WHERE id = ?")
+                ->execute(['automatico: no pasa los criterios nuevos', (int) $racimo['id']]);
+        }
+
+        return false;
+    }
+
+    $categoria = auto_categoria_diccionario($titular . ' ' . $cuerpo, $terminos);
+
+    datos_guardar_bit((int) $bit['id'], [
+        'titular'   => texto_recortar($titular, BITS_TITULAR_MAX),
+        'cuerpo'    => $cuerpo,
+        'por_que'   => '',
+        'categoria' => $categoria !== '' ? $categoria : auto_categoria($items),
+        'madurez'   => 'anuncio',
+        'tipo'      => auto_tipo($items),
+        'estado'    => 'publicado',
+    ]);
+
+    return true;
 }
 
 /**
