@@ -313,16 +313,41 @@ function auto_enumerar(array $nombres): string
 /**
  * ¿Toca cerrar la edicion y publicarla?
  *
- * Dos motivos: que este llena o que haya llegado su fecha. Nunca se cierra
- * vacia, porque una edicion sin bits es una pagina sin nada que enviar.
+ * Tres motivos: que este llena, que haya llegado su fecha, o que el sitio no
+ * tenga todavia ninguna edicion publicada y esta ya tenga con que llenar una
+ * portada. Nunca se cierra vacia, porque una edicion sin bits es una pagina
+ * sin nada que ensenar.
+ *
+ * El tercer motivo no es un capricho. La edicion se cierra el martes, asi que
+ * un sitio que se queda sin ediciones publicadas -porque es nuevo, o porque
+ * una revision retiro lo que no pasaba el filtro- ensena una portada vacia
+ * hasta el martes siguiente. Seis dias de nada. Una portada vacia no es una
+ * espera: es un sitio roto, y quien pasa por el no vuelve.
+ *
+ * @param bool $hay_publicadas ¿Hay ya alguna edicion cerrada o enviada?
+ * @param int  $suelo          Bits que hacen una portada digna de ese arranque.
  */
-function auto_toca_cerrar(int $bits, int $tope, string $fecha_prevista, string $hoy): bool
-{
+function auto_toca_cerrar(
+    int $bits,
+    int $tope,
+    string $fecha_prevista,
+    string $hoy,
+    bool $hay_publicadas = true,
+    int $suelo = 6
+): bool {
     if ($bits <= 0) {
         return false;
     }
 
-    return $bits >= $tope || $fecha_prevista <= $hoy;
+    if ($bits >= $tope) {
+        return true;
+    }
+
+    if (!$hay_publicadas && $bits >= max(1, $suelo)) {
+        return true;
+    }
+
+    return $fecha_prevista <= $hoy;
 }
 
 /**

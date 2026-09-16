@@ -263,4 +263,35 @@ comprobar('mil palabras son cinco minutos', 5, web_minutos(1000));
 comprobar('lo que sobra redondea hacia arriba', 6, web_minutos(1001));
 comprobar('una edicion vacia sigue siendo un minuto', 1, web_minutos(0));
 
+// --- Lo que sobra en publico/ -----------------------------------------------
+//
+// Una edicion retirada deja su carpeta escrita. Si no se barre, la noticia
+// sigue servida en su direccion de siempre y retirarla no ha servido de nada.
+
+comprobar(
+    'sobra lo que ya no esta publicado',
+    ['1-vieja'],
+    web_sobran(['1-vieja', '2-actual'], ['2-actual'])
+);
+
+comprobar(
+    'con todo publicado, no sobra nada',
+    [],
+    web_sobran(['2-actual'], ['2-actual', '3-siguiente'])
+);
+
+// Los slugs vivos se normalizan igual que al escribirlos; si no, la carpeta
+// de una edicion viva se tomaria por huerfana y se borraria la buena.
+comprobar(
+    'los slugs se comparan ya normalizados',
+    [],
+    web_sobran(['2-edicion-de-prueba'], ['2-Edicion De Prueba'])
+);
+
+comprobar(
+    'los puntos de scandir no cuentan',
+    ['1-vieja'],
+    web_sobran(['.', '..', '1-vieja'], [])
+);
+
 resumen_pruebas('Pruebas de la fase 4: la web generada');

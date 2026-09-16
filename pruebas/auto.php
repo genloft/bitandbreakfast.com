@@ -337,4 +337,31 @@ comprobar(
     auto_toca_cerrar(0, 20, '2026-09-01', '2026-09-16')
 );
 
+// Sin ninguna edicion publicada, la portada esta vacia: en cuanto hay con que
+// llenarla, se cierra sin esperar al martes.
+comprobar(
+    'sin nada publicado, se cierra en cuanto hay suficientes bits',
+    true,
+    auto_toca_cerrar(6, 20, '2026-12-31', '2026-09-16', false, 6)
+);
+
+comprobar(
+    'pero no con cuatro bits: eso no es una portada',
+    false,
+    auto_toca_cerrar(4, 20, '2026-12-31', '2026-09-16', false, 6)
+);
+
+// Con una edicion ya publicada no hay prisa: manda el calendario.
+comprobar(
+    'con el sitio ya lleno, se espera a la fecha',
+    false,
+    auto_toca_cerrar(6, 20, '2026-12-31', '2026-09-16', true, 6)
+);
+
+comprobar(
+    'y vacia no se cierra ni aunque no haya nada publicado',
+    false,
+    auto_toca_cerrar(0, 20, '2026-12-31', '2026-09-16', false, 6)
+);
+
 resumen_pruebas('Pruebas de la publicacion automatica');

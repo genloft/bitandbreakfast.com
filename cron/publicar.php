@@ -161,9 +161,63 @@ function publicar_pendiente(float $limite): array
         publicar_plantilla('feed', ['ediciones' => $ediciones, 'base' => $base])
     ) ? 1 : 0;
 
+    // Y se barre lo que ya no le corresponde a nada: una edicion retirada no
+    // puede seguir servida en su direccion de siempre.
+    $barridos  = publicar_barrer($publico . '/e', array_column($ediciones, 'slug'));
+    $barridos += publicar_barrer($publico . '/p', array_column($proveedores, 'slug'));
+
     ajuste_guardar('publicar_firma', $firma);
 
-    return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'publicado'];
+    return [
+        'ediciones' => $hechas,
+        'ficheros'  => $ficheros,
+        'barridos'  => $barridos,
+        'estado'    => 'publicado',
+    ];
+}
+
+/**
+ * Borra las carpetas generadas que ya no le corresponden a nada.
+ *
+ * Solo entra en carpetas de un nivel escritas por el propio generador y solo
+ * borra dentro de ellas los ficheros que el mismo escribe. No es paranoia: de
+ * aqui sale un rmdir, y un rmdir con una ruta mal calculada se lleva por
+ * delante lo que no debe.
+ *
+ * @return int Cuantas carpetas se han borrado.
+ */
+function publicar_barrer(string $carpeta, array $vivos): int
+{
+    if (!is_dir($carpeta)) {
+        return 0;
+    }
+
+    $hijas = array_values(array_filter(
+        scandir($carpeta) ?: [],
+        static fn (string $nombre): bool => is_dir($carpeta . '/' . $nombre)
+            && $nombre !== '.'
+            && $nombre !== '..'
+    ));
+
+    $borradas = 0;
+
+    foreach (web_sobran($hijas, $vivos) as $sobra) {
+        $ruta = $carpeta . '/' . $sobra;
+
+        // La carpeta tiene que llamarse como la escribio el generador. Si no,
+        // no es suya y no se toca.
+        if ($sobra !== web_slug_seguro($sobra)) {
+            continue;
+        }
+
+        @unlink($ruta . '/index.html');
+
+        if (@rmdir($ruta)) {
+            $borradas++;
+        }
+    }
+
+    return $borradas;
 }
 
 /**

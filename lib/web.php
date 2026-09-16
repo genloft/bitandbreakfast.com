@@ -246,6 +246,40 @@ function web_url_proveedor(string $base, string $slug): string
 }
 
 /**
+ * Carpetas generadas que ya no le corresponden a nada.
+ *
+ * El generador escribe una carpeta por edicion y otra por proveedor, pero no
+ * borra: una edicion retirada -o un proveedor que se queda sin nada
+ * publicado- deja su pagina viva en su direccion de siempre, enlazada desde
+ * ningun sitio y con el contenido de antes. Un radar que retira una noticia y
+ * la deja servida en otra URL no la ha retirado.
+ *
+ * @param array $carpetas Nombres de carpeta que hay en disco.
+ * @param array $vivos    Slugs que siguen publicados.
+ *
+ * @return array Los nombres de carpeta que sobran.
+ */
+function web_sobran(array $carpetas, array $vivos): array
+{
+    $validos = array_map('web_slug_seguro', array_map('strval', $vivos));
+    $sobran  = [];
+
+    foreach ($carpetas as $carpeta) {
+        $nombre = (string) $carpeta;
+
+        if ($nombre === '' || $nombre === '.' || $nombre === '..') {
+            continue;
+        }
+
+        if (!in_array($nombre, $validos, true)) {
+            $sobran[] = $nombre;
+        }
+    }
+
+    return $sobran;
+}
+
+/**
  * Firma del enlace contado de un bit.
  *
  * Corta a proposito: dieciseis caracteres hexadecimales son 64 bits, de sobra

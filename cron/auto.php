@@ -79,7 +79,19 @@ function auto_publicar_lote(float $limite): array
         }
     }
 
-    if (auto_toca_cerrar($dentro, $tope, (string) $edicion['fecha_prevista'], gmdate('Y-m-d'))) {
+    // Si no hay ninguna edicion publicada, la portada esta vacia ahora mismo y
+    // esperar al martes son seis dias de nada.
+    $publicadas = (int) bd()->query("SELECT COUNT(*) FROM ediciones WHERE estado <> 'abierta'")->fetchColumn();
+    $suelo      = max(1, (int) ajuste('edicion_min_bits', '6'));
+
+    if (auto_toca_cerrar(
+        $dentro,
+        $tope,
+        (string) $edicion['fecha_prevista'],
+        gmdate('Y-m-d'),
+        $publicadas > 0,
+        $suelo
+    )) {
         datos_cerrar_edicion((int) $edicion['id']);
         $resumen['cerrada'] = (int) $edicion['numero'];
     }
