@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 2;
+const AUTO_CRITERIOS = 3;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.
@@ -147,6 +147,87 @@ function auto_limpiar(string $bruto): string
     // Ademas de espacios, se quitan los guiones y barras con los que muchos
     // feeds separan el resumen de la firma del medio.
     return trim($texto, " \t\n\r\0\x0B-–—·|");
+}
+
+/**
+ * Deja el titular del racimo en algo publicable.
+ *
+ * El titular llega tal cual del feed, y la mitad de los feeds no decodifican
+ * las entidades: en la portada se leia "Soneva&#039;s Neil Gallagher", porque
+ * el generador escapa lo que le dan y lo que le daban ya venia escapado.
+ *
+ * Se limpia aparte del cuerpo porque un titular no lleva coletillas de gestor
+ * de contenidos, pero si arrastra el nombre del medio pegado al final -"...
+ * | Skift", "... - Hosteltur"-, que en un radar que ya dice la fuente debajo
+ * sobra.
+ *
+ * @param array $medios Nombres de los medios que cuentan la noticia.
+ */
+function auto_titular(string $bruto, array $medios = []): string
+{
+    $titular = html_entity_decode(
+        strip_tags(texto_limpiar_html($bruto)),
+        ENT_QUOTES | ENT_HTML5,
+        'UTF-8'
+    );
+
+    $titular = trim((string) preg_replace('/\s+/u', ' ', $titular));
+
+    foreach ($medios as $medio) {
+        $medio = trim((string) $medio);
+
+        if ($medio === '') {
+            continue;
+        }
+
+        $patron = '/\s*[-–—|·]\s*' . preg_quote($medio, '/') . '\s*$/ui';
+        $corto  = (string) preg_replace($patron, '', $titular);
+
+        // Solo si queda titular: hay medios cuyo nombre es la noticia entera.
+        if (trim($corto) !== '') {
+            $titular = trim($corto);
+        }
+    }
+
+    return $titular;
+}
+
+/**
+ * ¿Es esto un recopilatorio y no una noticia?
+ *
+ * Algunos boletines publican en su feed una sola entrada con cinco noticias
+ * distintas separadas por comas -"Soneva's Neil Gallagher on Bare Luxury...,
+ * dormakaba Acquires Alliants, EU AI Act Is Now..."-. Como titular de un bit
+ * no vale: no cuenta una cosa, cuenta cinco a medias, y el enlace lleva a un
+ * indice, no a la noticia.
+ *
+ * Tres condiciones a la vez, porque cualquiera de ellas por separado se lleva
+ * por delante titulares normales: muy largo, partido en tres o mas trozos por
+ * comas, y con tres trozos que son frases enteras. Un titular espanol con dos
+ * incisos rara vez llega a noventa caracteres con tres trozos de tres
+ * palabras; uno de estos no baja de ahi nunca.
+ */
+function auto_es_recopilatorio(string $titular): bool
+{
+    if (mb_strlen($titular) < 90) {
+        return false;
+    }
+
+    $trozos = explode(',', $titular);
+
+    if (count($trozos) < 3) {
+        return false;
+    }
+
+    $frases = 0;
+
+    foreach ($trozos as $trozo) {
+        if (texto_contar_palabras(trim($trozo)) >= 3) {
+            $frases++;
+        }
+    }
+
+    return $frases >= 3;
 }
 
 /**

@@ -143,6 +143,89 @@ comprobar(
     auto_limpiar('Empieza la noticia [&hellip;] y sigue.')
 );
 
+// --- Titulares --------------------------------------------------------------
+//
+// El titular llega del feed tal cual, y medio internet sigue publicando
+// entidades sin decodificar. En la portada se leia "Soneva&#039;s".
+
+comprobar(
+    'las entidades del titular se decodifican',
+    "Soneva's Neil Gallagher habla de lujo",
+    auto_titular('Soneva&#039;s Neil Gallagher habla de lujo')
+);
+
+comprobar(
+    'el HTML del titular se va',
+    'Mews compra Atomize',
+    auto_titular('<b>Mews</b> compra Atomize')
+);
+
+comprobar(
+    'los espacios de sobra se juntan',
+    'Cloudbeds lanza su RMS',
+    auto_titular("Cloudbeds   lanza\n su RMS  ")
+);
+
+// Muchos feeds pegan el nombre del medio al final del titular. Debajo del bit
+// ya se dice de donde sale, asi que ahi sobra.
+comprobar(
+    'el medio pegado al final se quita',
+    'Oracle cae cuatro horas',
+    auto_titular('Oracle cae cuatro horas | Skift', ['Skift'])
+);
+
+comprobar(
+    'y con guion largo tambien',
+    'La AEPD multa a una cadena',
+    auto_titular('La AEPD multa a una cadena — Hosteltur', ['Hosteltur'])
+);
+
+// Si el titular es solo el nombre del medio, quitarlo dejaria el bit sin
+// titular: se prefiere un titular pobre a ninguno.
+comprobar(
+    'nunca se deja el titular vacio',
+    'Skift',
+    auto_titular('Skift', ['Skift'])
+);
+
+// --- Recopilatorios ---------------------------------------------------------
+//
+// Hay boletines que publican cinco noticias en una sola entrada del feed. Eso
+// no es un bit: es un indice, y el enlace no lleva a ninguna noticia.
+
+comprobar(
+    'cinco noticias en un titular no son una noticia',
+    true,
+    auto_es_recopilatorio(
+        "Soneva's Neil Gallagher on Bare Luxury and What Stays When the SOPs Go, "
+        . 'dormakaba Acquires Alliants, EU AI Act Is Now in Force'
+    )
+);
+
+// Y las tres condiciones tienen que cumplirse a la vez, porque cualquiera de
+// ellas sola se lleva por delante titulares normales.
+comprobar(
+    'un titular largo con incisos no lo es',
+    false,
+    auto_es_recopilatorio('Mews compra Atomize, el RMS sueco, por una cifra no revelada')
+);
+
+comprobar(
+    'una enumeracion de nombres tampoco',
+    false,
+    auto_es_recopilatorio(
+        'Oracle, Mews y Cloudbeds firman un acuerdo para integrar pagos en el motor de reservas'
+    )
+);
+
+comprobar(
+    'ni un titular largo sin comas',
+    false,
+    auto_es_recopilatorio(
+        'La Agencia Espanola de Proteccion de Datos multa a una cadena hotelera por el registro de viajeros'
+    )
+);
+
 // --- Categoria segun el diccionario -----------------------------------------
 
 $diccionario = [

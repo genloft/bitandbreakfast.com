@@ -164,12 +164,15 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
     $items  = auto_items((int) $bit['racimo_id']);
     $cuerpo = auto_cuerpo($items);
 
-    $titular = $racimo !== null ? (string) $racimo['titulo_representativo'] : '';
+    $titular = $racimo !== null
+        ? auto_titular((string) $racimo['titulo_representativo'], auto_medios($items))
+        : '';
     $senal   = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
     if ($racimo === null
         || $senal['puntos'] < $minimo
         || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN
+        || auto_es_recopilatorio($titular)
     ) {
         datos_borrar_bit((int) $bit['id']);
 
@@ -210,9 +213,10 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         return false;
     }
 
-    $items  = auto_items($racimo_id);
-    $cuerpo = auto_cuerpo($items);
-    $texto  = (string) $racimo['titulo_representativo'] . ' ' . $cuerpo;
+    $items   = auto_items($racimo_id);
+    $cuerpo  = auto_cuerpo($items);
+    $titular = auto_titular((string) $racimo['titulo_representativo'], auto_medios($items));
+    $texto   = $titular . ' ' . $cuerpo;
 
     // Dos filtros que el umbral de puntuacion no cubre, y que son la
     // diferencia entre un radar y un tablon de novedades del sector:
@@ -222,16 +226,22 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     //      si el diccionario no reconoce nada, no es para este boletin.
     //   2. Tiene que tener cuerpo. Un bit que solo dice quien lo publica no
     //      le ahorra el clic a nadie.
-    $senal = puntuar_diccionario((string) $racimo['titulo_representativo'], $cuerpo, $terminos, 100);
+    //   3. Tiene que contar una sola noticia. Hay boletines que meten cinco en
+    //      una entrada del feed, y ese titular no es un bit: es un indice.
+    $senal = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
-    if ($senal['puntos'] < $minimo || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN) {
+    $motivo = match (true) {
+        $senal['puntos'] < $minimo                        => 'automatico: sin senal tematica',
+        texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN  => 'automatico: sin resumen utilizable',
+        auto_es_recopilatorio($titular)                   => 'automatico: recopilatorio, no una noticia',
+        default                                           => '',
+    };
+
+    if ($motivo !== '') {
         // Se saca de la cola con el motivo escrito: si no, se volveria a
         // evaluar en cada pasada y taparia a los que si valen.
         bd()->prepare("UPDATE racimos SET estado = 'descartado', motivo_descarte = ? WHERE id = ?")
-            ->execute([
-                $senal['puntos'] < $minimo ? 'automatico: sin senal tematica' : 'automatico: sin resumen utilizable',
-                $racimo_id,
-            ]);
+            ->execute([$motivo, $racimo_id]);
 
         return false;
     }
@@ -244,7 +254,7 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         $categoria = auto_categoria_diccionario($texto, $terminos);
 
         datos_guardar_bit($bit_id, [
-            'titular'   => texto_recortar((string) $racimo['titulo_representativo'], BITS_TITULAR_MAX),
+            'titular'   => texto_recortar($titular, BITS_TITULAR_MAX),
             'cuerpo'    => $cuerpo,
             // El "por que importa" se queda vacio a proposito: es un juicio
             // editorial y aqui no hay nadie para hacerlo. Inventarlo seria
