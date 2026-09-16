@@ -40,6 +40,9 @@ $descripcion = trim((string) $edicion['intro']) !== ''
 $enlace_activo = 'portada';
 $alta_abierta  = $alta_abierta ?? false;
 $secreto       = $secreto ?? '';
+$fuentes       = $fuentes ?? [];
+$ambitos       = web_ambitos();
+$idiomas       = web_idiomas();
 
 ?><!doctype html>
 <html lang="es">
@@ -134,6 +137,34 @@ $secreto       = $secreto ?? '';
             <?php endif; ?>
             <a class="volver" href="#sumario-titulo">Sumario ↑</a>
           </p>
+
+          <?php
+            // Todas las fuentes que cuentan la noticia, no solo la mejor. Que
+            // cuatro medios independientes la cuenten es la mitad de la
+            // informacion, y esconderla detras de un solo enlace la tiraba.
+            $suyas = $fuentes[(int) ($bit['racimo_id'] ?? 0)] ?? [];
+          ?>
+          <?php if (count($suyas) > 1): ?>
+            <details class="fuentes-bit">
+              <summary><?= count($suyas) ?> fuentes lo cuentan</summary>
+
+              <ul>
+              <?php foreach ($suyas as $fuente): ?>
+                <li>
+                  <a href="<?= web_e($fuente['url']) ?>" rel="nofollow noopener"><?= web_e($fuente['fuente']) ?></a>
+                  <span class="datos">
+                    <?= web_e($ambitos[$fuente['region']] ?? $fuente['region']) ?>
+                    <span class="punto">·</span>
+                    <?= web_e($idiomas[$fuente['idioma']] ?? $fuente['idioma']) ?>
+                    <span class="punto">·</span>
+                    <time datetime="<?= web_e(substr((string) $fuente['publicado'], 0, 10)) ?>"><?= web_e(web_fecha_larga(substr((string) $fuente['publicado'], 0, 10))) ?></time>
+                  </span>
+                  <span class="titular-fuente"><?= web_e($fuente['titulo']) ?></span>
+                </li>
+              <?php endforeach; ?>
+              </ul>
+            </details>
+          <?php endif; ?>
         </div>
       </section>
     <?php endforeach; ?>

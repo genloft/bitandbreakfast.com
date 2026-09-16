@@ -46,13 +46,14 @@ $alta_abierta  = $alta_abierta ?? false;
 
 <?php require __DIR__ . '/cabecera.php'; ?>
 
-<main id="contenido">
-  <header class="edicion-cabecera">
+<main id="contenido" class="explorador">
+  <header class="edicion-cabecera cabecera-explorador">
     <p class="sello">Explorar</p>
     <h1>En todo lo publicado</h1>
     <p class="datos"><?= (int) $total ?> bit<?= (int) $total === 1 ? '' : 's' ?> en el índice</p>
   </header>
 
+  <div class="rail">
   <form class="buscador" role="search" action="<?= web_e($base) ?>/buscar.html" method="get">
     <label for="q">Buscar</label>
     <input id="q" name="q" type="search" autocomplete="off"
@@ -82,7 +83,9 @@ $alta_abierta  = $alta_abierta ?? false;
 
     <button type="button" class="limpiar" id="limpiar" hidden>Quitar todos los filtros</button>
   </div>
+  </div>
 
+  <div class="resultados-panel">
   <p id="estado" class="datos">Escribe o toca un filtro. Se busca en el titular,
   en el «por qué importa», en el cuerpo, en la fuente y en los proveedores
   mencionados.</p>
@@ -95,6 +98,8 @@ $alta_abierta  = $alta_abierta ?? false;
     ediciones y las <a href="<?= web_e($base) ?>/proveedores.html">fichas de
     proveedor</a> agrupan lo publicado sobre cada uno.</p>
   </noscript>
+
+  </div>
 
   <?php require __DIR__ . '/suscribir.php'; ?>
 </main>

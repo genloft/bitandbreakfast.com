@@ -80,6 +80,11 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
     RewriteCond %{REQUEST_URI} !^/publico//
     RewriteRule ^publico(?:/(.*))?$ /$1 [R=301,L]
 
+    # /panel sin barra final: la regla de abajo exige la barra para dejarlo
+    # pasar, asi que sin ella acabaria reescrito a publico/panel y devolviendo
+    # un 404 desconcertante. Se redirige a la forma canonica.
+    RewriteRule ^(api|panel)$ /$1/ [R=301,L]
+
     # api/ y panel/ son PHP y se sirven tal cual. instalar.php tambien:
     # es el instalador web, y se borra solo en cuanto termina.
     RewriteCond %{REQUEST_URI} !^/(api|panel|publico)/

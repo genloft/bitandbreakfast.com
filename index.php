@@ -52,17 +52,16 @@ if (!is_file($config)) {
 // Sin web generada: generarla ahora
 // -----------------------------------------------------------------------------
 
-if (arranque_hay_que_generar($raiz, $huella) && arranque_toca_intentar($raiz)) {
-    try {
-        require_once $raiz . '/cron/publicar.php';
-
-        // Presupuesto corto: esto corre dentro de una peticion web, no en el
-        // cron. Lo que no entre lo termina la siguiente visita o el cron.
-        publicar_pendiente(microtime(true) + 15);
-    } catch (Throwable $e) {
-        // Que falle no puede dejar al visitante sin pagina: se sigue adelante
-        // y se le sirve lo que haya, o la provisional.
-        error_log('Bit & Breakfast, generacion desde la web: ' . $e->getMessage());
+if (arranque_toca_intentar($raiz)) {
+    if (arranque_sin_contenido($raiz)) {
+        // Sitio recien puesto en marcha: cada visita empuja la cadena entera un
+        // paso -rastrear, agrupar, publicar y generar-, como mucho una vez cada
+        // cinco minutos. Asi se llena solo aunque el cron no este bien puesto,
+        // que es exactamente lo que ha pasado aqui. En cuanto hay una edicion
+        // publicada esto deja de ejecutarse y el sitio vuelve a ser estatico.
+        arranque_cadena($raiz);
+    } elseif (arranque_hay_que_generar($raiz, $huella)) {
+        arranque_tarea($raiz, 'publicar', 'publicar_pendiente', 15);
     }
 }
 
@@ -84,6 +83,59 @@ if ($contenido !== false && $contenido !== '') {
 arranque_provisional();
 
 // -----------------------------------------------------------------------------
+
+/**
+ * ¿El sitio no tiene todavia nada publicado?
+ *
+ * Se mira el indice de busqueda, que el generador escribe siempre y lleva
+ * dentro todos los bits publicados. Sin fichero o con la lista vacia, no hay
+ * contenido.
+ */
+function arranque_sin_contenido(string $raiz): bool
+{
+    $indice = $raiz . '/publico/indice.json';
+
+    if (!is_file($indice)) {
+        return true;
+    }
+
+    $datos = json_decode((string) @file_get_contents($indice), true);
+
+    return !is_array($datos) || empty($datos['bits']);
+}
+
+/**
+ * Una vuelta completa de la cadena, con presupuestos cortos.
+ *
+ * El orden importa y es el mismo que usa el cron: primero traer, luego
+ * agrupar, luego decidir que se publica, y al final escribir la web.
+ */
+function arranque_cadena(string $raiz): void
+{
+    @set_time_limit(90);
+
+    arranque_tarea($raiz, 'ingesta',  'ingesta_lote',       12);
+    arranque_tarea($raiz, 'procesar', 'procesar_lote',      10);
+    arranque_tarea($raiz, 'auto',     'auto_publicar_lote',  6);
+    arranque_tarea($raiz, 'publicar', 'publicar_pendiente', 12);
+}
+
+/**
+ * Ejecuta una tarea del cron desde la web, sin dejar que un fallo suyo deje
+ * al visitante sin pagina.
+ */
+function arranque_tarea(string $raiz, string $fichero, string $funcion, int $segundos): void
+{
+    try {
+        require_once $raiz . '/cron/' . $fichero . '.php';
+
+        if (function_exists($funcion)) {
+            $funcion(microtime(true) + $segundos);
+        }
+    } catch (Throwable $e) {
+        error_log('Bit & Breakfast, ' . $funcion . ' desde la web: ' . $e->getMessage());
+    }
+}
 
 /**
  * ¿La web publicada esta al dia?

@@ -430,4 +430,65 @@ comprobar(
     publicar_pendiente(microtime(true) + 10)['estado']
 );
 
-resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion y web');
+// -----------------------------------------------------------------------------
+// Publicacion automatica
+//
+// El otro racimo -el de Mews- sigue en la cola sin que nadie lo haya tocado.
+// En modo automatico tiene que convertirse en bit el solo, entrar en la
+// edicion abierta y acabar publicado cuando le llegue la fecha.
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/cron/auto.php';
+
+ajuste_guardar('auto_publicar', '1');
+ajuste_guardar('auto_umbral', '10');
+
+$auto = auto_publicar_lote(microtime(true) + 20);
+
+comprobar('el modo automatico escribe el bit que quedaba', 1, $auto['bits']);
+
+$abierta = datos_edicion_abierta();
+$suyos   = datos_bits_edicion((int) $abierta['id']);
+
+comprobar('y lo mete en la edicion abierta', 1, count($suyos));
+comprobar('aprobado, no en borrador', 'aprobado', $suyos[0]['estado']);
+comprobar('y marcado como no escrito por una persona', 'ia', $suyos[0]['redactado_por']);
+
+// El cuerpo sale del resumen de la fuente o de la lista de medios, nunca de
+// la nada.
+comprobar(
+    'el bit automatico tiene cuerpo',
+    true,
+    trim((string) $suyos[0]['cuerpo']) !== ''
+);
+
+// La edicion no esta llena y su fecha es la del proximo martes: no toca
+// cerrar todavia.
+comprobar('sin fecha ni tope, la edicion sigue abierta', 0, $auto['cerrada']);
+
+// Con la fecha cumplida, se cierra sola y se publica.
+bd()->prepare('UPDATE ediciones SET fecha_prevista = ? WHERE id = ?')
+    ->execute([gmdate('Y-m-d', time() - 86400), (int) $abierta['id']]);
+
+$auto = auto_publicar_lote(microtime(true) + 20);
+
+comprobar('cumplida la fecha, la edicion se cierra sola', (int) $abierta['numero'], $auto['cerrada']);
+
+$resumen_web = publicar_pendiente(microtime(true) + 30);
+
+comprobar('y el generador publica las dos ediciones', 2, $resumen_web['ediciones']);
+
+$indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
+
+comprobar('el indice recoge los dos bits', 2, count($indice['bits'] ?? []));
+
+// Apagar el modo automatico tiene que bastar para que no vuelva a tocar nada.
+ajuste_guardar('auto_publicar', '0');
+
+comprobar(
+    'apagado, el modo automatico no hace nada',
+    'desactivado',
+    auto_publicar_lote(microtime(true) + 5)['estado']
+);
+
+resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');

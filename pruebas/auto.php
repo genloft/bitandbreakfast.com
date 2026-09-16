@@ -1,0 +1,181 @@
+<?php
+/**
+ * Pruebas de lib/auto.php.  Ejecutar:  php pruebas/auto.php
+ *
+ * La publicacion automatica levanta la premisa con la que nacio el proyecto
+ * -ningun bit sin revision humana-, asi que lo que hace tiene que ser
+ * especialmente predecible. Aqui se comprueba que no inventa: que el cuerpo
+ * sale del resumen de la fuente, que la categoria sale del catalogo y que el
+ * umbral corta donde tiene que cortar.
+ */
+
+require_once __DIR__ . '/ayuda.php';
+require_once dirname(__DIR__) . '/lib/auto.php';
+
+// --- Categoria --------------------------------------------------------------
+
+comprobar(
+    'la categoria sale de la fuente mejor puntuada',
+    'ciberseguridad-cumplimiento',
+    auto_categoria([
+        ['categoria_defecto' => 'ciberseguridad-cumplimiento'],
+        ['categoria_defecto' => 'pms-gestion'],
+    ])
+);
+
+// Una categoria que no esta en el catalogo no puede colarse: luego no filtra.
+comprobar(
+    'una categoria desconocida se ignora y se pasa a la siguiente',
+    'pms-gestion',
+    auto_categoria([
+        ['categoria_defecto' => 'lo-que-sea'],
+        ['categoria_defecto' => 'pms-gestion'],
+    ])
+);
+
+comprobar(
+    'sin ninguna valida, la general',
+    'tecnologia-general',
+    auto_categoria([['categoria_defecto' => 'inventada']])
+);
+
+comprobar('sin items, la general', 'tecnologia-general', auto_categoria([]));
+
+// --- Tipo -------------------------------------------------------------------
+
+comprobar('una pagina de estado es un incidente', 'incidente', auto_tipo([['tipo' => 'estado']]));
+comprobar('un boletin oficial es regulacion', 'regulacion', auto_tipo([['tipo' => 'normativa']]));
+comprobar('una ronda es inversion', 'inversion', auto_tipo([['tipo' => 'financiacion']]));
+comprobar('lo demas es producto', 'producto', auto_tipo([['tipo' => 'prensa']]));
+
+comprobar(
+    'si la primera fuente no dice nada, se mira la siguiente',
+    'incidente',
+    auto_tipo([['tipo' => 'prensa'], ['tipo' => 'estado']])
+);
+
+// --- Cuerpo -----------------------------------------------------------------
+
+$largo = 'El corte afecto a los hoteles europeos durante cuatro horas, entre las '
+       . 'ocho y diez de la manana y las doce y media, y obligo a las recepciones '
+       . 'a volver al papel mientras duro la incidencia en toda la region.';
+
+comprobar(
+    'el cuerpo es el resumen de la fuente, tal cual',
+    $largo,
+    auto_cuerpo([['resumen_origen' => $largo, 'fuente' => 'Skift']])
+);
+
+// El HTML de los feeds no puede llegar al bit.
+comprobar(
+    'el resumen llega limpio de etiquetas',
+    $largo,
+    auto_cuerpo([['resumen_origen' => '<p>' . $largo . '</p>', 'fuente' => 'Skift']])
+);
+
+comprobar(
+    'un resumen larguisimo se recorta por palabras',
+    30,
+    texto_contar_palabras(auto_cuerpo(
+        [['resumen_origen' => trim(str_repeat('palabra ', 200)), 'fuente' => 'Skift']],
+        30
+    ))
+);
+
+// Sin resumen utilizable no se inventa nada: se dice quien lo cuenta.
+comprobar(
+    'sin resumen, se enumeran los medios',
+    'Lo publican 3 medios: Skift, Hosteltur y PhocusWire. El resumen completo está en las fuentes.',
+    auto_cuerpo([
+        ['resumen_origen' => '', 'fuente' => 'Skift'],
+        ['resumen_origen' => 'corto', 'fuente' => 'Hosteltur'],
+        ['resumen_origen' => null, 'fuente' => 'PhocusWire'],
+    ])
+);
+
+comprobar(
+    'con un solo medio, en singular',
+    'Lo publica Skift. El resumen completo está en la fuente.',
+    auto_cuerpo([['resumen_origen' => '', 'fuente' => 'Skift']])
+);
+
+comprobar('sin nada de nada, cuerpo vacio', '', auto_cuerpo([]));
+
+// --- Medios y enumeracion ---------------------------------------------------
+
+comprobar(
+    'los medios no se repiten',
+    ['Skift', 'Hosteltur'],
+    auto_medios([
+        ['fuente' => 'Skift'],
+        ['fuente' => 'Hosteltur'],
+        ['fuente' => 'Skift'],
+    ])
+);
+
+comprobar('dos nombres se unen con y', 'Skift y Hosteltur', auto_enumerar(['Skift', 'Hosteltur']));
+comprobar('tres, con comas y una y', 'A, B y C', auto_enumerar(['A', 'B', 'C']));
+comprobar('uno solo, tal cual', 'Skift', auto_enumerar(['Skift']));
+
+// --- Que racimos entran -----------------------------------------------------
+
+$candidatos = [
+    ['id' => 1, 'puntuacion' => 80],
+    ['id' => 2, 'puntuacion' => 55],
+    ['id' => 3, 'puntuacion' => 31],
+    ['id' => 4, 'puntuacion' => 29],
+    ['id' => 5, 'puntuacion' => 10],
+];
+
+comprobar(
+    'entran los que llegan al umbral, hasta llenar los huecos',
+    [1, 2, 3],
+    array_column(auto_elegir($candidatos, 30, 10), 'id')
+);
+
+comprobar(
+    'nunca mas de los huecos que quedan',
+    [1, 2],
+    array_column(auto_elegir($candidatos, 30, 2), 'id')
+);
+
+comprobar(
+    'con la edicion llena no entra ninguno',
+    [],
+    auto_elegir($candidatos, 30, 0)
+);
+
+comprobar(
+    'un umbral alto deja la edicion vacia',
+    [],
+    auto_elegir($candidatos, 90, 10)
+);
+
+// --- Cuando se cierra la edicion --------------------------------------------
+
+comprobar(
+    'una edicion llena se cierra',
+    true,
+    auto_toca_cerrar(20, 20, '2026-12-31', '2026-09-16')
+);
+
+comprobar(
+    'una edicion a medias, pero con la fecha cumplida, tambien',
+    true,
+    auto_toca_cerrar(6, 20, '2026-09-16', '2026-09-16')
+);
+
+comprobar(
+    'una edicion a medias y sin fecha, no',
+    false,
+    auto_toca_cerrar(6, 20, '2026-12-31', '2026-09-16')
+);
+
+// Una edicion sin bits es una pagina sin nada que ensenar.
+comprobar(
+    'una edicion vacia no se cierra aunque toque la fecha',
+    false,
+    auto_toca_cerrar(0, 20, '2026-09-01', '2026-09-16')
+);
+
+resumen_pruebas('Pruebas de la publicacion automatica');

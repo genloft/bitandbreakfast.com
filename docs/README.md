@@ -14,7 +14,9 @@ nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
 - PHP 8.1 y MySQL/MariaDB. Sin framework, sin Composer en producción.
 - Sin build de frontend: CSS a mano y un único JavaScript propio, el del buscador.
 - Todo proceso largo va por lotes con puntero persistente, nunca en una pasada.
-- Ningún bit se publica sin revisión humana.
+- **Modo automático activado**: los racimos mejor puntuados se publican solos.
+  Era al revés —ningún bit sin revisión humana— y se cambió a petición del
+  dueño del sitio. Se apaga con el ajuste `auto_publicar` a 0.
 
 ## Estructura
 
@@ -25,6 +27,7 @@ config/       configuración (config.php no está en el repositorio)
 lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
               puntuación, reglas del bit, sesión del panel e instalador
 cron/         tareas programadas; tareas.php es el despachador único
+              (ingesta, procesar, auto, publicar, mantenimiento)
 api/          endpoints públicos: redirección contada, votos, redacción asistida
 panel/        zona privada de curación: cola, edición del bit y cierre
 plantillas/   plantillas: web/ publicada, panel/ e instalador
@@ -55,10 +58,11 @@ php pruebas/procesar.php
 php pruebas/panel.php
 php pruebas/web.php
 php pruebas/correo.php
+php pruebas/auto.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las siete primeras no tocan la base de datos. La octava sí la lee, y sale a la
+Las ocho primeras no tocan la base de datos. La novena sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
 
 Y una más, `pruebas/humo.php`, que monta el esquema y las semillas desde
@@ -108,6 +112,16 @@ un MariaDB 10.6 para la de humo.
   tope en cinco: que la cuenten seis medios en vez de cinco ya no añade
   información, y sin tope cualquier nota de prensa muy distribuida ganaría a
   una exclusiva buena.
+- **El modo automático no inventa.** Coge el titular del racimo, el resumen
+  que publica la propia fuente y la lista de medios que lo cuentan. No escribe
+  análisis y deja el «por qué importa» vacío, porque eso es un juicio
+  editorial y ahí no hay nadie para hacerlo. Todo lo que publica es
+  comprobable, y los bits quedan marcados como `redactado_por = 'ia'`.
+- **La web tira de la cadena mientras no haya nada publicado.** Cada visita a
+  la portada, como mucho una cada cinco minutos, empuja un paso: rastrear,
+  agrupar, publicar y generar. Así un sitio recién desplegado se llena solo
+  aunque el cron esté mal configurado, que es exactamente lo que pasó. En
+  cuanto hay una edición publicada, eso deja de ejecutarse.
 - **Ningún bit llega a una edición sin pasar por el formato.** El titular
   cabe en 120 caracteres, el cuerpo entre 25 y 110 palabras y el "por qué
   importa" es obligatorio. Un borrador se guarda como sea, pero aprobarlo

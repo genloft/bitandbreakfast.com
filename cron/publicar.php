@@ -88,6 +88,7 @@ function publicar_pendiente(float $limite): array
         $datos = $comunes + [
             'edicion' => $edicion,
             'bits'    => publicar_bits((int) $edicion['id']),
+            'fuentes' => publicar_fuentes((int) $edicion['id']),
             // Firma los enlaces contados. Si falta, los enlaces salen
             // directos a la fuente y simplemente no se cuentan.
             'secreto' => (string) ($config['secretos']['secreto_hmac'] ?? ''),
@@ -186,7 +187,7 @@ function publicar_ediciones(): array
  */
 function publicar_bits(int $edicion_id): array
 {
-    $sql = "SELECT b.id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo,
+    $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo,
                    (SELECT i.url FROM items i
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
                      ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS url,
@@ -210,6 +211,38 @@ function publicar_bits(int $edicion_id): array
     $st->execute([$edicion_id]);
 
     return $st->fetchAll();
+}
+
+/**
+ * Todas las fuentes que cuentan cada noticia de una edicion.
+ *
+ * Una sola consulta para la edicion entera, agrupada despues en PHP: la
+ * alternativa era una consulta por bit, y una edicion tiene veinte.
+ *
+ * @return array [racimo_id => filas con fuente, url, publicado, region, idioma]
+ */
+function publicar_fuentes(int $edicion_id): array
+{
+    $sql = "SELECT i.racimo_id, i.url, i.titulo, i.publicado, i.idioma,
+                   f.nombre AS fuente, f.region, f.tipo
+              FROM items i
+              JOIN fuentes f ON f.id = i.fuente_id
+              JOIN bits b    ON b.racimo_id = i.racimo_id
+             WHERE b.edicion_id = ?
+               AND b.estado = 'publicado'
+               AND i.estado <> 'descartado'
+             ORDER BY i.puntuacion DESC, i.id ASC";
+
+    $st = bd()->prepare($sql);
+    $st->execute([$edicion_id]);
+
+    $por_racimo = [];
+
+    foreach ($st->fetchAll() as $fila) {
+        $por_racimo[(int) $fila['racimo_id']][] = $fila;
+    }
+
+    return $por_racimo;
 }
 
 /**

@@ -349,6 +349,8 @@ INSERT INTO ajustes (clave, valor, descripcion) VALUES
   ('punt_bonus_changelog',   '6',  'Bonus por fuente de tipo changelog'),
   ('punt_bonus_empleo',      '3',  'Bonus por fuente de tipo empleo'),
   ('punt_publirreportaje',   '12', 'Penalizacion del filtro anti-publirreportaje'),
+  ('auto_publicar',          '1',  'Publicar solo los racimos mejor puntuados, sin revision humana'),
+  ('auto_umbral',            '30', 'Puntuacion minima de un racimo para publicarse solo'),
   ('edicion_max_bits',       '20', 'Techo de bits por edicion'),
   ('edicion_cuota_es_eu',    '30', 'Porcentaje minimo aconsejado de bits de fuentes ES o EU'),
   ('retencion_items_dias',   '180','Dias que se conservan los items no usados'),

@@ -6,7 +6,7 @@
  * alojamiento puede no permitir mas. Este fichero mira el reloj y decide que
  * toca en cada ejecucion.
  *
- *   Cada ejecucion : ingesta y, cuando exista, procesado
+ *   Cada ejecucion : ingesta, procesado, publicacion automatica y generador
  *   A las 05:00 UTC: mantenimiento
  *
  * Uso normal (desde cron, cada hora):
@@ -69,7 +69,7 @@ function tareas_toca(string $tarea, string $forzada): bool
     $hora = (int) gmdate('G');
 
     return match ($tarea) {
-        'ingesta', 'procesar' => true,
+        'ingesta', 'procesar', 'auto' => true,
         'mantenimiento'       => $hora === 5,
         // Mira si hay algo que publicar y sale enseguida si no lo hay: la
         // comprobacion es una firma, no una regeneracion.
@@ -81,6 +81,7 @@ function tareas_toca(string $tarea, string $forzada): bool
 $tareas = [
     'ingesta'       => dirname(__DIR__) . '/cron/ingesta.php',
     'procesar'      => dirname(__DIR__) . '/cron/procesar.php',
+    'auto'          => dirname(__DIR__) . '/cron/auto.php',
     'publicar'      => dirname(__DIR__) . '/cron/publicar.php',
     'mantenimiento' => dirname(__DIR__) . '/cron/mantenimiento.php',
 ];
@@ -109,6 +110,7 @@ foreach ($tareas as $nombre => $fichero) {
         $funcion = match ($nombre) {
             'ingesta'       => 'ingesta_lote',
             'procesar'      => 'procesar_lote',
+            'auto'          => 'auto_publicar_lote',
             'publicar'      => 'publicar_pendiente',
             'mantenimiento' => 'mantenimiento_diario',
         };

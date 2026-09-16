@@ -604,6 +604,74 @@ h1 {
   .opciones { flex-wrap: wrap; overflow-x: visible; }
 }
 
+/* --- Escritorio: se usa el ancho ------------------------------------------
+   La columna de lectura no crece -38rem es la medida a la que se lee sin
+   cansarse-, pero el espacio que sobra deja de estar vacio: el sumario se va
+   a un lateral fijo que acompana toda la edicion, y los filtros del explorador
+   hacen lo mismo. En el movil todo eso vuelve a apilarse. */
+
+@media (min-width: 70rem) {
+  .cabecera, main, .pie { max-width: 76rem; }
+
+  .edicion {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 40rem);
+    gap: 0 4rem;
+    align-items: start;
+  }
+
+  .edicion-cabecera { grid-column: 1 / -1; }
+
+  .sumario {
+    position: sticky;
+    top: 2.5rem;
+    margin: 3rem 0 0;
+    padding: 0 1.5rem 0 0;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--borde);
+    max-height: calc(100vh - 5rem);
+    overflow-y: auto;
+  }
+
+  .bits { min-width: 0; }
+  .bit:first-child { padding-top: 3rem; }
+
+  /* El bloque de alta no entra en la rejilla: ocupa el ancho de abajo. */
+  .alta { margin-left: 0; margin-right: 0; padding-left: 2rem; padding-right: 2rem; }
+  .explorador > .alta { grid-column: 1 / -1; }
+  .resultados-panel { min-width: 0; }
+
+  /* Explorador: filtros a la izquierda, resultados a la derecha. */
+  .explorador {
+    display: grid;
+    grid-template-columns: 19rem minmax(0, 40rem);
+    gap: 0 4rem;
+    align-items: start;
+  }
+
+  .explorador > .cabecera-explorador { grid-column: 1 / -1; }
+
+  .rail {
+    position: sticky;
+    top: 2.5rem;
+    padding-right: 1.5rem;
+    border-right: 1px solid var(--borde);
+    max-height: calc(100vh - 5rem);
+    overflow-y: auto;
+  }
+
+  .opciones { flex-direction: column; align-items: flex-start; }
+  .opcion { width: 100%; text-align: left; }
+
+  /* Listas largas a dos columnas: el archivo de un ano son cincuenta filas. */
+  .archivo, .proveedores {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 3rem;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 }
