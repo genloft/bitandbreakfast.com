@@ -114,6 +114,43 @@ comprobar(
     web_parrafos("   \n\n  ")
 );
 
+// --- Enlaces contados -------------------------------------------------------
+
+comprobar(
+    'la firma del clic es estable para el mismo bit y secreto',
+    web_firma_clic(42, 'secreto'),
+    web_firma_clic(42, 'secreto')
+);
+
+comprobar(
+    'cambiar de bit cambia la firma',
+    false,
+    web_firma_clic(42, 'secreto') === web_firma_clic(43, 'secreto')
+);
+
+// Si el secreto cambia, las firmas viejas dejan de valer. Es lo que se quiere:
+// los enlaces de correos ya enviados caducan con el secreto.
+comprobar(
+    'cambiar el secreto invalida las firmas',
+    false,
+    web_firma_clic(42, 'secreto') === web_firma_clic(42, 'otro')
+);
+
+comprobar('la firma son 16 caracteres', 16, strlen(web_firma_clic(42, 'secreto')));
+
+comprobar(
+    'el enlace contado apunta al endpoint con el bit y la firma',
+    'https://bitandbreakfast.com/api/ir.php?b=42&t=' . web_firma_clic(42, 'secreto'),
+    web_url_clic('https://bitandbreakfast.com', 42, 'secreto', 'https://skift.com/noticia')
+);
+
+// Mejor un enlace que no cuenta que un enlace que no lleva a ningun sitio.
+comprobar(
+    'sin secreto, el enlace va directo a la fuente',
+    'https://skift.com/noticia',
+    web_url_clic('https://bitandbreakfast.com', 42, '', 'https://skift.com/noticia')
+);
+
 // --- Minutos de lectura -----------------------------------------------------
 
 comprobar('doscientas palabras son un minuto', 1, web_minutos(200));

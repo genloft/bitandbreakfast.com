@@ -129,6 +129,12 @@ un MariaDB 10.6 para la de humo.
 - **Al que ya estaba suscrito se le dice lo mismo que al que no.** Distinguir
   las dos respuestas permitiría averiguar quién está en la lista probando
   direcciones.
+- **El redirector va firmado.** `api/ir.php` cuenta el clic y redirige, pero
+  solo si la URL trae el HMAC del bit. Sin esa firma sería un redirector
+  abierto, y un redirector abierto en un dominio que manda correo se convierte
+  en munición para phishing en cuestión de semanas. De quien pulsa no se
+  guarda nada: ni IP ni identificador, solo el HMAC del agente de usuario para
+  poder descontar los escáneres de correo.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

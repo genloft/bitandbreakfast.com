@@ -119,6 +119,36 @@ function web_parrafos(string $texto): string
 }
 
 /**
+ * Firma del enlace contado de un bit.
+ *
+ * Corta a proposito: dieciseis caracteres hexadecimales son 64 bits, de sobra
+ * para que nadie adivine una firma valida, y lo bastante corto para que el
+ * enlace siga siendo legible en el codigo fuente del correo.
+ *
+ * Sin firma, api/ir.php seria un redirector abierto, y un redirector abierto
+ * en un dominio que manda correo se convierte en municion para phishing.
+ */
+function web_firma_clic(int $bit_id, string $secreto): string
+{
+    return substr(hash_hmac('sha256', 'clic:' . $bit_id, $secreto), 0, 16);
+}
+
+/**
+ * Enlace contado hacia la fuente de un bit.
+ *
+ * Con el secreto vacio devuelve la URL de la fuente tal cual: mejor un enlace
+ * que no cuenta que un enlace que no lleva a ningun sitio.
+ */
+function web_url_clic(string $base, int $bit_id, string $secreto, string $directa): string
+{
+    if ($secreto === '') {
+        return $directa;
+    }
+
+    return rtrim($base, '/') . '/api/ir.php?b=' . $bit_id . '&t=' . web_firma_clic($bit_id, $secreto);
+}
+
+/**
  * Minutos de lectura, redondeando hacia arriba, a 200 palabras por minuto.
  */
 function web_minutos(int $palabras): int

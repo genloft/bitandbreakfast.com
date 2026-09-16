@@ -76,6 +76,9 @@ function publicar_pendiente(float $limite): array
             'bits'         => publicar_bits((int) $edicion['id']),
             'base'         => $base,
             'alta_abierta' => $alta,
+            // Firma los enlaces contados. Si falta, los enlaces salen
+            // directos a la fuente y simplemente no se cuentan.
+            'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
         ];
 
         $html = publicar_plantilla('edicion', $datos);

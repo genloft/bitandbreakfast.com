@@ -36,6 +36,7 @@ $descripcion = trim((string) $edicion['intro']) !== ''
 
 $enlace_activo = 'portada';
 $alta_abierta  = $alta_abierta ?? false;
+$secreto       = $secreto ?? '';
 
 ?><!doctype html>
 <html lang="es">
@@ -117,7 +118,7 @@ $alta_abierta  = $alta_abierta ?? false;
 
           <p class="pie-bit">
             <?php if (!empty($bit['url'])): ?>
-              <a class="fuente" href="<?= web_e($bit['url']) ?>" rel="nofollow noopener">
+              <a class="fuente" href="<?= web_e(web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])) ?>" rel="nofollow noopener">
                 <?= web_e($bit['fuente'] ?? 'Leer la fuente') ?> →
               </a>
             <?php endif; ?>
