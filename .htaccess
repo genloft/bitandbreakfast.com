@@ -56,16 +56,13 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
     RewriteCond %{REQUEST_URI} !^/instalar\.php$
     RewriteRule ^ /instalar.php [R=302,L]
 
-    # Instalado pero sin la web generada: la raiz pasa por index.php, que la
-    # genera en el acto y la sirve.
+    # La raiz pasa por index.php. Es la unica pagina del sitio que toca PHP, y
+    # lo hace para comprobar dos cosas baratas: que la web este generada y que
+    # no sea mas vieja que las plantillas. Si lo es, la regenera en el acto.
     #
-    # La condicion mira archivo.html y no index.html a proposito. index.html lo
-    # puede haber dejado el instalador, asi que su presencia no dice nada;
-    # archivo.html solo lo escribe el generador, tenga o no ediciones, y es la
-    # unica huella fiable de que la web existe. Sin esto, un despliegue nuevo se
-    # quedaba con la portada vieja hasta que el cron se despertara, y si el cron
-    # estaba mal puesto, para siempre.
-    RewriteCond %{DOCUMENT_ROOT}/publico/archivo.html !-f
+    # Sin esto, un despliegue solo se veia cuando el cron se despertaba, y si
+    # el cron estaba mal configurado -cosa facil en hPanel-, nunca. El resto
+    # del sitio se sigue sirviendo estatico, sin tocar PHP.
     RewriteRule ^$ index.php [L]
 
     # publico/ es el almacen de la web generada, no una direccion publica. Sin

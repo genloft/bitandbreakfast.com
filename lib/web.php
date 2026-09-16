@@ -165,6 +165,22 @@ function web_fila_indice(array $bit): array
 }
 
 /**
+ * Version de un fichero generado, para colgarla de su URL.
+ *
+ * La hoja de estilo y el guion se reescriben siempre en el mismo sitio, y el
+ * .htaccess les pone un mes de cache. Sin esto, quien ya haya visitado el
+ * sitio se queda con la version vieja hasta treinta dias, aunque el servidor
+ * tenga la nueva: el navegador ni la pide. Colgar el hash del contenido de la
+ * URL convierte cada cambio en una direccion distinta.
+ */
+function web_version(string $ruta): string
+{
+    $hash = is_file($ruta) ? @sha1_file($ruta) : false;
+
+    return $hash === false ? '0' : substr($hash, 0, 8);
+}
+
+/**
  * Etiquetas de las facetas por las que se puede filtrar.
  *
  * El ambito sale de fuentes.region, que es lo que hay: no se guarda el pais

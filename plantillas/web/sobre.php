@@ -9,6 +9,9 @@
 
 declare(strict_types=1);
 
+$version    = $version ?? '0';
+$version_js = $version_js ?? '0';
+
 $enlace_activo = 'sobre';
 $alta_abierta  = $alta_abierta ?? false;
 
@@ -21,8 +24,8 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta name="description" content="Bit &amp; Breakfast es un radar de tecnología hotelera: rastrea el sector, agrupa lo que cuenta lo mismo y publica quince o veinte bits a la semana.">
 <link rel="canonical" href="<?= web_e($base) ?>/sobre.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css">
-<meta name="theme-color" content="#f6f5f2">
+<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
+<meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
 <meta property="og:title" content="Qué es Bit &amp; Breakfast">
 <meta property="og:type" content="website">

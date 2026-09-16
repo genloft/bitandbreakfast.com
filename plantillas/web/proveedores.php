@@ -11,6 +11,9 @@
 
 declare(strict_types=1);
 
+$version    = $version ?? '0';
+$version_js = $version_js ?? '0';
+
 $enlace_activo = 'proveedores';
 $alta_abierta  = $alta_abierta ?? false;
 
@@ -45,8 +48,8 @@ $etiquetas = [
 <meta name="description" content="Los proveedores de tecnología hotelera de los que ha hablado Bit &amp; Breakfast, con todo lo publicado sobre cada uno.">
 <link rel="canonical" href="<?= web_e($base) ?>/proveedores.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css">
-<meta name="theme-color" content="#f6f5f2">
+<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
+<meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
 <meta property="og:title" content="Proveedores en Bit &amp; Breakfast">
 <meta property="og:type" content="website">

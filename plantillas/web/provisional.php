@@ -12,6 +12,9 @@
 
 declare(strict_types=1);
 
+$version    = $version ?? '0';
+$version_js = $version_js ?? '0';
+
 $base          = $base ?? '';
 $enlace_activo = 'portada';
 $alta_abierta  = $alta_abierta ?? false;
@@ -23,8 +26,8 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bit &amp; Breakfast · Radar de tecnología hotelera</title>
 <meta name="description" content="Radar de tecnología hotelera. Cinco minutos de lectura a la semana. La primera edición está en camino.">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css">
-<meta name="theme-color" content="#f6f5f2">
+<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
+<meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
 <meta property="og:title" content="Bit &amp; Breakfast">
 <meta property="og:description" content="Radar de tecnología hotelera. Cinco minutos de lectura a la semana.">

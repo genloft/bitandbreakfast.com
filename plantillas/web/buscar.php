@@ -18,6 +18,9 @@
 
 declare(strict_types=1);
 
+$version    = $version ?? '0';
+$version_js = $version_js ?? '0';
+
 $enlace_activo = 'buscar';
 $alta_abierta  = $alta_abierta ?? false;
 
@@ -30,7 +33,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta name="description" content="Busca y filtra en todo lo publicado por Bit &amp; Breakfast: por temática, ámbito, idioma, fuente y proveedor.">
 <link rel="canonical" href="<?= web_e($base) ?>/buscar.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css">
+<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
 <meta property="og:title" content="Explorar Bit &amp; Breakfast">
@@ -98,6 +101,6 @@ $alta_abierta  = $alta_abierta ?? false;
 
 <?php require __DIR__ . '/pie.php'; ?>
 
-<script src="<?= web_e($base) ?>/buscar.js" defer></script>
+<script src="<?= web_e($base) ?>/buscar.js?v=<?= web_e($version_js) ?>" defer></script>
 </body>
 </html>

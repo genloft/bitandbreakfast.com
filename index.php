@@ -28,7 +28,7 @@ $config  = $raiz . '/config/config.php';
 $portada = $raiz . '/publico/index.html';
 
 // El archivo lo escribe siempre el generador, tenga o no ediciones. Es la
-// huella de que ha pasado por aqui: si falta, la web no se ha generado nunca.
+// huella de cuando paso por aqui por ultima vez.
 $huella  = $raiz . '/publico/archivo.html';
 
 // -----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ if (!is_file($config)) {
 // Sin web generada: generarla ahora
 // -----------------------------------------------------------------------------
 
-if (!is_file($huella) && arranque_toca_intentar($raiz)) {
+if (arranque_hay_que_generar($raiz, $huella) && arranque_toca_intentar($raiz)) {
     try {
         require_once $raiz . '/cron/publicar.php';
 
@@ -84,6 +84,32 @@ if ($contenido !== false && $contenido !== '') {
 arranque_provisional();
 
 // -----------------------------------------------------------------------------
+
+/**
+ * ¿La web publicada esta al dia?
+ *
+ * Dos motivos para regenerar: que no exista, o que las plantillas sean mas
+ * nuevas que lo generado. Lo segundo es lo que hace que un despliegue se vea
+ * solo con abrir la portada, sin esperar al cron ni depender de que este bien
+ * configurado. Son catorce llamadas a filemtime; para lo que cuesta descubrir
+ * dos semanas despues que el sitio seguia con el diseno viejo, sale barato.
+ */
+function arranque_hay_que_generar(string $raiz, string $huella): bool
+{
+    if (!is_file($huella)) {
+        return true;
+    }
+
+    $generado = (int) @filemtime($huella);
+
+    foreach (glob($raiz . '/plantillas/web/*.php') ?: [] as $plantilla) {
+        if ((int) @filemtime($plantilla) > $generado) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /**
  * ¿Toca intentar generar?
@@ -118,7 +144,9 @@ function arranque_provisional(): void
 
     require_once __DIR__ . '/lib/web.php';
 
-    $base = '';
+    $base       = '';
+    $version    = web_version(__DIR__ . '/publico/estilo.css');
+    $version_js = '0';
 
     require __DIR__ . '/plantillas/web/provisional.php';
     exit;

@@ -106,7 +106,10 @@ function alta_responder(string $titulo, string $mensaje, int $codigo = 200): voi
     echo '<meta name="viewport" content="width=device-width, initial-scale=1">', "\n";
     echo '<meta name="robots" content="noindex,nofollow">', "\n";
     echo '<title>', web_e($titulo), ' · Bit &amp; Breakfast</title>', "\n";
-    echo '<link rel="stylesheet" href="', web_e($base), '/estilo.css">', "\n";
+    // Con la version colgada de la URL, como en el resto del sitio: la hoja
+    // lleva un mes de cache y se reescribe siempre en el mismo sitio.
+    echo '<link rel="stylesheet" href="', web_e($base), '/estilo.css?v=',
+         web_e(web_version(dirname(__DIR__) . '/publico/estilo.css')), '">', "\n";
     echo '</head>', "\n<body>\n";
 
     require dirname(__DIR__) . '/plantillas/web/cabecera.php';

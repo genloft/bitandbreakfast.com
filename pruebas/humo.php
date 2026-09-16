@@ -379,6 +379,15 @@ comprobar(
 
 comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
 comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
+
+// Sin version en la URL, quien ya haya visitado el sitio se queda con la hoja
+// vieja hasta treinta dias: el .htaccess le pone un mes de cache y el fichero
+// se reescribe siempre en el mismo sitio.
+comprobar(
+    'la portada enlaza la hoja con su version',
+    1,
+    preg_match('~/estilo\.css\?v=[0-9a-f]{8}~', (string) file_get_contents($publico . '/index.html'))
+);
 comprobar('escribe el robots.txt', true, is_file($publico . '/robots.txt'));
 
 $portada = (string) file_get_contents($publico . '/index.html');

@@ -58,10 +58,24 @@ function publicar_pendiente(float $limite): array
     // sitio.
     $alta = correo_configurado();
 
-    // La hoja de estilo y robots.txt no dependen de las ediciones, pero se
-    // escriben aqui: son parte de la salida y no tienen otro sitio donde vivir.
+    // La hoja de estilo, el guion y robots.txt no dependen de las ediciones,
+    // pero se escriben aqui: son parte de la salida y no tienen otro sitio
+    // donde vivir. Van los primeros porque de su contenido sale la version que
+    // cuelga de sus URLs.
     $ficheros += publicar_escribir($publico . '/estilo.css', publicar_plantilla('estilo', [])) ? 1 : 0;
+    $ficheros += publicar_escribir($publico . '/buscar.js', publicar_plantilla('buscarjs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
+
+    // El .htaccess le pone un mes de cache a los dos ficheros, y se reescriben
+    // siempre en el mismo sitio. Sin colgar el hash de su contenido de la URL,
+    // quien ya hubiera visitado el sitio seguiria viendo la version vieja
+    // durante treinta dias aunque el servidor tuviera la nueva.
+    $comunes = [
+        'base'         => $base,
+        'version'      => web_version($publico . '/estilo.css'),
+        'version_js'   => web_version($publico . '/buscar.js'),
+        'alta_abierta' => $alta,
+    ];
 
     foreach ($ediciones as $indice => $edicion) {
         if (microtime(true) >= $limite) {
@@ -71,14 +85,12 @@ function publicar_pendiente(float $limite): array
             return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
         }
 
-        $datos = [
-            'edicion'      => $edicion,
-            'bits'         => publicar_bits((int) $edicion['id']),
-            'base'         => $base,
-            'alta_abierta' => $alta,
+        $datos = $comunes + [
+            'edicion' => $edicion,
+            'bits'    => publicar_bits((int) $edicion['id']),
             // Firma los enlaces contados. Si falta, los enlaces salen
             // directos a la fuente y simplemente no se cuentan.
-            'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
+            'secreto' => (string) ($config['secretos']['secreto_hmac'] ?? ''),
         ];
 
         $html = publicar_plantilla('edicion', $datos);
@@ -98,13 +110,13 @@ function publicar_pendiente(float $limite): array
     if (!$ediciones) {
         $ficheros += publicar_escribir(
             $publico . '/index.html',
-            publicar_plantilla('provisional', ['base' => $base, 'alta_abierta' => $alta])
+            publicar_plantilla('provisional', $comunes)
         ) ? 1 : 0;
     }
 
     $ficheros += publicar_escribir(
         $publico . '/archivo.html',
-        publicar_plantilla('archivo', ['ediciones' => $ediciones, 'base' => $base, 'alta_abierta' => $alta])
+        publicar_plantilla('archivo', $comunes + ['ediciones' => $ediciones])
     ) ? 1 : 0;
 
     // Fichas de proveedor: solo las de los que tienen algo publicado.
@@ -113,11 +125,9 @@ function publicar_pendiente(float $limite): array
     foreach ($proveedores as $proveedor) {
         $ficheros += publicar_escribir(
             $publico . '/' . web_ruta_proveedor((string) $proveedor['slug']),
-            publicar_plantilla('proveedor', [
-                'proveedor'    => $proveedor,
-                'bits'         => publicar_bits_proveedor((int) $proveedor['id']),
-                'base'         => $base,
-                'alta_abierta' => $alta,
+            publicar_plantilla('proveedor', $comunes + [
+                'proveedor' => $proveedor,
+                'bits'      => publicar_bits_proveedor((int) $proveedor['id']),
             ])
         ) ? 1 : 0;
     }
@@ -131,31 +141,18 @@ function publicar_pendiente(float $limite): array
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
-        $publico . '/buscar.js',
-        publicar_plantilla('buscarjs', [])
-    ) ? 1 : 0;
-
-    $ficheros += publicar_escribir(
         $publico . '/buscar.html',
-        publicar_plantilla('buscar', [
-            'base'         => $base,
-            'total'        => count($indice['bits']),
-            'alta_abierta' => $alta,
-        ])
+        publicar_plantilla('buscar', $comunes + ['total' => count($indice['bits'])])
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
         $publico . '/proveedores.html',
-        publicar_plantilla('proveedores', [
-            'proveedores'  => $proveedores,
-            'base'         => $base,
-            'alta_abierta' => $alta,
-        ])
+        publicar_plantilla('proveedores', $comunes + ['proveedores' => $proveedores])
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
         $publico . '/sobre.html',
-        publicar_plantilla('sobre', ['base' => $base, 'alta_abierta' => $alta])
+        publicar_plantilla('sobre', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(

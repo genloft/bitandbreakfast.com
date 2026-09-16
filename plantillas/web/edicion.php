@@ -16,6 +16,9 @@
 
 declare(strict_types=1);
 
+$version    = $version ?? '0';
+$version_js = $version_js ?? '0';
+
 $titulo = trim((string) $edicion['titulo']) !== ''
     ? (string) $edicion['titulo']
     : 'Edición ' . (int) $edicion['numero'];
@@ -47,8 +50,8 @@ $secreto       = $secreto ?? '';
 <meta name="description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
 <link rel="canonical" href="<?= web_e($url) ?>">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css">
-<meta name="theme-color" content="#f6f5f2">
+<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
+<meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
 <meta property="og:title" content="<?= web_e($titulo) ?>">
 <meta property="og:description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
