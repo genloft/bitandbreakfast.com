@@ -305,6 +305,53 @@ h1 {
 .volver { margin-left: auto; color: var(--apagado); text-decoration: none; }
 .volver:hover { text-decoration: underline; }
 
+/* --- Menciones de proveedor ---------------------------------------------- */
+
+.menciona {
+  margin: 1rem 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: .8rem;
+  color: var(--apagado);
+}
+.menciona a { color: var(--apagado); }
+
+/* --- Fichas de proveedor --------------------------------------------------- */
+
+.fichas { list-style: none; margin: 1.5rem 0 0; padding: 0; }
+
+.fichas li { padding: 1.1rem 0; border-top: 1px solid var(--borde); }
+
+.fichas h2 {
+  margin: 0 0 .2rem;
+  font-size: clamp(1.1rem, 4.2vw, 1.25rem);
+  line-height: 1.3;
+}
+.fichas h2 a { text-decoration: none; }
+.fichas h2 a:hover { text-decoration: underline; }
+
+.proveedores { list-style: none; margin: 0; padding: 0; }
+
+.proveedores li {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  padding: .55rem 0;
+  border-top: 1px solid var(--borde);
+}
+
+.proveedores a { flex: 1; text-decoration: none; }
+.proveedores a:hover { text-decoration: underline; }
+
+.cuenta {
+  flex: 0 0 auto;
+  min-width: 1.6rem;
+  text-align: right;
+  color: var(--apagado);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- Archivo -------------------------------------------------------------- */
 
 .ano h2 {

@@ -78,6 +78,47 @@ comprobar(
     web_slug_seguro('2026-w39-038')
 );
 
+// --- Fichas de proveedor ----------------------------------------------------
+
+comprobar(
+    'cada proveedor tiene su carpeta con un index dentro',
+    'p/mews/index.html',
+    web_ruta_proveedor('mews')
+);
+
+comprobar(
+    'y su direccion sin extension',
+    'https://bitandbreakfast.com/p/oracle-hospitality/',
+    web_url_proveedor('https://bitandbreakfast.com', 'oracle-hospitality')
+);
+
+// La lista viene empaquetada en una sola columna para no hacer una consulta
+// por bit.
+comprobar(
+    'deshace la lista empaquetada de proveedores',
+    [['slug' => 'mews', 'nombre' => 'Mews'], ['slug' => 'duetto', 'nombre' => 'Duetto']],
+    web_proveedores('mews|Mews;;duetto|Duetto')
+);
+
+comprobar(
+    'un bit sin proveedores no da lista',
+    [],
+    web_proveedores(null)
+);
+
+comprobar(
+    'un trozo mal formado se descarta sin romper',
+    [['slug' => 'mews', 'nombre' => 'Mews']],
+    web_proveedores('mews|Mews;;basura;;|Sin slug')
+);
+
+// Un nombre con barra vertical no puede partir la fila en tres.
+comprobar(
+    'el nombre puede llevar la barra que separa',
+    [['slug' => 'ab', 'nombre' => 'A|B']],
+    web_proveedores('ab|A|B')
+);
+
 // --- Texto ------------------------------------------------------------------
 
 comprobar(

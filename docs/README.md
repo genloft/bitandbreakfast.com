@@ -80,7 +80,7 @@ un MariaDB 10.6 para la de humo.
 | 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | completada |
 | 5 | Proveedor de correo y alta con doble confirmación | alta hecha; envío pendiente |
-| 6 | Fichas de proveedor, buscador, votos, redacción asistida | pendiente |
+| 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas y clics hechos |
 
 ## Decisiones que conviene no olvidar
 
@@ -135,6 +135,11 @@ un MariaDB 10.6 para la de humo.
   en munición para phishing en cuestión de semanas. De quien pulsa no se
   guarda nada: ni IP ni identificador, solo el HMAC del agente de usuario para
   poder descontar los escáneres de correo.
+- **Las fichas de proveedor salen solas.** Un bit cuelga de un racimo y los
+  proveedores se detectan en los items de ese racimo, así que la ficha de Mews
+  es una consulta, no una tabla que mantener. Solo se generan las de los
+  proveedores con algo publicado: cuarenta y siete fichas vacías no ayudan a
+  nadie y además son mala señal para un buscador.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

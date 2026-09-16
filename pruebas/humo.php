@@ -317,6 +317,24 @@ comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web_ruta_edicion($slug)));
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
+comprobar('escribe el indice de proveedores', true, is_file($publico . '/proveedores.html'));
+
+// El bit habla de Oracle OPERA, asi que su ficha tiene que existir y llevarlo.
+comprobar(
+    'escribe la ficha del proveedor mencionado',
+    true,
+    is_file($publico . '/' . web_ruta_proveedor('oracle-hospitality'))
+);
+
+comprobar(
+    'la ficha del proveedor lleva el bit',
+    true,
+    str_contains(
+        (string) file_get_contents($publico . '/' . web_ruta_proveedor('oracle-hospitality')),
+        'Oracle OPERA Cloud se cae durante cuatro horas'
+    )
+);
+
 comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
 comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
 comprobar('escribe el robots.txt', true, is_file($publico . '/robots.txt'));
@@ -337,6 +355,12 @@ comprobar(
 
 // El cuerpo llega de un textarea: si alguna vez saliera sin escapar, esto lo
 // caza antes que un lector.
+comprobar(
+    'la portada enlaza la ficha del proveedor desde el bit',
+    true,
+    str_contains($portada, '/p/oracle-hospitality/')
+);
+
 comprobar(
     'la portada no cuela etiquetas que vengan del panel',
     false,

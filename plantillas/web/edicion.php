@@ -116,6 +116,13 @@ $secreto       = $secreto ?? '';
             <p class="por-que"><strong>Por qué importa.</strong> <?= web_e($bit['por_que']) ?></p>
           <?php endif; ?>
 
+          <?php $menciona = web_proveedores($bit['proveedores'] ?? null); ?>
+          <?php if ($menciona): ?>
+            <p class="menciona">Menciona:
+              <?php foreach ($menciona as $indice_p => $proveedor): ?><?= $indice_p > 0 ? ', ' : '' ?><a href="<?= web_e(web_url_proveedor($base, $proveedor['slug'])) ?>"><?= web_e($proveedor['nombre']) ?></a><?php endforeach; ?>
+            </p>
+          <?php endif; ?>
+
           <p class="pie-bit">
             <?php if (!empty($bit['url'])): ?>
               <a class="fuente" href="<?= web_e(web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])) ?>" rel="nofollow noopener">

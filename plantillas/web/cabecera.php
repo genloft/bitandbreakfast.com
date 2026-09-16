@@ -19,6 +19,7 @@ $enlace_activo = $enlace_activo ?? '';
     <nav class="menu" aria-label="Principal">
       <a href="<?= web_e($base) ?>/"<?= $enlace_activo === 'portada' ? ' aria-current="page"' : '' ?>>Última edición</a>
       <a href="<?= web_e($base) ?>/archivo.html"<?= $enlace_activo === 'archivo' ? ' aria-current="page"' : '' ?>>Archivo</a>
+      <a href="<?= web_e($base) ?>/proveedores.html"<?= $enlace_activo === 'proveedores' ? ' aria-current="page"' : '' ?>>Proveedores</a>
       <a href="<?= web_e($base) ?>/sobre.html"<?= $enlace_activo === 'sobre' ? ' aria-current="page"' : '' ?>>Qué es</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
     </nav>

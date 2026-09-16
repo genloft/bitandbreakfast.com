@@ -97,6 +97,30 @@ function publicar_pendiente(float $limite): array
         publicar_plantilla('archivo', ['ediciones' => $ediciones, 'base' => $base, 'alta_abierta' => $alta])
     ) ? 1 : 0;
 
+    // Fichas de proveedor: solo las de los que tienen algo publicado.
+    $proveedores = publicar_proveedores();
+
+    foreach ($proveedores as $proveedor) {
+        $ficheros += publicar_escribir(
+            $publico . '/' . web_ruta_proveedor((string) $proveedor['slug']),
+            publicar_plantilla('proveedor', [
+                'proveedor'    => $proveedor,
+                'bits'         => publicar_bits_proveedor((int) $proveedor['id']),
+                'base'         => $base,
+                'alta_abierta' => $alta,
+            ])
+        ) ? 1 : 0;
+    }
+
+    $ficheros += publicar_escribir(
+        $publico . '/proveedores.html',
+        publicar_plantilla('proveedores', [
+            'proveedores'  => $proveedores,
+            'base'         => $base,
+            'alta_abierta' => $alta,
+        ])
+    ) ? 1 : 0;
+
     $ficheros += publicar_escribir(
         $publico . '/sobre.html',
         publicar_plantilla('sobre', ['base' => $base, 'alta_abierta' => $alta])
@@ -140,13 +164,64 @@ function publicar_bits(int $edicion_id): array
                    (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
-                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente
+                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                   -- Los proveedores del racimo, para enlazar sus fichas.
+                   -- slug y nombre en la misma cadena para no hacer una
+                   -- consulta por bit.
+                   (SELECT GROUP_CONCAT(DISTINCT CONCAT(p.slug, '|', p.nombre) SEPARATOR ';;')
+                      FROM items i
+                      JOIN item_proveedor ip ON ip.item_id = i.id
+                      JOIN proveedores p     ON p.id = ip.proveedor_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado') AS proveedores
               FROM bits b
              WHERE b.edicion_id = ? AND b.estado = 'publicado'
              ORDER BY b.orden ASC, b.id ASC";
 
     $st = bd()->prepare($sql);
     $st->execute([$edicion_id]);
+
+    return $st->fetchAll();
+}
+
+/**
+ * Proveedores con al menos un bit publicado, con su recuento.
+ *
+ * La relacion no es directa: un bit cuelga de un racimo, y los proveedores se
+ * detectan en los items de ese racimo. Por eso el salto de tres tablas.
+ */
+function publicar_proveedores(): array
+{
+    $sql = "SELECT p.id, p.nombre, p.slug, p.categoria,
+                   COUNT(DISTINCT b.id) AS bits
+              FROM proveedores p
+              JOIN item_proveedor ip ON ip.proveedor_id = p.id
+              JOIN items i           ON i.id = ip.item_id
+              JOIN bits b            ON b.racimo_id = i.racimo_id
+             WHERE b.estado = 'publicado'
+             GROUP BY p.id, p.nombre, p.slug, p.categoria
+             ORDER BY p.nombre";
+
+    return bd()->query($sql)->fetchAll();
+}
+
+/**
+ * Los bits publicados que mencionan a un proveedor, del mas reciente al mas
+ * antiguo, con la edicion en la que salieron.
+ */
+function publicar_bits_proveedor(int $proveedor_id): array
+{
+    $sql = "SELECT DISTINCT b.id, b.titular, b.por_que,
+                   e.numero, e.slug, e.fecha_prevista
+              FROM bits b
+              JOIN ediciones e       ON e.id = b.edicion_id
+              JOIN items i           ON i.racimo_id = b.racimo_id
+              JOIN item_proveedor ip ON ip.item_id = i.id
+             WHERE ip.proveedor_id = ?
+               AND b.estado = 'publicado'
+             ORDER BY e.numero DESC, b.orden ASC";
+
+    $st = bd()->prepare($sql);
+    $st->execute([$proveedor_id]);
 
     return $st->fetchAll();
 }

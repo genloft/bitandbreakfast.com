@@ -119,6 +119,54 @@ function web_parrafos(string $texto): string
 }
 
 /**
+ * Deshace la lista de proveedores que trae el generador en una sola columna.
+ *
+ * Viene como "slug|Nombre;;slug|Nombre" porque sacarla con un GROUP_CONCAT
+ * evita una consulta por bit. Aqui vuelve a ser una lista.
+ *
+ * @return array Filas con 'slug' y 'nombre'.
+ */
+function web_proveedores(?string $empaquetados): array
+{
+    $empaquetados = trim((string) $empaquetados);
+
+    if ($empaquetados === '') {
+        return [];
+    }
+
+    $lista = [];
+
+    foreach (explode(';;', $empaquetados) as $trozo) {
+        $partes = explode('|', $trozo, 2);
+
+        if (count($partes) !== 2 || $partes[0] === '') {
+            continue;
+        }
+
+        $lista[] = ['slug' => $partes[0], 'nombre' => $partes[1]];
+    }
+
+    return $lista;
+}
+
+/**
+ * Ruta y direccion de la ficha de un proveedor.
+ *
+ * Misma forma que las ediciones, /p/<slug>/, por la misma razon: una URL sin
+ * extension no delata con que se genero y no hay que cambiarla el dia que
+ * deje de ser un fichero.
+ */
+function web_ruta_proveedor(string $slug): string
+{
+    return 'p/' . web_slug_seguro($slug) . '/index.html';
+}
+
+function web_url_proveedor(string $base, string $slug): string
+{
+    return rtrim($base, '/') . '/p/' . web_slug_seguro($slug) . '/';
+}
+
+/**
  * Firma del enlace contado de un bit.
  *
  * Corta a proposito: dieciseis caracteres hexadecimales son 64 bits, de sobra
