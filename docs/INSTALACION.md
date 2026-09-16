@@ -209,14 +209,30 @@ dijo en pantalla y la creas tú.
 Si `/usr/bin/php` no fuese PHP 8.1, usa la ruta que ofrezca el desplegable de
 esa misma pantalla, del estilo `/opt/alt/php81/usr/bin/php`.
 
-### Si el cron no arranca, el sitio se ve igualmente
+### Si el cron no arranca, el radar sigue funcionando
 
-La web se genera sola en la primera visita a la portada si no existe todavía:
-la raíz pasa por `index.php`, que llama al generador y sirve el resultado. A
-partir de ahí Apache vuelve a servir ficheros estáticos sin tocar PHP.
+El despachador deja una marca (`cache/.cron`) cada vez que se despierta. Si esa
+marca lleva más de dos horas sin tocarse, `index.php` da por hecho que no hay
+cron y **empuja la cadena entera en cada visita a la portada**, como mucho una
+vez cada cinco minutos: rastrear, agrupar, publicar y generar.
 
-O sea: sin cron **se ve el sitio**, pero no entran noticias nuevas. El cron es
-lo que rastrea las fuentes y alimenta la cola del panel.
+O sea: sin cron el sitio se ve **y entra material**, sólo que al ritmo de las
+visitas en vez de cada hora. En cuanto el cron vuelve a latir, esto se apaga
+solo y la portada vuelve a ser un fichero estático.
+
+Para saber cuál de los dos está tirando del carro, abre `/salud.php`:
+
+```json
+{
+  "cron": { "ultima_vez": "hace 3 h", "callado": true,
+            "suplencia": "la portada empuja la cadena en cada visita" },
+  "cola": { "items_sin_agrupar": 0, "racimos_candidatos": 34 },
+  "ediciones": { "publicadas": 1, "bits": 12 }
+}
+```
+
+Esa página no pide contraseña porque no dice nada que no se pueda deducir
+mirando la web: sólo cuentas y fechas.
 
 ---
 
@@ -306,6 +322,16 @@ desactiva sola y deja el motivo en `fuentes.notas`.
 
 1. `git push` desde local.
 2. hPanel → GIT → **Deploy** (o automático, si pusiste el webhook).
+
+**Merece la pena poner el webhook.** Sin él, cada arreglo se queda en GitHub
+hasta que alguien entra en hPanel y pulsa Deploy: el código puede estar
+corregido y probado y el sitio seguir publicando lo de antes durante días, sin
+que nada avise. Con webhook, `git push` y ya está. Está en hPanel → GIT →
+*Auto deployment*, y se pega en GitHub → *Settings* → *Webhooks* → *Add
+webhook*, con *Content type* `application/json` y el evento *push*.
+
+Para comprobar qué versión hay desplegada, `/salud.php` da la versión de
+criterios que lleva el código y la que se ha aplicado a lo publicado.
 
 Cada despliegue vuelve a dejar `instalar.php` en el servidor, porque está en el
 repositorio. No es un agujero: con `config/config.php` escrito, la página no
