@@ -611,12 +611,15 @@ h1 {
    hacen lo mismo. En el movil todo eso vuelve a apilarse. */
 
 @media (min-width: 70rem) {
-  .cabecera, main, .pie { max-width: 76rem; }
+  .cabecera, main, .pie { max-width: 66rem; }
 
+  /* justify-content centra las dos columnas dentro del contenedor: sin eso, el
+     espacio que sobra se queda todo a la derecha y la pagina parece torcida. */
   .edicion {
     display: grid;
-    grid-template-columns: 17rem minmax(0, 40rem);
-    gap: 0 4rem;
+    grid-template-columns: 16rem minmax(0, 40rem);
+    justify-content: center;
+    gap: 0 3.5rem;
     align-items: start;
   }
 
@@ -645,8 +648,9 @@ h1 {
   /* Explorador: filtros a la izquierda, resultados a la derecha. */
   .explorador {
     display: grid;
-    grid-template-columns: 19rem minmax(0, 40rem);
-    gap: 0 4rem;
+    grid-template-columns: 18rem minmax(0, 40rem);
+    justify-content: center;
+    gap: 0 3.5rem;
     align-items: start;
   }
 
