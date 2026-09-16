@@ -80,12 +80,23 @@ function bd(): PDO
 }
 
 /**
- * Lee un ajuste de la tabla ajustes. Los ajustes se cachean por ejecucion
- * porque el motor de puntuacion los consulta en bucle.
+ * Cache de la tabla ajustes, compartida por ajuste() y ajuste_guardar().
+ *
+ * Se lee entera una vez por ejecucion porque el motor de puntuacion la
+ * consulta en bucle. Vive en una funcion propia, y no en un static dentro de
+ * ajuste(), para que al escribir se pueda refrescar: si no, quien guarda un
+ * ajuste y lo vuelve a leer en la misma pasada recibe el valor viejo, y ese
+ * fallo no se ve hasta que algo se ejecuta dos veces seguidas.
+ *
+ * @param array|null $reemplazo Si se pasa, sustituye la cache entera.
  */
-function ajuste(string $clave, $defecto = null)
+function ajustes_cache(?array $reemplazo = null): array
 {
     static $cache = null;
+
+    if ($reemplazo !== null) {
+        return $cache = $reemplazo;
+    }
 
     if ($cache === null) {
         $cache = [];
@@ -94,15 +105,30 @@ function ajuste(string $clave, $defecto = null)
         }
     }
 
+    return $cache;
+}
+
+/**
+ * Lee un ajuste de la tabla ajustes.
+ */
+function ajuste(string $clave, $defecto = null)
+{
+    $cache = ajustes_cache();
+
     return array_key_exists($clave, $cache) ? $cache[$clave] : $defecto;
 }
 
 /**
- * Escribe un ajuste. Se usa sobre todo para los punteros de lote.
+ * Escribe un ajuste. Se usa sobre todo para los punteros de lote y para las
+ * firmas de lo ya generado.
  */
 function ajuste_guardar(string $clave, string $valor): void
 {
     $sql = 'INSERT INTO ajustes (clave, valor) VALUES (?, ?)
             ON DUPLICATE KEY UPDATE valor = VALUES(valor)';
     bd()->prepare($sql)->execute([$clave, $valor]);
+
+    $cache = ajustes_cache();
+    $cache[$clave] = $valor;
+    ajustes_cache($cache);
 }
