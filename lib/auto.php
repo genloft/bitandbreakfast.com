@@ -22,6 +22,20 @@ require_once __DIR__ . '/texto.php';
 require_once __DIR__ . '/bits.php';
 
 /**
+ * Version de los criterios automaticos.
+ *
+ * Cuando sube, lo ya publicado sin revision humana se vuelve a pasar por el
+ * filtro una sola vez. Sin esto, una edicion publicada con criterios flojos se
+ * queda ahi para siempre y solo mejora lo que venga despues, que es
+ * exactamente lo que paso con la primera.
+ *
+ * Vive aqui, con las reglas, y no en cron/auto.php: asi la pagina de estado
+ * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
+ * media tarea del cron.
+ */
+const AUTO_CRITERIOS = 2;
+
+/**
  * Categoria del bit a partir de las fuentes que lo cuentan.
  *
  * Se usa la categoria por defecto de la fuente mejor puntuada, que es la que

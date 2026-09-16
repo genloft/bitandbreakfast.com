@@ -8,6 +8,7 @@
  *
  *   sin config/config.php        -> al instalador
  *   sin la web generada          -> se genera aqui mismo y se sirve
+ *   sin cron que responda        -> la visita empuja la cadena entera
  *   sin poder generarla          -> portada provisional, nunca un 403 seco
  *
  * Lo segundo es lo importante y es reciente. Antes, la web solo se generaba
@@ -15,13 +16,23 @@
  * publico/ -que no esta en el repositorio, y por tanto no se actualiza nunca
  * con un git pull- hasta que el cron se despertara. Si el cron estaba mal
  * configurado, eso era "para siempre". Ahora la primera visita lo arregla.
+ *
+ * Lo tercero es la consecuencia de mirar la realidad: el cron se configura en
+ * el panel del alojamiento, fuera del repositorio, y equivocarse alli es
+ * facil. Mientras el cron no de senales de vida, el radar se mantiene con las
+ * visitas: una cada cinco minutos empuja la cadena un paso. Es mas lento y
+ * mas tosco que el cron, pero la diferencia entre un sitio lento y un sitio
+ * muerto no es de grado. En cuanto el cron vuelve a latir, esto se apaga solo.
  */
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/lib/estado.php';
+
 date_default_timezone_set('UTC');
 
-const ARRANQUE_ESPERA = 300;   // segundos entre intentos de generar
+const ARRANQUE_ESPERA = 300;     // segundos entre intentos de generar
+const ARRANQUE_SILENCIO = 7200;  // sin cron en dos horas, tira la web del carro
 
 $raiz    = __DIR__;
 $config  = $raiz . '/config/config.php';
@@ -53,12 +64,13 @@ if (!is_file($config)) {
 // -----------------------------------------------------------------------------
 
 if (arranque_toca_intentar($raiz)) {
-    if (arranque_sin_contenido($raiz)) {
-        // Sitio recien puesto en marcha: cada visita empuja la cadena entera un
-        // paso -rastrear, agrupar, publicar y generar-, como mucho una vez cada
-        // cinco minutos. Asi se llena solo aunque el cron no este bien puesto,
-        // que es exactamente lo que ha pasado aqui. En cuanto hay una edicion
-        // publicada esto deja de ejecutarse y el sitio vuelve a ser estatico.
+    if (arranque_sin_contenido($raiz) || arranque_sin_cron($raiz)) {
+        // Sitio recien puesto en marcha, o cron que no contesta: cada visita
+        // empuja la cadena entera un paso -rastrear, agrupar, publicar y
+        // generar-, como mucho una vez cada cinco minutos. Asi el radar se
+        // llena y se mantiene aunque el cron no este bien puesto, que es
+        // exactamente lo que ha pasado aqui. En cuanto el cron da senales de
+        // vida esto deja de ejecutarse y el sitio vuelve a ser estatico.
         arranque_cadena($raiz);
     } elseif (arranque_hay_que_generar($raiz, $huella)) {
         arranque_tarea($raiz, 'publicar', 'publicar_pendiente', 15);
@@ -102,6 +114,18 @@ function arranque_sin_contenido(string $raiz): bool
     $datos = json_decode((string) @file_get_contents($indice), true);
 
     return !is_array($datos) || empty($datos['bits']);
+}
+
+/**
+ * ¿El cron lleva demasiado tiempo sin dar senales?
+ *
+ * El cron toca cache/.cron cada vez que corre. Sin esa marca -o con una vieja-
+ * se da por hecho que no hay cron y la web se mantiene sola. Es la diferencia
+ * entre un radar que va lento y un radar congelado.
+ */
+function arranque_sin_cron(string $raiz): bool
+{
+    return estado_cron_callado(estado_ultimo_cron($raiz), time(), ARRANQUE_SILENCIO);
 }
 
 /**

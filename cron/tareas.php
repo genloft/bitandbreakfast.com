@@ -27,6 +27,13 @@ if (PHP_SAPI !== 'cli') {
 }
 
 require_once dirname(__DIR__) . '/lib/db.php';
+require_once dirname(__DIR__) . '/lib/estado.php';
+
+// Lo primero de todo, antes incluso de leer la configuracion: dejar constancia
+// de que el cron esta vivo. La portada mira esta marca para decidir si tiene
+// que mantener el sitio ella sola, y para eso le vale saber que el cron llego
+// a arrancar, aunque despues fallara.
+estado_latir(dirname(__DIR__));
 
 $config = config();
 

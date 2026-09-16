@@ -22,6 +22,7 @@ nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
 
 ```
 index.php     arranque: sin configuración lleva al instalador, con ella a la portada
+salud.php     estado del radar en JSON: cron, cola, fuentes y ediciones
 instalar.php  instalador web; se borra solo al terminar
 config/       configuración (config.php no está en el repositorio)
 lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
@@ -117,11 +118,22 @@ un MariaDB 10.6 para la de humo.
   análisis y deja el «por qué importa» vacío, porque eso es un juicio
   editorial y ahí no hay nadie para hacerlo. Todo lo que publica es
   comprobable, y los bits quedan marcados como `redactado_por = 'ia'`.
-- **La web tira de la cadena mientras no haya nada publicado.** Cada visita a
-  la portada, como mucho una cada cinco minutos, empuja un paso: rastrear,
-  agrupar, publicar y generar. Así un sitio recién desplegado se llena solo
-  aunque el cron esté mal configurado, que es exactamente lo que pasó. En
-  cuanto hay una edición publicada, eso deja de ejecutarse.
+- **La web tira de la cadena mientras el cron no conteste.** Cada visita a la
+  portada, como mucho una cada cinco minutos, empuja un paso: rastrear,
+  agrupar, publicar y generar. Ocurre en dos casos: cuando no hay nada
+  publicado todavía y cuando `cache/.cron` —la marca que deja el despachador
+  al arrancar— lleva más de dos horas sin tocarse. El cron se configura en el
+  panel del alojamiento, fuera del repositorio, y equivocarse allí es fácil:
+  ya pasó. Mantenerse con las visitas es más lento y más tosco, pero la
+  diferencia entre un radar lento y un radar muerto no es de grado. En cuanto
+  el cron vuelve a latir, esto se apaga solo y el sitio vuelve a ser estático.
+- **`/salud.php` cuenta lo que no se ve.** Cuándo corrió el cron, cuántos
+  items esperan en la cola, cuántas fuentes fallaron hoy y qué versión de
+  criterios lleva aplicada lo publicado. Existe porque el sitio se mantiene
+  sin acceso al servidor: sin esto, una portada quieta puede ser «no hay
+  noticias» o «la ingesta lleva dos días fallando», y desde fuera no hay forma
+  de distinguirlo. Solo devuelve cuentas y fechas, nunca configuración ni
+  nada que identifique a nadie.
 - **Ningún bit llega a una edición sin pasar por el formato.** El titular
   cabe en 120 caracteres, el cuerpo entre 25 y 110 palabras y el "por qué
   importa" es obligatorio. Un borrador se guarda como sea, pero aprobarlo

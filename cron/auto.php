@@ -28,16 +28,6 @@ require_once dirname(__DIR__) . '/lib/puntuar.php';
 require_once dirname(__DIR__) . '/panel/datos.php';
 
 /**
- * Version de los criterios automaticos.
- *
- * Cuando sube, lo ya publicado sin revision humana se vuelve a pasar por el
- * filtro una sola vez. Sin esto, una edicion publicada con criterios flojos se
- * queda ahi para siempre y solo mejora lo que venga despues, que es
- * exactamente lo que paso con la primera.
- */
-const AUTO_CRITERIOS = 2;
-
-/**
  * Una pasada de publicacion automatica.
  *
  * @param float $limite Marca de tiempo a partir de la cual no se empiezan
