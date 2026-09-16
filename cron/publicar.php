@@ -195,6 +195,12 @@ function publicar_bits(int $edicion_id): array
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
                      ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                   -- El idioma del titular, con el mismo orden con el que
+                   -- cron/procesar.php elige el titular representativo: si no
+                   -- coincidiera, la etiqueta diria una cosa y el titular otra.
+                   (SELECT i.idioma FROM items i
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS idioma,
                    -- Los proveedores del racimo, para enlazar sus fichas.
                    -- slug y nombre en la misma cadena para no hacer una
                    -- consulta por bit.

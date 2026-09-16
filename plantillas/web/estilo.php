@@ -314,6 +314,10 @@ h1 {
 
 .etiqueta-categoria { border-color: var(--acento-suave); color: var(--acento); }
 
+/* El idioma es un aviso, no una categoria: se queda en el borde discontinuo
+   para que se lea sin competir con la etiqueta que de verdad clasifica. */
+.etiqueta-idioma { border-style: dashed; }
+
 .texto p { margin: 0 0 1rem; }
 
 .por-que {

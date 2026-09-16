@@ -114,6 +114,13 @@ $idiomas       = web_idiomas();
             <span class="etiqueta etiqueta-categoria"><?= web_e($categorias[$bit['categoria']] ?? $bit['categoria']) ?></span>
             <span class="etiqueta"><?= web_e($tipos[$bit['tipo']] ?? $bit['tipo']) ?></span>
             <span class="etiqueta"><?= web_e($madureces[$bit['madurez']] ?? $bit['madurez']) ?></span>
+            <?php if (($bit['idioma'] ?? 'es') !== 'es'): ?>
+              <?php // El titular es el que publico el medio. Decir en que idioma
+                    // esta evita que parezca un descuido: es la noticia tal cual
+                    // la conto su fuente, sin traducir, que es lo que promete
+                    // este radar. ?>
+              <span class="etiqueta etiqueta-idioma">Titular en <?= web_e(mb_strtolower((string) ($idiomas[$bit['idioma']] ?? $bit['idioma']), 'UTF-8')) ?></span>
+            <?php endif; ?>
           </p>
 
           <div class="texto"><?= web_parrafos((string) $bit['cuerpo']) ?></div>
