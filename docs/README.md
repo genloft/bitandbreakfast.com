@@ -12,7 +12,7 @@ nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
 
 - Alojamiento compartido de Hostinger, coste cero. Ni VPS ni contenedores.
 - PHP 8.1 y MySQL/MariaDB. Sin framework, sin Composer en producción.
-- Sin build de frontend: CSS a mano, un único fichero.
+- Sin build de frontend: CSS a mano y un único JavaScript propio, el del buscador.
 - Todo proceso largo va por lotes con puntero persistente, nunca en una pasada.
 - Ningún bit se publica sin revisión humana.
 
@@ -80,7 +80,7 @@ un MariaDB 10.6 para la de humo.
 | 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | completada |
 | 5 | Proveedor de correo y alta con doble confirmación | alta hecha; envío pendiente |
-| 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas y clics hechos |
+| 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador y clics hechos |
 
 ## Decisiones que conviene no olvidar
 
@@ -140,6 +140,11 @@ un MariaDB 10.6 para la de humo.
   es una consulta, no una tabla que mantener. Solo se generan las de los
   proveedores con algo publicado: cuarenta y siete fichas vacías no ayudan a
   nadie y además son mala señal para un buscador.
+- **El buscador no tiene servidor.** Se descarga `indice.json` y se busca en
+  el navegador, así que el sitio sigue siendo ficheros estáticos: no hay
+  endpoint que tumbar ni que limitar. El texto buscable se normaliza en PHP
+  con `texto_normalizar()` y el navegador aplica exactamente las mismas
+  reglas sobre lo que teclea el lector.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

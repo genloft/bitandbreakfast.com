@@ -10,6 +10,7 @@ declare(strict_types=1);
   <nav class="menu" aria-label="Pie">
     <a href="<?= web_e($base) ?>/">Última edición</a>
     <a href="<?= web_e($base) ?>/archivo.html">Archivo</a>
+    <a href="<?= web_e($base) ?>/buscar.html">Buscar</a>
     <a href="<?= web_e($base) ?>/proveedores.html">Proveedores</a>
     <a href="<?= web_e($base) ?>/sobre.html">Qué es</a>
     <a href="<?= web_e($base) ?>/feed.xml">RSS</a>

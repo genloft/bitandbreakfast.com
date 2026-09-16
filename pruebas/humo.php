@@ -318,6 +318,19 @@ comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
 comprobar('escribe el indice de proveedores', true, is_file($publico . '/proveedores.html'));
+comprobar('escribe el buscador', true, is_file($publico . '/buscar.html'));
+comprobar('escribe el guion del buscador', true, is_file($publico . '/buscar.js'));
+comprobar('escribe el indice de busqueda', true, is_file($publico . '/indice.json'));
+
+$indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
+
+comprobar('el indice es una lista con el bit publicado', 1, is_array($indice) ? count($indice) : 0);
+
+comprobar(
+    'y su texto buscable esta normalizado',
+    true,
+    is_array($indice) && str_contains((string) $indice[0]['b'], 'oracle opera cloud se cae')
+);
 
 // El bit habla de Oracle OPERA, asi que su ficha tiene que existir y llevarlo.
 comprobar(

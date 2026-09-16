@@ -112,6 +112,28 @@ function publicar_pendiente(float $limite): array
         ) ? 1 : 0;
     }
 
+    // Indice de busqueda y el buscador, que corre entero en el navegador.
+    $indice = publicar_indice();
+
+    $ficheros += publicar_escribir(
+        $publico . '/indice.json',
+        (string) json_encode($indice, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/buscar.js',
+        publicar_plantilla('buscarjs', [])
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/buscar.html',
+        publicar_plantilla('buscar', [
+            'base'         => $base,
+            'total'        => count($indice),
+            'alta_abierta' => $alta,
+        ])
+    ) ? 1 : 0;
+
     $ficheros += publicar_escribir(
         $publico . '/proveedores.html',
         publicar_plantilla('proveedores', [
@@ -181,6 +203,37 @@ function publicar_bits(int $edicion_id): array
     $st->execute([$edicion_id]);
 
     return $st->fetchAll();
+}
+
+/**
+ * El indice de busqueda: todos los bits publicados, ya normalizados.
+ *
+ * Se descarga entero en el navegador, asi que se queda en lo justo. Con mil
+ * bits ronda los doscientos kilobytes; el dia que se acerque al megabyte
+ * habra que partirlo por anos, pero a veinte bits por semana eso son cuatro
+ * anos de boletin.
+ */
+function publicar_indice(): array
+{
+    $sql = "SELECT b.id, b.titular, b.por_que, b.cuerpo, b.categoria,
+                   e.numero, e.slug, e.fecha_prevista,
+                   (SELECT GROUP_CONCAT(DISTINCT CONCAT(p.slug, '|', p.nombre) SEPARATOR ';;')
+                      FROM items i
+                      JOIN item_proveedor ip ON ip.item_id = i.id
+                      JOIN proveedores p     ON p.id = ip.proveedor_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado') AS proveedores
+              FROM bits b
+              JOIN ediciones e ON e.id = b.edicion_id
+             WHERE b.estado = 'publicado'
+             ORDER BY e.numero DESC, b.orden ASC";
+
+    $filas = [];
+
+    foreach (bd()->query($sql) as $bit) {
+        $filas[] = web_fila_indice($bit);
+    }
+
+    return $filas;
 }
 
 /**

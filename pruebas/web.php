@@ -155,6 +155,54 @@ comprobar(
     web_parrafos("   \n\n  ")
 );
 
+// --- Indice de busqueda -----------------------------------------------------
+
+$fila = web_fila_indice([
+    'id'             => 7,
+    'titular'        => 'Oracle OPERA Cloud se cae durante cuatro horas',
+    'por_que'        => 'Si tu PMS es OPERA Cloud, el jueves volviste al papel.',
+    'cuerpo'         => 'El corte afectó a media Europa.',
+    'categoria'      => 'pms-gestion',
+    'numero'         => 38,
+    'slug'           => '2026-w39-038',
+    'fecha_prevista' => '2026-09-22',
+    'proveedores'    => 'oracle-hospitality|Oracle Hospitality',
+]);
+
+// Las claves son de una letra porque el indice se descarga entero: con mil
+// bits, los nombres largos repetidos son decenas de kilobytes.
+comprobar('la fila lleva el identificador del bit', 7, $fila['i']);
+comprobar('y el titular sin tocar', 'Oracle OPERA Cloud se cae durante cuatro horas', $fila['t']);
+comprobar('y la edicion en la que salio', 38, $fila['n']);
+comprobar('y los proveedores en texto plano', 'Oracle Hospitality', $fila['v']);
+comprobar('y la fecha ya escrita en espanol', '22 de septiembre de 2026', $fila['d']);
+
+// El campo buscable viene ya normalizado desde PHP para que el navegador solo
+// tenga que normalizar lo que escribe el lector, con las mismas reglas.
+comprobar(
+    'el texto buscable va normalizado',
+    true,
+    str_contains($fila['b'], 'oracle opera cloud se cae durante cuatro horas')
+);
+
+comprobar(
+    'el texto buscable incluye el por que importa',
+    true,
+    str_contains($fila['b'], 'volviste al papel')
+);
+
+comprobar(
+    'y el cuerpo, sin acentos',
+    true,
+    str_contains($fila['b'], 'afecto a media europa')
+);
+
+comprobar(
+    'y el nombre del proveedor',
+    true,
+    str_contains($fila['b'], 'oracle hospitality')
+);
+
 // --- Enlaces contados -------------------------------------------------------
 
 comprobar(

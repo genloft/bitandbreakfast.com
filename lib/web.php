@@ -10,6 +10,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/texto.php';
+
 /** Meses en espanol. No se usa strftime: esta obsoleta desde PHP 8.1. */
 function web_meses(): array
 {
@@ -116,6 +118,45 @@ function web_parrafos(string $texto): string
     }
 
     return $html;
+}
+
+/**
+ * Fila del indice de busqueda a partir de un bit publicado.
+ *
+ * Las claves son de una letra a proposito: el indice se descarga entero en el
+ * navegador y con mil bits la diferencia entre "titular" y "t" son cuarenta
+ * kilobytes de nombres de campo repetidos.
+ *
+ * El campo 'b' es el texto sobre el que se busca, ya normalizado aqui con
+ * texto_normalizar: asi el navegador solo tiene que normalizar lo que escribe
+ * el lector, y las dos partes usan exactamente las mismas reglas.
+ */
+function web_fila_indice(array $bit): array
+{
+    $proveedores = web_proveedores($bit['proveedores'] ?? null);
+    $nombres     = implode(' ', array_column($proveedores, 'nombre'));
+
+    $buscable = texto_normalizar(
+        (string) $bit['titular'] . ' ' .
+        (string) ($bit['por_que'] ?? '') . ' ' .
+        (string) ($bit['cuerpo'] ?? '') . ' ' .
+        $nombres
+    );
+
+    return [
+        'i' => (int) $bit['id'],
+        't' => (string) $bit['titular'],
+        'q' => (string) ($bit['por_que'] ?? ''),
+        'c' => (string) $bit['categoria'],
+        'n' => (int) $bit['numero'],
+        's' => (string) $bit['slug'],
+        'f' => (string) $bit['fecha_prevista'],
+        // La fecha ya escrita: asi el buscador no repite los nombres de los
+        // meses en JavaScript ni se arriesga a que los dos formatos difieran.
+        'd' => web_fecha_larga((string) $bit['fecha_prevista']),
+        'v' => $nombres,
+        'b' => $buscable,
+    ];
 }
 
 /**

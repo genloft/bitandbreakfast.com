@@ -305,6 +305,30 @@ h1 {
 .volver { margin-left: auto; color: var(--apagado); text-decoration: none; }
 .volver:hover { text-decoration: underline; }
 
+/* --- Buscador -------------------------------------------------------------- */
+
+.buscador { margin: 1.5rem 0 1rem; }
+
+.buscador label {
+  display: block;
+  margin-bottom: .35rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--apagado);
+}
+
+.buscador input {
+  width: 100%;
+  padding: .75rem .9rem;
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  background: var(--papel);
+  color: var(--tinta);
+  /* 16px o mas: por debajo, Safari en iPhone hace zoom al enfocar. */
+  font: 1.05rem/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
 /* --- Menciones de proveedor ---------------------------------------------- */
 
 .menciona {
