@@ -11,6 +11,11 @@
 #      MariaDB de usar y tirar, la misma version que sirve Hostinger.
 #
 # Nada de esto necesita secretos ni toca el servidor de produccion.
+#
+# Cuando algo falla, la salida se emite ademas como anotacion del run. El
+# registro completo de Actions exige iniciar sesion, incluso en un repositorio
+# publico; las anotaciones se ven sin cuenta, y son la unica forma de que un
+# fallo diga algo mas que "exit code 1" a quien mira desde fuera.
 
 name: pruebas
 
@@ -54,19 +59,17 @@ jobs:
           find . -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
 
       - name: Pruebas sin base de datos
-        # La salida se copia al resumen del run, que se ve sin iniciar sesion.
-        # El registro completo de Actions no, y sin esto un fallo aqui solo
-        # dice "exit code 1" a quien no tenga cuenta en el repositorio.
         run: |
-          set -o pipefail
           fallo=0
           for prueba in texto canonica instalacion procesar; do
-            {
-              echo "### pruebas/$prueba.php"
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-            php "pruebas/$prueba.php" 2>&1 | tee -a "$GITHUB_STEP_SUMMARY" || fallo=1
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            if salida="$(php "pruebas/$prueba.php" 2>&1)"; then
+              echo "$salida"
+            else
+              fallo=1
+              echo "$salida"
+              recorte="$(printf '%s' "$salida" | tail -c 3000)"
+              echo "::error title=pruebas/${prueba}.php::${recorte//$'\n'/%0A}"
+            fi
           done
           exit $fallo
 
@@ -94,19 +97,19 @@ jobs:
           BITB_BD_USUARIO: root
           BITB_BD_CLAVE: raiz
         run: |
-          set -o pipefail
-          {
-            echo "### pruebas/humo.php"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          php pruebas/humo.php 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
-          resultado=$?
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          exit $resultado
+          if salida="$(php pruebas/humo.php 2>&1)"; then
+            echo "$salida"
+          else
+            echo "$salida"
+            recorte="$(printf '%s' "$salida" | tail -c 3000)"
+            echo "::error title=pruebas/humo.php::${recorte//$'\n'/%0A}"
+            exit 1
+          fi
 
       - name: Comprobar que no queda configuracion escrita
         # La prueba de humo escribe un config/config.php de usar y tirar y lo
         # borra al terminar. Si sobrevive, es que el borrado no funciona, y eso
         # en el servidor de verdad seria un fichero con credenciales de mas.
+        if: always()
         run: |
-          test ! -f config/config.php || { echo "config/config.php no se ha limpiado"; exit 1; }
+          test ! -f config/config.php || { echo "::error::config/config.php no se ha limpiado"; exit 1; }
