@@ -169,7 +169,14 @@ $titulo_c = 'Mews compra un motor de reservas europeo';
 
 $item_a = humo_item($fuente_a, $titulo_a, 'El PMS quedo fuera de servicio en toda Europa.', 'es');
 $item_b = humo_item($fuente_b, $titulo_b, 'La incidencia afecto a los hoteles de media Europa.', 'es');
-$item_c = humo_item($fuente_c, $titulo_c, 'La compra refuerza su posicion en el mercado europeo.', 'en');
+$item_c = humo_item(
+    $fuente_c,
+    $titulo_c,
+    'La compra refuerza su posicion en el mercado europeo y le da acceso directo al '
+    . 'canal de reserva de mas de dos mil hoteles independientes, segun la nota que ha '
+    . 'publicado la compania esta manana sin detallar el importe de la operacion.',
+    'en'
+);
 
 // -----------------------------------------------------------------------------
 // Procesado
@@ -485,6 +492,31 @@ comprobar('y el generador publica las dos ediciones', 2, $resumen_web['ediciones
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 
 comprobar('el indice recoge los dos bits', 2, count($indice['bits'] ?? []));
+
+// Un racimo sin resumen utilizable no se publica: un bit que solo dice quien
+// lo cuenta no le ahorra el clic a nadie. Se saca de la cola con el motivo
+// escrito para no reevaluarlo en cada pasada.
+$fuente_d = humo_fuente('Humo Flojo', 'prensa', 5, 'es');
+$item_d   = humo_item($fuente_d, 'Una nota de prensa cualquiera del sector', 'Sin resumen.', 'es');
+
+procesar_lote(microtime(true) + 20);
+
+$flojo = auto_publicar_lote(microtime(true) + 20);
+
+comprobar('el racimo sin cuerpo no se publica', 0, $flojo['bits']);
+comprobar('y se descarta, no se reintenta', 1, $flojo['descartados']);
+
+$st = bd()->prepare('SELECT r.estado, r.motivo_descarte FROM racimos r JOIN items i ON i.racimo_id = r.id WHERE i.id = ?');
+$st->execute([$item_d]);
+$descartado = $st->fetch();
+
+comprobar('queda marcado como descartado', 'descartado', $descartado['estado'] ?? '');
+
+comprobar(
+    'con el motivo escrito',
+    true,
+    str_contains((string) ($descartado['motivo_descarte'] ?? ''), 'automatico')
+);
 
 // Apagar el modo automatico tiene que bastar para que no vuelva a tocar nada.
 ajuste_guardar('auto_publicar', '0');
