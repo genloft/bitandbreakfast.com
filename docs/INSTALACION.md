@@ -163,15 +163,42 @@ escrito el instalador ya no hace nada. Pero púlsalo: es lo que lo deja limpio.
 
 Una sola entrada de cron: `cron/tareas.php` decide qué toca en cada ejecución.
 
-hPanel → **Avanzado → Trabajos cron** → *Crear nuevo trabajo cron*:
+hPanel → **Avanzado → Trabajos cron** → *Crear nuevo trabajo cron*.
 
-- Tipo: **Comando personalizado**
-- Frecuencia: **Cada hora**
-- Comando: el que te dio el instalador, con esta forma:
+> ⚠️ **La trampa de hPanel.** La pantalla tiene dos modos, *PHP* y *Custom*.
+> Con **PHP** marcado, el panel escribe él solo el prefijo
+> `/usr/bin/php /home/uXXXXXXXXX/` y en la casilla solo va **la ruta
+> relativa a tu carpeta personal**. Si ahí pegas el comando entero, queda
+> duplicado y no se ejecuta nada; y si escribes `cron/tareas.php`, apunta a
+> `/home/uXXXXXXXXX/cron/tareas.php`, que no existe porque el proyecto está
+> dentro de `public_html`. El cron falla en silencio y parece que el sitio
+> «no hace nada».
+
+**Opción A, modo *Custom*** (la recomendada, porque además guarda registro).
+Comando completo, en una sola línea:
 
 ```
-/usr/bin/php /home/uXXXXXXXXX/domains/bitandbreakfast.com/public_html/cron/tareas.php >> /home/uXXXXXXXXX/logs/bitb-cron.log 2>&1
+mkdir -p /home/uXXXXXXXXX/logs; for f in /home/uXXXXXXXXX/domains/*/public_html/cron/tareas.php /home/uXXXXXXXXX/public_html/cron/tareas.php; do [ -f "$f" ] && /usr/bin/php "$f"; done >> /home/uXXXXXXXXX/logs/bitb-cron.log 2>&1
 ```
+
+Parece aparatoso a propósito: busca el proyecto en las dos ubicaciones que usa
+Hostinger y ejecuta la que exista, así no hay que averiguar cuál es la tuya.
+
+**Opción B, modo *PHP***. En la casilla, solo esto:
+
+```
+domains/bitandbreakfast.com/public_html/cron/tareas.php
+```
+
+Y si tu plan no usa carpeta `domains/`, entonces:
+
+```
+public_html/cron/tareas.php
+```
+
+Frecuencia: **cada hora**. Y **una sola entrada**: `tareas.php` llama él mismo
+a la ingesta, al procesado y al generador. Una segunda entrada para
+`procesar.php` duplica trabajo y las dos se pisan.
 
 La carpeta `logs/` cuelga de `/home/uXXXXXXXXX/`, **fuera** de `public_html`,
 para que el registro no se pueda leer desde la web. El instalador la busca
@@ -181,6 +208,15 @@ dijo en pantalla y la creas tú.
 
 Si `/usr/bin/php` no fuese PHP 8.1, usa la ruta que ofrezca el desplegable de
 esa misma pantalla, del estilo `/opt/alt/php81/usr/bin/php`.
+
+### Si el cron no arranca, el sitio se ve igualmente
+
+La web se genera sola en la primera visita a la portada si no existe todavía:
+la raíz pasa por `index.php`, que llama al generador y sirve el resultado. A
+partir de ahí Apache vuelve a servir ficheros estáticos sin tocar PHP.
+
+O sea: sin cron **se ve el sitio**, pero no entran noticias nuevas. El cron es
+lo que rastrea las fuentes y alimenta la cola del panel.
 
 ---
 
