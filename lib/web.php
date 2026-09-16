@@ -140,6 +140,7 @@ function web_fila_indice(array $bit): array
         (string) $bit['titular'] . ' ' .
         (string) ($bit['por_que'] ?? '') . ' ' .
         (string) ($bit['cuerpo'] ?? '') . ' ' .
+        (string) ($bit['fuente'] ?? '') . ' ' .
         $nombres
     );
 
@@ -148,6 +149,10 @@ function web_fila_indice(array $bit): array
         't' => (string) $bit['titular'],
         'q' => (string) ($bit['por_que'] ?? ''),
         'c' => (string) $bit['categoria'],
+        // Las tres facetas que se pueden filtrar, ademas de la categoria.
+        'fu' => (string) ($bit['fuente'] ?? ''),
+        'a'  => (string) ($bit['ambito'] ?? 'global'),
+        'l'  => (string) ($bit['idioma'] ?? 'en'),
         'n' => (int) $bit['numero'],
         's' => (string) $bit['slug'],
         'f' => (string) $bit['fecha_prevista'],
@@ -157,6 +162,23 @@ function web_fila_indice(array $bit): array
         'v' => $nombres,
         'b' => $buscable,
     ];
+}
+
+/**
+ * Etiquetas de las facetas por las que se puede filtrar.
+ *
+ * El ambito sale de fuentes.region, que es lo que hay: no se guarda el pais
+ * de cada medio, sino si cubre Espana, Europa o el mundo. Llamarlo "pais"
+ * seria prometer una precision que el dato no tiene.
+ */
+function web_ambitos(): array
+{
+    return ['es' => 'España', 'eu' => 'Europa', 'global' => 'Global'];
+}
+
+function web_idiomas(): array
+{
+    return ['es' => 'Español', 'en' => 'Inglés'];
 }
 
 /**

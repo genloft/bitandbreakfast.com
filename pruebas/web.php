@@ -167,6 +167,9 @@ $fila = web_fila_indice([
     'slug'           => '2026-w39-038',
     'fecha_prevista' => '2026-09-22',
     'proveedores'    => 'oracle-hospitality|Oracle Hospitality',
+    'fuente'         => 'Skift',
+    'ambito'         => 'global',
+    'idioma'         => 'en',
 ]);
 
 // Las claves son de una letra porque el indice se descarga entero: con mil
@@ -176,6 +179,19 @@ comprobar('y el titular sin tocar', 'Oracle OPERA Cloud se cae durante cuatro ho
 comprobar('y la edicion en la que salio', 38, $fila['n']);
 comprobar('y los proveedores en texto plano', 'Oracle Hospitality', $fila['v']);
 comprobar('y la fecha ya escrita en espanol', '22 de septiembre de 2026', $fila['d']);
+
+// Las tres facetas que se pueden filtrar, ademas de la categoria.
+comprobar('y la fuente', 'Skift', $fila['fu']);
+comprobar('y el ambito', 'global', $fila['a']);
+comprobar('y el idioma', 'en', $fila['l']);
+
+// La fuente tambien se puede buscar por texto: "skift" tiene que encontrar
+// sus noticias.
+comprobar(
+    'el texto buscable incluye la fuente',
+    true,
+    str_contains($fila['b'], 'skift')
+);
 
 // El campo buscable viene ya normalizado desde PHP para que el navegador solo
 // tenga que normalizar lo que escribe el lector, con las mismas reglas.

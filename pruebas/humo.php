@@ -323,13 +323,26 @@ comprobar('escribe el guion del buscador', true, is_file($publico . '/buscar.js'
 comprobar('escribe el indice de busqueda', true, is_file($publico . '/indice.json'));
 
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
+$bits_indice = $indice['bits'] ?? [];
 
-comprobar('el indice es una lista con el bit publicado', 1, is_array($indice) ? count($indice) : 0);
+comprobar('el indice lleva el bit publicado', 1, count($bits_indice));
 
 comprobar(
     'y su texto buscable esta normalizado',
     true,
-    is_array($indice) && str_contains((string) $indice[0]['b'], 'oracle opera cloud se cae')
+    isset($bits_indice[0]['b']) && str_contains((string) $bits_indice[0]['b'], 'oracle opera cloud se cae')
+);
+
+// Las facetas por las que se filtra tienen que llegar con cada bit.
+comprobar('el bit del indice trae su fuente', 'Humo Uno', $bits_indice[0]['fu'] ?? '');
+comprobar('y su ambito', 'global', $bits_indice[0]['a'] ?? '');
+comprobar('y su idioma', 'es', $bits_indice[0]['l'] ?? '');
+
+// Y las etiquetas, para que el buscador no lleve una copia de los catalogos.
+comprobar(
+    'el indice trae las etiquetas de las facetas',
+    true,
+    isset($indice['etiquetas']['c']['pms-gestion'], $indice['etiquetas']['a']['es'], $indice['etiquetas']['l']['en'])
 );
 
 // El bit habla de Oracle OPERA, asi que su ficha tiene que existir y llevarlo.

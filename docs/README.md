@@ -140,11 +140,24 @@ un MariaDB 10.6 para la de humo.
   es una consulta, no una tabla que mantener. Solo se generan las de los
   proveedores con algo publicado: cuarenta y siete fichas vacías no ayudan a
   nadie y además son mala señal para un buscador.
-- **El buscador no tiene servidor.** Se descarga `indice.json` y se busca en
-  el navegador, así que el sitio sigue siendo ficheros estáticos: no hay
-  endpoint que tumbar ni que limitar. El texto buscable se normaliza en PHP
-  con `texto_normalizar()` y el navegador aplica exactamente las mismas
+- **El explorador no tiene servidor.** Se descarga `indice.json` y se busca y
+  filtra en el navegador, así que el sitio sigue siendo ficheros estáticos: no
+  hay endpoint que tumbar ni que limitar. El texto buscable se normaliza en
+  PHP con `texto_normalizar()` y el navegador aplica exactamente las mismas
   reglas sobre lo que teclea el lector.
+- **Los filtros suman dentro de un grupo y restan entre grupos.** Dos
+  temáticas es «una u otra»; una temática y un idioma es «las dos cosas». Es
+  lo que espera cualquiera que haya usado una tienda, y evita el callejón de
+  elegir dos idiomas y no obtener nada. Los recuentos de cada opción se
+  calculan con el resto de filtros aplicados pero sin el propio grupo, que es
+  lo que impide que un filtro te lleve a cero resultados.
+- **El ámbito no es el país.** `fuentes.region` dice si un medio cubre España,
+  Europa o el mundo; no se guarda el país de cada medio. Llamarlo «país» sería
+  prometer una precisión que el dato no tiene.
+- **Oscuro siempre, no según el sistema.** Es una decisión de marca, como la
+  iluminación del vestíbulo de un hotel: no se enciende y se apaga según quién
+  entre. Y serif para todo lo que se lee, con el sans reservado a las
+  etiquetas diminutas, que es donde una serif pequeña se ensucia.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

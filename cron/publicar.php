@@ -129,7 +129,7 @@ function publicar_pendiente(float $limite): array
         $publico . '/buscar.html',
         publicar_plantilla('buscar', [
             'base'         => $base,
-            'total'        => count($indice),
+            'total'        => count($indice['bits']),
             'alta_abierta' => $alta,
         ])
     ) ? 1 : 0;
@@ -217,6 +217,19 @@ function publicar_indice(): array
 {
     $sql = "SELECT b.id, b.titular, b.por_que, b.cuerpo, b.categoria,
                    e.numero, e.slug, e.fecha_prevista,
+                   (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                   -- El ambito mas concreto del racimo: si alguna fuente es
+                   -- espanola, cuenta como espanola; si no, europea.
+                   (SELECT f.region FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (f.region = 'es') DESC, (f.region = 'eu') DESC LIMIT 1) AS ambito,
+                   (SELECT i.idioma FROM items i
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS idioma,
                    (SELECT GROUP_CONCAT(DISTINCT CONCAT(p.slug, '|', p.nombre) SEPARATOR ';;')
                       FROM items i
                       JOIN item_proveedor ip ON ip.item_id = i.id
@@ -233,7 +246,16 @@ function publicar_indice(): array
         $filas[] = web_fila_indice($bit);
     }
 
-    return $filas;
+    // Las etiquetas viajan con el indice para que el buscador no tenga que
+    // llevar una copia de los catalogos en JavaScript.
+    return [
+        'etiquetas' => [
+            'c' => bits_categorias(),
+            'a' => web_ambitos(),
+            'l' => web_idiomas(),
+        ],
+        'bits' => $filas,
+    ];
 }
 
 /**
