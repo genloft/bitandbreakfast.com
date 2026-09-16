@@ -92,6 +92,16 @@ function publicar_pendiente(float $limite): array
         }
     }
 
+    // Sin ninguna edicion publicada, la portada es la pagina provisional. El
+    // generador es el unico que puede mantenerla al dia: el instalador la
+    // escribe una vez y despues desaparece.
+    if (!$ediciones) {
+        $ficheros += publicar_escribir(
+            $publico . '/index.html',
+            publicar_plantilla('provisional', ['base' => $base, 'alta_abierta' => $alta])
+        ) ? 1 : 0;
+    }
+
     $ficheros += publicar_escribir(
         $publico . '/archivo.html',
         publicar_plantilla('archivo', ['ediciones' => $ediciones, 'base' => $base, 'alta_abierta' => $alta])
@@ -309,10 +319,12 @@ function publicar_bits_proveedor(int $proveedor_id): array
  */
 function publicar_firma(array $ediciones): string
 {
-    if (!$ediciones) {
-        return '';
-    }
-
+    // Sin ediciones tambien hay firma. Devolver cadena vacia aqui hacia que
+    // coincidiera con el ajuste vacio de una instalacion recien hecha, y
+    // publicar_pendiente() se marchaba sin escribir ni la hoja de estilo: la
+    // portada se quedaba con lo que hubiera dejado el instalador, para
+    // siempre, porque publico/ no esta en el repositorio y un despliegue no lo
+    // toca.
     $st = bd()->query(
         "SELECT COUNT(*) AS bits, COALESCE(MAX(modificado), '') AS ultimo
            FROM bits WHERE estado = 'publicado'"

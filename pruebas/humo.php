@@ -296,6 +296,23 @@ comprobar('la edicion abierta recoge el bit', 1, count(datos_bits_edicion((int) 
 $revision = bits_revisar_edicion(datos_bits_edicion((int) $edicion['id']), datos_conf_edicion());
 comprobar('la edicion se puede cerrar', [], $revision['errores']);
 
+// Antes de cerrar nada no hay ediciones publicables. Aun asi el generador
+// tiene que dejar la portada en pie: saltarselo es lo que dejo el sitio real
+// con la pagina del instalador durante semanas, porque publico/ no esta en el
+// repositorio y ningun despliegue lo toca.
+$publico = $raiz . '/publico';
+$previa  = publicar_pendiente(microtime(true) + 20);
+
+comprobar('sin ediciones cerradas, el generador publica igualmente', 'publicado', $previa['estado']);
+comprobar('escribe la portada provisional', true, is_file($publico . '/index.html'));
+comprobar('y la hoja de estilo', true, is_file($publico . '/estilo.css'));
+
+comprobar(
+    'la portada provisional dice que la edicion esta en camino',
+    true,
+    str_contains((string) file_get_contents($publico . '/index.html'), 'primera edición está en camino')
+);
+
 datos_cerrar_edicion((int) $edicion['id']);
 
 comprobar(
@@ -310,8 +327,7 @@ $resumen_web = publicar_pendiente(microtime(true) + 30);
 
 comprobar('el generador publica una edicion', 1, $resumen_web['ediciones']);
 
-$publico = $raiz . '/publico';
-$slug    = (string) $edicion['slug'];
+$slug = (string) $edicion['slug'];
 
 comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web_ruta_edicion($slug)));

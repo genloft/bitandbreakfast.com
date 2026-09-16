@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 $base          = $base ?? '';
 $enlace_activo = 'portada';
+$alta_abierta  = $alta_abierta ?? false;
 
 ?><!doctype html>
 <html lang="es">
@@ -48,6 +49,8 @@ $enlace_activo = 'portada';
     hotel. Ni una más.</p>
     <p>Es un radar, no un agregador: filtra duro y enseña poco.</p>
   </div>
+
+  <?php require __DIR__ . '/suscribir.php'; ?>
 </main>
 
 <?php require __DIR__ . '/pie.php'; ?>
