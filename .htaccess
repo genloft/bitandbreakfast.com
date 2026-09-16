@@ -62,6 +62,21 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
     RewriteCond %{DOCUMENT_ROOT}/publico/index.html !-f
     RewriteRule ^$ index.php [L]
 
+    # publico/ es el almacen de la web generada, no una direccion publica. Sin
+    # esto, cada pagina existiria en dos URLs (/bits/x y /publico/bits/x), que
+    # para un sitio que se apoya en canonicas y en un RSS es un problema.
+    #
+    # La condicion mira THE_REQUEST, que es la linea de peticion original y no
+    # cambia con las reescrituras internas. Sin ella, la regla volveria a
+    # dispararse sobre la reescritura de mas abajo y el sitio entero entraria
+    # en un bucle de redirecciones.
+    # La segunda condicion cierra la redireccion abierta: con /publico//otro
+    # dominio, el destino "/$1" quedaria como "//otrodominio", que en una
+    # cabecera Location es una URL a otro sitio, no una ruta de este.
+    RewriteCond %{THE_REQUEST} "\s/publico(/|\s)"
+    RewriteCond %{REQUEST_URI} !^/publico//
+    RewriteRule ^publico(?:/(.*))?$ /$1 [R=301,L]
+
     # api/ y panel/ son PHP y se sirven tal cual. instalar.php tambien:
     # es el instalador web, y se borra solo en cuanto termina.
     RewriteCond %{REQUEST_URI} !^/(api|panel|publico)/

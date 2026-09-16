@@ -97,14 +97,14 @@ el Administrador de archivos y recarga.
 > ⚠️ **Instala justo después de desplegar.** Entre el despliegue y el momento
 > en que pulsas *Instalar*, el formulario lo ve cualquiera que abra el dominio,
 > y el primero que lo envíe se queda con el sitio. Suelen ser minutos, pero si
-> vas a dejarlo a medias, abre `.htaccess` y descomenta las dos líneas del
+> vas a dejarlo a medias, abre `.htaccess` y descomenta las tres líneas del
 > bloque *Sitio sin instalar* con tu IP: solo tú verás el instalador.
 
 ### 4.2 Rellenar y pulsar Instalar
 
 Arriba verás la tabla de comprobaciones del servidor: versión de PHP,
 extensiones, permisos de escritura de `config/`, `cache/` y `publico/`, los
-tres ficheros SQL y si la raíz permite que el instalador se borre solo. Si algo
+cuatro ficheros SQL y si la raíz permite que el instalador se borre solo. Si algo
 sale en rojo, arréglalo antes de seguir.
 
 | Campo | Qué poner |
@@ -121,8 +121,8 @@ sale en rojo, arréglalo antes de seguir.
 El instalador:
 
 1. Conecta con la base.
-2. Ejecuta `sql/esquema.sql`, `sql/semilla_fuentes.sql` y
-   `sql/semilla_diccionario.sql`.
+2. Ejecuta `sql/esquema.sql` y las tres semillas: `semilla_fuentes.sql`,
+   `semilla_diccionario.sql` y `semilla_proveedores.sql`.
 3. Crea el usuario del panel con `password_hash`.
 4. Deja una portada provisional en `publico/index.html` y su `estilo.css`, para
    que la raíz del dominio conteste algo con sentido antes de la primera
@@ -257,6 +257,10 @@ Qué sobrevive a cada despliegue, porque no está en el repositorio:
 
 Si un despliegue trae SQL nuevo, lo ejecutas a mano en phpMyAdmin: el
 instalador no sirve para actualizar, solo para instalar desde cero.
+
+Pendiente ahora mismo si instalaste antes de la fase 2: importar
+`sql/semilla_proveedores.sql` en phpMyAdmin. El catálogo de proveedores es la
+segunda puerta del agrupador, y sin él solo agrupa la similitud de titulares.
 
 ---
 

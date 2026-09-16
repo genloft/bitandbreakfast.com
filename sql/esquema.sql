@@ -332,6 +332,7 @@ INSERT INTO ajustes (clave, valor, descripcion) VALUES
   ('ingesta_lote',           '15', 'Fuentes por ejecucion del cron de ingesta'),
   ('ingesta_timeout',        '10', 'Segundos de espera por peticion HTTP'),
   ('ingesta_resumen_max',    '1200','Caracteres que se guardan del resumen del feed'),
+  ('procesar_lote',          '40', 'Items por ejecucion del cron de procesado'),
   ('agrupar_ventana_horas',  '72', 'Ventana en horas para considerar dos items la misma noticia'),
   ('agrupar_umbral_alto',    '0.45','Similitud Jaccard que agrupa sin mas condiciones'),
   ('agrupar_umbral_bajo',    '0.30','Similitud Jaccard que agrupa si ademas comparten proveedores'),

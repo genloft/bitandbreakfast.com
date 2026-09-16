@@ -166,7 +166,7 @@ function inst_requisitos(): array
         ];
     }
 
-    foreach (['esquema.sql', 'semilla_fuentes.sql', 'semilla_diccionario.sql'] as $fichero) {
+    foreach (['esquema.sql', 'semilla_fuentes.sql', 'semilla_diccionario.sql', 'semilla_proveedores.sql'] as $fichero) {
         $requisitos[] = [
             'sql/' . $fichero,
             is_readable($raiz . '/sql/' . $fichero),
@@ -351,7 +351,9 @@ function inst_plantilla_config(array $datos): string
             'max_bytes'     => 5242880,
         ],
 
-        'presupuesto_cron' => 25,
+        // Segundos por tarea del cron, y techo de la ejecucion entera.
+        'presupuesto_cron'       => 25,
+        'presupuesto_cron_total' => 75,
 
         'rutas' => [
             'raiz'    => dirname(__DIR__),
@@ -507,6 +509,7 @@ function inst_instalar(array $datos): array
     $sentencias  = inst_ejecutar_sql($pdo, $raiz . '/sql/esquema.sql');
     $sentencias += inst_ejecutar_sql($pdo, $raiz . '/sql/semilla_fuentes.sql');
     $sentencias += inst_ejecutar_sql($pdo, $raiz . '/sql/semilla_diccionario.sql');
+    $sentencias += inst_ejecutar_sql($pdo, $raiz . '/sql/semilla_proveedores.sql');
 
     if ($datos['panel_usuario'] !== '') {
         $sql = 'INSERT INTO usuarios (usuario, hash_clave, nombre, activo) VALUES (?, ?, ?, 1)
@@ -526,6 +529,7 @@ function inst_instalar(array $datos): array
         'sentencias' => $sentencias,
         'fuentes'    => (int) $pdo->query('SELECT COUNT(*) FROM fuentes')->fetchColumn(),
         'terminos'   => (int) $pdo->query('SELECT COUNT(*) FROM diccionario')->fetchColumn(),
+        'proveedores' => (int) $pdo->query('SELECT COUNT(*) FROM proveedores')->fetchColumn(),
         'ajustes'    => (int) $pdo->query('SELECT COUNT(*) FROM ajustes')->fetchColumn(),
         'usuario'    => $datos['panel_usuario'],
         'dominio'    => $datos['dominio'],

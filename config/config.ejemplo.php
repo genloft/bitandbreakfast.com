@@ -41,7 +41,9 @@ return [
     // Presupuesto de segundos por ejecucion del cron. Cada tarea para cuando
     // lo agota y la siguiente ejecucion continua por donde iba, asi que
     // quedarse corto nunca pierde trabajo: solo lo reparte en mas pasadas.
-    'presupuesto_cron' => 25,
+    // Segundos por tarea del cron, y techo de la ejecucion entera.
+    'presupuesto_cron'       => 25,
+    'presupuesto_cron_total' => 75,
 
     'rutas' => [
         // Rutas absolutas en el servidor. __DIR__ apunta a config/.

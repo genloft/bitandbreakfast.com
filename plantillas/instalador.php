@@ -143,7 +143,8 @@ declare(strict_types=1);
     <strong>Base de datos lista.</strong>
     <p><?= (int) $resultado['sentencias'] ?> sentencias ejecutadas,
        <?= (int) $resultado['fuentes'] ?> fuentes,
-       <?= (int) $resultado['terminos'] ?> términos y
+       <?= (int) $resultado['terminos'] ?> términos,
+       <?= (int) ($resultado['proveedores'] ?? 0) ?> proveedores y
        <?= (int) $resultado['ajustes'] ?> ajustes.
        <?php if ($resultado['usuario'] !== ''): ?>
          Usuario del panel: <code><?= inst_e($resultado['usuario']) ?></code>.

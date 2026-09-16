@@ -35,8 +35,18 @@ error_reporting(E_ALL);
 ini_set('display_errors', $config['depuracion'] ? '1' : '0');
 
 $arranque    = microtime(true);
+
+// El presupuesto es POR TAREA, no para la ejecucion entera. Compartirlo era
+// un error: la ingesta se lo gastaba casi todo y el procesado arrancaba ya
+// sin tiempo, asi que la cola de items nuevos no bajaba nunca. Como esto solo
+// corre por linea de comandos, donde PHP no impone limite de ejecucion, el
+// unico limite que importa es el que nos ponemos aqui.
 $presupuesto = (float) ($config['presupuesto_cron'] ?? 25);
-$forzada     = $argv[1] ?? '';
+
+// Y un techo para la ejecucion completa, para no dejar corriendo media hora
+// un cron que se haya atascado.
+$techo   = (float) ($config['presupuesto_cron_total'] ?? $presupuesto * 3);
+$forzada = $argv[1] ?? '';
 
 /**
  * Escribe una linea con marca de tiempo. La salida la recoge el cron y la
@@ -86,7 +96,7 @@ foreach ($tareas as $nombre => $fichero) {
         continue;
     }
 
-    if (microtime(true) - $arranque >= $presupuesto) {
+    if (microtime(true) - $arranque >= $techo) {
         tareas_log("sin presupuesto para $nombre, queda para la proxima pasada");
         break;
     }
@@ -106,7 +116,9 @@ foreach ($tareas as $nombre => $fichero) {
             continue;
         }
 
-        $limite  = $arranque + $presupuesto;
+        // Cada tarea empieza a contar su presupuesto cuando le toca, sin
+        // pasarse nunca del techo de la ejecucion entera.
+        $limite  = min($arranque + $techo, microtime(true) + $presupuesto);
         $resumen = $funcion($limite);
 
         tareas_log($nombre . ': ' . json_encode($resumen, JSON_UNESCAPED_UNICODE));

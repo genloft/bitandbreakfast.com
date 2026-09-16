@@ -167,7 +167,9 @@ function ingesta_guardar_item(array $fuente, array $entrada): bool
         texto_recortar($entrada['url'], 780),
         texto_recortar($canonica, 780),
         canonica_hash($canonica),
-        $entrada['titulo'],
+        // Recortado tambien aqui: titulo es VARCHAR(500) y con
+        // STRICT_TRANS_TABLES un titular mas largo aborta el INSERT entero.
+        texto_recortar($entrada['titulo'], 480),
         texto_recortar(texto_titulo_norm($entrada['titulo']), 480),
         $entrada['resumen'],
         $entrada['autor'],

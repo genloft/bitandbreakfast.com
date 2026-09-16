@@ -22,7 +22,8 @@ nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
 index.php     arranque: sin configuración lleva al instalador, con ella a la portada
 instalar.php  instalador web; se borra solo al terminar
 config/       configuración (config.php no está en el repositorio)
-lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, motor del instalador
+lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
+              puntuación y motor del instalador
 cron/         tareas programadas; tareas.php es el despachador único
 api/          endpoints públicos: redirección contada, votos, redacción asistida
 panel/        zona privada de curación
@@ -50,10 +51,11 @@ de salida 1 si algo falla.
 php pruebas/texto.php
 php pruebas/canonica.php
 php pruebas/instalacion.php
+php pruebas/procesar.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las tres primeras no tocan la base de datos. La última sí la lee, y sale a la
+Las cuatro primeras no tocan la base de datos. La última sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
 
 ## Estado
@@ -61,7 +63,7 @@ red a comprobar que las fuentes del catálogo siguen vivas.
 | Fase | Alcance | Estado |
 |---|---|---|
 | 1 | Esquema, utilidades de texto y URL, ingesta, semillas | completada |
-| 2 | Agrupación, puntuación, `cron/procesar.php` | pendiente |
+| 2 | Agrupación, puntuación, `cron/procesar.php` | completada |
 | 3 | Panel de curación | pendiente |
 | 4 | Generador estático, archivo, RSS | pendiente |
 | 5 | Proveedor de correo y alta con doble confirmación | pendiente |
@@ -73,6 +75,26 @@ red a comprobar que las fuentes del catálogo siguen vivas.
   tres caracteres da casi cero entre un titular inglés y su equivalente en
   español. La agrupación entre idiomas se apoyará en proveedores y cifras
   compartidas, no en el texto.
+- **La agrupación tiene dos puertas.** La similitud de titulares agrupa por sí
+  sola a partir de 0,45. Por debajo, hasta 0,30, solo agrupa si las dos
+  noticias mencionan al menos dos proveedores en común. Esa segunda puerta es
+  la única que cruza idiomas, y por eso `sql/semilla_proveedores.sql` no es
+  decoración: sin catálogo de proveedores, la mitad del agrupador no existe.
+- **Los racimos se cosen, no solo se abren.** Si un item se parece mucho a dos
+  racimos a la vez, es que esos dos racimos cuentan lo mismo y nacieron
+  separados porque cuando llegaron no había nada que los uniera. Ese es el
+  único momento en que se puede saber, así que es ahí donde se fusionan. Sin
+  esa costura, la misma noticia acabaría dos veces en la misma edición.
+- **Un fallo transitorio no descarta una noticia.** Un interbloqueo de InnoDB
+  no dice nada del item: se queda en la cola y se reintenta. Solo se descarta
+  lo que falla de forma determinista, porque `descartado` es indistinguible
+  del descarte editorial y no habría forma de saber qué se perdió.
+- **La puntuación vive en dos niveles.** El item vale por su fuente, su
+  diccionario, su frescura y sus proveedores. El racimo vale lo que su mejor
+  item más un extra por cada fuente distinta que cuenta la misma noticia, con
+  tope en cinco: que la cuenten seis medios en vez de cinco ya no añade
+  información, y sin tope cualquier nota de prensa muy distribuida ganaría a
+  una exclusiva buena.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.
