@@ -31,10 +31,41 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # --- Sitio sin instalar --------------------------------------------------
+    # Mientras no exista config/config.php, cualquier peticion acaba en el
+    # instalador. Es lo que hace que un despliegue recien clonado se ponga en
+    # marcha solo con abrir el dominio. En cuanto el instalador escribe la
+    # configuracion, esta regla deja de cumplirse sola y no vuelve a aplicarse.
+    #
+    # Estas reglas dan por hecho que el proyecto cuelga de la raiz del dominio,
+    # que es como lo despliega hPanel sobre public_html.
+    #
+    # OJO: entre el despliegue y la instalacion, el formulario lo ve cualquiera
+    # que pase por el dominio. Lo normal es que sean minutos, pero si vas a
+    # tardar, descomenta las tres lineas siguientes con tu IP y solo tu veras el
+    # instalador. La primera condicion las apaga solas en cuanto el sitio queda
+    # instalado, para no impedir que instalar.php se borre cuando un despliegue
+    # lo devuelva al servidor.
+    #
+    #   RewriteCond %{DOCUMENT_ROOT}/config/config.php !-f
+    #   RewriteCond %{REMOTE_ADDR} !=203.0.113.45
+    #   RewriteRule ^instalar\.php$ - [F]
+
+    RewriteCond %{DOCUMENT_ROOT}/config/config.php !-f
+    RewriteCond %{DOCUMENT_ROOT}/instalar.php -f
+    RewriteCond %{REQUEST_URI} !^/instalar\.php$
+    RewriteRule ^ /instalar.php [R=302,L]
+
+    # Instalado pero sin ninguna edicion generada todavia: la portada la
+    # contesta index.php, que explica que no hay nada publicado. Sin esto,
+    # publico/ vacio daria un 403 seco.
+    RewriteCond %{DOCUMENT_ROOT}/publico/index.html !-f
+    RewriteRule ^$ index.php [L]
+
     # api/ y panel/ son PHP y se sirven tal cual. instalar.php tambien:
-    # es el instalador web, y se desarma solo en cuanto termina.
+    # es el instalador web, y se borra solo en cuanto termina.
     RewriteCond %{REQUEST_URI} !^/(api|panel|publico)/
-    RewriteCond %{REQUEST_URI} !^/(robots\.txt|favicon\.ico|feed\.xml|instalar\.php)$
+    RewriteCond %{REQUEST_URI} !^/(robots\.txt|favicon\.ico|feed\.xml|instalar\.php|index\.php)$
     RewriteRule ^(.*)$ publico/$1 [L]
 
     # Los ficheros de la raiz del sitio generado.

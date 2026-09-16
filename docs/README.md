@@ -19,24 +19,27 @@ nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
 ## Estructura
 
 ```
-config/     configuración (config.php no está en el repositorio)
-lib/        utilidades: PDO, feeds, robots.txt, normalización de texto, URLs
-cron/       tareas programadas; tareas.php es el despachador único
-api/        endpoints públicos: redirección contada, votos, redacción asistida
-panel/      zona privada de curación
-plantillas/ plantillas de la web y del correo
-publico/    salida estática generada (no se versiona)
-pruebas/    scripts de prueba sin framework
-sql/        esquema y semillas
-docs/       esta documentación e INSTALACION.md
+index.php     arranque: sin configuración lleva al instalador, con ella a la portada
+instalar.php  instalador web; se borra solo al terminar
+config/       configuración (config.php no está en el repositorio)
+lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, motor del instalador
+cron/         tareas programadas; tareas.php es el despachador único
+api/          endpoints públicos: redirección contada, votos, redacción asistida
+panel/        zona privada de curación
+plantillas/   plantillas de la web, del correo y del instalador
+publico/      salida estática generada (no se versiona)
+pruebas/      scripts de prueba sin framework
+sql/          esquema y semillas
+docs/         esta documentación e INSTALACION.md
 ```
 
 ## Puesta en marcha
 
-Ver [INSTALACION.md](INSTALACION.md). Resumen: crear la base de datos, importar
-`sql/esquema.sql` y las dos semillas, copiar `config/config.ejemplo.php` a
-`config/config.php`, subir por FTP y crear una tarea cron horaria que ejecute
-`cron/tareas.php`.
+Ver [INSTALACION.md](INSTALACION.md). Resumen: crear una base de datos vacía en
+hPanel, clonar el repositorio en `public_html` desde hPanel → GIT, abrir el
+dominio —mientras no exista `config/config.php` todo redirige al instalador,
+que pide los datos, importa el esquema y las semillas, escribe la configuración
+y se borra a sí mismo— y crear la tarea cron horaria que da en pantalla.
 
 ## Pruebas
 
@@ -46,10 +49,11 @@ de salida 1 si algo falla.
 ```bash
 php pruebas/texto.php
 php pruebas/canonica.php
+php pruebas/instalacion.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las dos primeras no tocan la base de datos. La tercera sí la lee, y sale a la
+Las tres primeras no tocan la base de datos. La última sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
 
 ## Estado

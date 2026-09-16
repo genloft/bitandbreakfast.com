@@ -19,5 +19,5 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Fichero que arma el instalador web; se crea a mano en el servidor
-/config/INSTALAR_PERMITIDO
+# Cerrojo del instalador web; lo crea y lo borra el propio instalador
+/config/.instalacion
