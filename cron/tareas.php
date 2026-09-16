@@ -71,7 +71,9 @@ function tareas_toca(string $tarea, string $forzada): bool
     return match ($tarea) {
         'ingesta', 'procesar' => true,
         'mantenimiento'       => $hora === 5,
-        'publicar'            => false,   // lo dispara el cierre de edicion
+        // Mira si hay algo que publicar y sale enseguida si no lo hay: la
+        // comprobacion es una firma, no una regeneracion.
+        'publicar'            => true,
         default               => false,
     };
 }

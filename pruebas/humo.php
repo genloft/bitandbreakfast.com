@@ -256,4 +256,102 @@ comprobar(
     procesar_lote(microtime(true) + 10)['items']
 );
 
-resumen_pruebas('Prueba de humo: esquema, semillas y procesado');
+// -----------------------------------------------------------------------------
+// Curacion y publicacion
+//
+// El resto del camino: un racimo se convierte en bit, el bit entra en la
+// edicion, la edicion se cierra y el generador escribe la web. Es lo unico
+// que comprueba que las cuatro fases encajan entre si.
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/panel/datos.php';
+require_once $raiz . '/cron/publicar.php';
+
+$bit_id = datos_crear_bit(
+    datos_racimo((int) $a['racimo_id']),
+    datos_items_racimo((int) $a['racimo_id'])
+);
+
+comprobar('el bit nace del racimo en borrador', 'borrador', datos_bit($bit_id)['estado']);
+
+$contenido = [
+    'titular'   => 'Oracle OPERA Cloud se cae durante cuatro horas en toda Europa',
+    'cuerpo'    => trim(str_repeat('palabra ', 40)),
+    'por_que'   => 'Si tu PMS es OPERA Cloud, esto explica por que el jueves no pudiste hacer check-in.',
+    'categoria' => 'pms-gestion',
+    'madurez'   => 'anuncio',
+    'tipo'      => 'incidente',
+    'estado'    => 'aprobado',
+];
+
+comprobar('el bit cumple el formato', [], bits_validar($contenido));
+
+datos_guardar_bit($bit_id, $contenido);
+
+$edicion = datos_edicion_abierta();
+datos_asignar_bit($bit_id, (int) $edicion['id']);
+
+comprobar('la edicion abierta recoge el bit', 1, count(datos_bits_edicion((int) $edicion['id'])));
+
+$revision = bits_revisar_edicion(datos_bits_edicion((int) $edicion['id']), datos_conf_edicion());
+comprobar('la edicion se puede cerrar', [], $revision['errores']);
+
+datos_cerrar_edicion((int) $edicion['id']);
+
+comprobar(
+    'al cerrar, el racimo sale de la cola',
+    'publicado',
+    datos_racimo((int) $a['racimo_id'])['estado']
+);
+
+comprobar('y la cola de candidatos se queda con el otro racimo', 1, count(datos_cola()));
+
+$resumen_web = publicar_pendiente(microtime(true) + 30);
+
+comprobar('el generador publica una edicion', 1, $resumen_web['ediciones']);
+
+$publico = $raiz . '/publico';
+$slug    = (string) $edicion['slug'];
+
+comprobar('escribe la portada', true, is_file($publico . '/index.html'));
+comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web_ruta_edicion($slug)));
+comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
+comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
+comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
+comprobar('escribe el robots.txt', true, is_file($publico . '/robots.txt'));
+
+$portada = (string) file_get_contents($publico . '/index.html');
+
+comprobar(
+    'la portada lleva el titular del bit',
+    true,
+    str_contains($portada, 'Oracle OPERA Cloud se cae durante cuatro horas')
+);
+
+comprobar(
+    'y el por que importa',
+    true,
+    str_contains($portada, 'Por qu&eacute; importa') || str_contains($portada, 'Por qué importa')
+);
+
+// El cuerpo llega de un textarea: si alguna vez saliera sin escapar, esto lo
+// caza antes que un lector.
+comprobar(
+    'la portada no cuela etiquetas que vengan del panel',
+    false,
+    str_contains($portada, '<script')
+);
+
+$feed = (string) file_get_contents($publico . '/feed.xml');
+
+comprobar('el feed declara el canal', true, str_contains($feed, '<rss version="2.0"'));
+comprobar('y enlaza la edicion', true, str_contains($feed, web_url_edicion('https://ejemplo.test', $slug)));
+
+// La firma evita que el cron reescriba seis ficheros cada hora para nada.
+comprobar(
+    'una segunda pasada no reescribe nada',
+    'sin cambios',
+    publicar_pendiente(microtime(true) + 10)['estado']
+);
+
+resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion y web');
