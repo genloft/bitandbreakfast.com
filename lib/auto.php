@@ -117,9 +117,9 @@ function auto_limpiar(string $bruto): string
 
     $coletillas = [
         // WordPress y compañia, en ingles y en espanol.
-        '/\s*The post.*$/su',
-        '/\s*El art[ií]culo.*?(aparec[eió]|se public[oó]).*$/sui',
-        '/\s*(Continue reading|Read more|Read the full|Leer m[aá]s|Seguir leyendo|Sigue leyendo).*$/sui',
+        '/\s*The post.*$/su',
+        '/\s*El art[ií]culo.*?(aparec[eió]|se public[oó]).*$/sui',
+        '/\s*(Continue reading|Read more|Read the full|Leer m[aá]s|Seguir leyendo|Sigue leyendo).*$/sui',
         // La entradilla cortada que dejan muchos feeds.
         '/\s*\[\s*[…\.]+\s*\]\s*/u',
     ];
