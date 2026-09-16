@@ -336,6 +336,19 @@ h1 {
   color: var(--apagado);
 }
 
+/* --- Pagina de texto corrido (Que es esto) -------------------------------- */
+
+.pagina { margin-top: 2rem; }
+
+.pagina h2 {
+  margin: 2rem 0 .6rem;
+  font-size: clamp(1.15rem, 4.4vw, 1.35rem);
+  line-height: 1.25;
+}
+
+.pagina ul { margin: 0 0 1rem; padding-left: 1.3rem; }
+.pagina li { margin-bottom: .45rem; }
+
 /* --- Alta en el boletin ---------------------------------------------------
    Va al final, despues de los bits: quien ha llegado hasta aqui ya sabe si le
    interesa. En el movil el boton se pone debajo del campo, a ancho completo,

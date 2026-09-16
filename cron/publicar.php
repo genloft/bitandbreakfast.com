@@ -98,6 +98,11 @@ function publicar_pendiente(float $limite): array
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
+        $publico . '/sobre.html',
+        publicar_plantilla('sobre', ['base' => $base, 'alta_abierta' => $alta])
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
         $publico . '/feed.xml',
         publicar_plantilla('feed', ['ediciones' => $ediciones, 'base' => $base])
     ) ? 1 : 0;
@@ -165,6 +170,10 @@ function publicar_firma(array $ediciones): string
     $bits = $st->fetch();
 
     $partes = [
+        // Un cambio en las plantillas tiene que regenerar la web aunque no
+        // haya cambiado ni una edicion. Si no, se despliega un arreglo de
+        // diseno y no se ve hasta la semana siguiente.
+        publicar_firma_plantillas(),
         // Sin esto, configurar el proveedor de correo no cambiaria nada
         // visible hasta que se publicara una edicion nueva: las paginas ya
         // generadas seguirian diciendo que el alta no esta abierta.
@@ -177,6 +186,26 @@ function publicar_firma(array $ediciones): string
 
     foreach ($ediciones as $edicion) {
         $partes[] = $edicion['id'] . ':' . $edicion['estado'] . ':' . $edicion['titulo'];
+    }
+
+    return sha1(implode('|', $partes));
+}
+
+/**
+ * Firma de las plantillas: nombre, fecha y tamano de cada una.
+ *
+ * Con la fecha basta, porque un despliegue por Git reescribe el fichero y la
+ * cambia. Se anade el tamano por si dos escrituras caen en el mismo segundo.
+ */
+function publicar_firma_plantillas(): string
+{
+    $ficheros = glob(dirname(__DIR__) . '/plantillas/web/*.php') ?: [];
+    sort($ficheros);
+
+    $partes = [];
+
+    foreach ($ficheros as $fichero) {
+        $partes[] = basename($fichero) . ':' . (int) @filemtime($fichero) . ':' . (int) @filesize($fichero);
     }
 
     return sha1(implode('|', $partes));

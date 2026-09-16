@@ -316,6 +316,7 @@ $slug    = (string) $edicion['slug'];
 comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web_ruta_edicion($slug)));
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
+comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
 comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
 comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
 comprobar('escribe el robots.txt', true, is_file($publico . '/robots.txt'));
