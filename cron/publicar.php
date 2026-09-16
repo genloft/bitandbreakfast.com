@@ -28,6 +28,7 @@
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/web.php';
+require_once dirname(__DIR__) . '/lib/bits.php';
 
 /**
  * Publica lo que haya pendiente.

@@ -169,8 +169,33 @@ button[disabled] { opacity: .4; cursor: not-allowed; }
 
 .cerrar { margin-top: 2rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
 
+/* --- Movil ---------------------------------------------------------------
+   El panel se usa de pie, en la cocina del hotel y con una mano. Las tarjetas
+   se apilan, los botones ocupan el ancho y nada baja de 44 pixeles de alto,
+   que es lo que mide un dedo. */
+
 @media (max-width: 48rem) {
   .dos-columnas { grid-template-columns: 1fr; }
   .campos { grid-template-columns: 1fr; }
-  .cola li, .bits li { flex-wrap: wrap; }
+}
+
+@media (max-width: 34rem) {
+  .barra { flex-wrap: wrap; gap: .75rem 1rem; padding: .75rem 1rem; }
+  .barra .quien { margin-left: 0; width: 100%; }
+
+  main { padding: 1.25rem 1rem 3rem; }
+
+  .cola li, .bits li { flex-wrap: wrap; gap: .75rem; }
+  .cola .puntos { min-width: 2.5rem; font-size: 1rem; }
+
+  .cola .cuerpo, .bits .cuerpo { flex: 1 1 100%; order: 2; }
+  .cola .acciones, .bits .acciones { flex: 1 1 100%; order: 3; }
+  .cola .acciones form { flex: 1 1 100%; }
+  .cola .acciones input[type="text"] { width: auto; flex: 1; }
+
+  button { padding: .7rem 1rem; min-height: 2.75rem; }
+
+  .editor, .fuentes, .cabecera-edicion { padding: 1rem; }
+
+  .botones button { flex: 1 1 100%; }
 }

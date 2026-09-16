@@ -27,8 +27,8 @@ lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
 cron/         tareas programadas; tareas.php es el despachador único
 api/          endpoints públicos: redirección contada, votos, redacción asistida
 panel/        zona privada de curación: cola, edición del bit y cierre
-plantillas/   plantillas de la web, del correo y del instalador
-publico/      salida estática generada (no se versiona)
+plantillas/   plantillas: web/ publicada, panel/ e instalador
+publico/      salida estática generada por cron/publicar.php (no se versiona)
 pruebas/      scripts de prueba sin framework
 sql/          esquema y semillas
 docs/         esta documentación e INSTALACION.md
@@ -53,13 +53,14 @@ php pruebas/canonica.php
 php pruebas/instalacion.php
 php pruebas/procesar.php
 php pruebas/panel.php
+php pruebas/web.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las cinco primeras no tocan la base de datos. La sexta sí la lee, y sale a la
+Las seis primeras no tocan la base de datos. La séptima sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
 
-Hay una sexta, `pruebas/humo.php`, que monta el esquema y las semillas desde
+Y una más, `pruebas/humo.php`, que monta el esquema y las semillas desde
 cero, mete items de prueba y ejecuta el procesado entero. **Es destructiva**:
 empieza por un `DROP TABLE`. Exige `BITB_HUMO=1` y las credenciales por
 variables de entorno, y se niega a arrancar si existe `config/config.php`, así
@@ -76,7 +77,7 @@ un MariaDB 10.6 para la de humo.
 | 1 | Esquema, utilidades de texto y URL, ingesta, semillas | completada |
 | 2 | Agrupación, puntuación, `cron/procesar.php` | completada |
 | 3 | Panel de curación | completada |
-| 4 | Generador estático, archivo, RSS | pendiente |
+| 4 | Generador estático, archivo, RSS | completada |
 | 5 | Proveedor de correo y alta con doble confirmación | pendiente |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | pendiente |
 
@@ -113,6 +114,13 @@ un MariaDB 10.6 para la de humo.
   rompe en ningún sitio.
 - **La cuota de fuentes españolas y europeas avisa, no bloquea.** Es una
   intención editorial, y una semana floja en Europa no puede impedir el envío.
+- **La web se genera, no se sirve.** Una edición cerrada se convierte en
+  ficheros dentro de `publico/` y a partir de ahí Apache los sirve sin tocar
+  PHP ni la base de datos. Es lo único que aguanta una portada compartida de
+  golpe, y en un alojamiento compartido no hay plan B.
+- **La portada se lee con el pulgar.** El sumario va antes que los bits porque
+  un radar tiene que decir en diez segundos si esta semana traía algo. Todo lo
+  demás es consecuencia de eso.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

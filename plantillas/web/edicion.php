@@ -2,9 +2,16 @@
 /**
  * Una edicion publicada. Es tambien la portada cuando es la mas reciente.
  *
- * Recibe $edicion, $bits y $base. Lo que sale de aqui es HTML estatico: ni
- * script, ni estilo en linea, ni una sola peticion a terceros. La politica de
- * seguridad del sitio es 'self' y esta pagina es la razon de que pueda serlo.
+ * Recibe $edicion, $bits y $base.
+ *
+ * La pagina esta pensada para escanearse antes que para leerse: primero el
+ * sumario, que dice en diez segundos si esta semana te interesa algo, y
+ * despues los bits. Un radar que obliga a leerlo entero para saber si tenia
+ * algo no es un radar.
+ *
+ * HTML estatico: ni script, ni estilo en linea, ni una peticion a terceros.
+ * La politica de seguridad del sitio es 'self' y esta pagina es la razon de
+ * que pueda serlo.
  */
 
 declare(strict_types=1);
@@ -18,7 +25,16 @@ foreach ($bits as $bit) {
     $palabras += texto_contar_palabras((string) $bit['cuerpo']);
 }
 
-$url = web_url_edicion($base, (string) $edicion['slug']);
+$url        = web_url_edicion($base, (string) $edicion['slug']);
+$categorias = bits_categorias();
+$madureces  = bits_madureces();
+$tipos      = bits_tipos();
+
+$descripcion = trim((string) $edicion['intro']) !== ''
+    ? (string) $edicion['intro']
+    : sprintf('%d bits de tecnología hotelera, %d minutos de lectura.', count($bits), web_minutos($palabras));
+
+$enlace_activo = 'portada';
 
 ?><!doctype html>
 <html lang="es">
@@ -26,74 +42,99 @@ $url = web_url_edicion($base, (string) $edicion['slug']);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= web_e($titulo) ?> · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e(texto_recortar(trim((string) $edicion['intro']) !== '' ? (string) $edicion['intro'] : 'Radar de tecnología hotelera: ' . count($bits) . ' bits de la semana.', 160)) ?>">
+<meta name="description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
 <link rel="canonical" href="<?= web_e($url) ?>">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css">
+<meta name="theme-color" content="#f6f5f2">
+<meta property="og:site_name" content="Bit &amp; Breakfast">
 <meta property="og:title" content="<?= web_e($titulo) ?>">
+<meta property="og:description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
 <meta property="og:type" content="article">
 <meta property="og:url" content="<?= web_e($url) ?>">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
 </head>
 <body>
 
-<header class="cabecera">
-  <p class="marca"><a href="<?= web_e($base) ?>/">Bit &amp; Breakfast</a></p>
-  <p class="promesa">Cinco minutos de tecnología hotelera a la semana.</p>
-</header>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
 
-<main>
+<?php require __DIR__ . '/cabecera.php'; ?>
+
+<main id="contenido">
   <article class="edicion">
-    <h1><?= web_e($titulo) ?></h1>
 
-    <p class="datos">
-      Edición <?= (int) $edicion['numero'] ?> ·
-      <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e(web_fecha_larga((string) $edicion['fecha_prevista'])) ?></time> ·
-      <?= count($bits) ?> bits ·
-      <?= web_minutos($palabras) ?> min
-    </p>
+    <header class="edicion-cabecera">
+      <p class="sello">Edición <?= (int) $edicion['numero'] ?></p>
+      <h1><?= web_e($titulo) ?></h1>
+      <p class="datos">
+        <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e(web_fecha_larga((string) $edicion['fecha_prevista'])) ?></time>
+        <span class="punto">·</span>
+        <?= count($bits) ?> bit<?= count($bits) === 1 ? '' : 's' ?>
+        <span class="punto">·</span>
+        <?= web_minutos($palabras) ?> min de lectura
+      </p>
 
-    <?php if (trim((string) $edicion['intro']) !== ''): ?>
-      <div class="intro"><?= web_parrafos((string) $edicion['intro']) ?></div>
+      <?php if (trim((string) $edicion['intro']) !== ''): ?>
+        <div class="intro"><?= web_parrafos((string) $edicion['intro']) ?></div>
+      <?php endif; ?>
+    </header>
+
+    <?php if ($bits): ?>
+      <nav class="sumario" aria-labelledby="sumario-titulo">
+        <h2 id="sumario-titulo">En esta edición</h2>
+        <ol>
+        <?php foreach ($bits as $bit): ?>
+          <li>
+            <a href="#bit-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></a>
+            <span class="sumario-etiqueta"><?= web_e($categorias[$bit['categoria']] ?? $bit['categoria']) ?></span>
+          </li>
+        <?php endforeach; ?>
+        </ol>
+      </nav>
     <?php endif; ?>
 
-    <?php foreach ($bits as $bit): ?>
-      <section class="bit" id="bit-<?= (int) $bit['id'] ?>">
-        <h2><?= web_e($bit['titular']) ?></h2>
+    <div class="bits">
+    <?php foreach ($bits as $indice => $bit): ?>
+      <section class="bit" id="bit-<?= (int) $bit['id'] ?>" aria-labelledby="titular-<?= (int) $bit['id'] ?>">
+        <p class="numero" aria-hidden="true"><?= $indice + 1 ?></p>
 
-        <p class="etiquetas">
-          <span class="etiqueta"><?= web_e($bit['categoria']) ?></span>
-          <span class="etiqueta"><?= web_e($bit['tipo']) ?></span>
-          <span class="etiqueta"><?= web_e($bit['madurez']) ?></span>
-        </p>
+        <div class="bit-cuerpo">
+          <h2 id="titular-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></h2>
 
-        <?= web_parrafos((string) $bit['cuerpo']) ?>
-
-        <?php if (trim((string) $bit['por_que']) !== ''): ?>
-          <p class="por-que"><strong>Por qué importa.</strong> <?= web_e($bit['por_que']) ?></p>
-        <?php endif; ?>
-
-        <?php if (!empty($bit['url'])): ?>
-          <p class="fuente">
-            <a href="<?= web_e($bit['url']) ?>" rel="nofollow noopener">
-              <?= web_e($bit['fuente'] ?? 'Leer la fuente') ?>
-            </a>
+          <p class="etiquetas">
+            <span class="etiqueta etiqueta-categoria"><?= web_e($categorias[$bit['categoria']] ?? $bit['categoria']) ?></span>
+            <span class="etiqueta"><?= web_e($tipos[$bit['tipo']] ?? $bit['tipo']) ?></span>
+            <span class="etiqueta"><?= web_e($madureces[$bit['madurez']] ?? $bit['madurez']) ?></span>
           </p>
-        <?php endif; ?>
+
+          <div class="texto"><?= web_parrafos((string) $bit['cuerpo']) ?></div>
+
+          <?php if (trim((string) $bit['por_que']) !== ''): ?>
+            <p class="por-que"><strong>Por qué importa.</strong> <?= web_e($bit['por_que']) ?></p>
+          <?php endif; ?>
+
+          <p class="pie-bit">
+            <?php if (!empty($bit['url'])): ?>
+              <a class="fuente" href="<?= web_e($bit['url']) ?>" rel="nofollow noopener">
+                <?= web_e($bit['fuente'] ?? 'Leer la fuente') ?> →
+              </a>
+            <?php endif; ?>
+            <a class="volver" href="#sumario-titulo">Sumario ↑</a>
+          </p>
+        </div>
       </section>
     <?php endforeach; ?>
+    </div>
 
     <?php if (!$bits): ?>
       <p class="vacio">Esta edición se cerró sin bits publicados.</p>
     <?php endif; ?>
+
   </article>
 </main>
 
-<footer class="pie">
-  <p><a href="<?= web_e($base) ?>/archivo.html">Ediciones anteriores</a> ·
-     <a href="<?= web_e($base) ?>/feed.xml">RSS</a></p>
-  <p class="letra-pequena">Bit &amp; Breakfast es un radar, no un agregador:
-  filtra duro y enseña poco. Cada bit enlaza a su fuente original.</p>
-</footer>
+<?php require __DIR__ . '/pie.php'; ?>
 
 </body>
 </html>
