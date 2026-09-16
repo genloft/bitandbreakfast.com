@@ -386,60 +386,58 @@ function inst_plantilla_config(array $datos): string
 }
 
 /**
- * Escribe una pagina provisional en publico/ si no hay ninguna.
+ * Escribe la portada provisional y la hoja de estilo en publico/.
  *
  * La raiz del dominio reescribe hacia publico/, y un directorio sin index y
  * sin listado de ficheros devuelve 403. Esto evita que el sitio parezca roto
  * entre la instalacion y la primera edicion publicada.
  *
- * Los estilos van en un fichero aparte, no en atributos style: la politica de
- * seguridad de contenido del sitio es 'self' y el estilo en linea no se
- * aplicaria. El generador de la fase 4 sobrescribira los dos ficheros.
+ * Las dos salen de las mismas plantillas que usa el generador de la fase 4,
+ * asi que el sitio tiene su aspecto definitivo desde el primer minuto y no
+ * hay una segunda version del diseno que mantener. El generador las
+ * sobrescribira con la primera edicion.
  */
 function inst_pagina_provisional(): bool
 {
     $publico = inst_raiz() . '/publico';
 
     if (!is_file($publico . '/estilo.css')) {
-        $css = <<<CSS
-        :root { color-scheme: light; }
-        body { margin: 0; padding: 4rem 1.5rem; background: #f6f5f2; color: #1b1b1a;
-               font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-        main { max-width: 32rem; margin: 0 auto; }
-        h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
-        p { color: #6b675e; margin: 0; }
-        p + p { margin-top: 2rem; }
-
-        CSS;
-
-        @file_put_contents($publico . '/estilo.css', $css);
+        @file_put_contents($publico . '/estilo.css', inst_render('estilo'));
     }
 
     if (is_file($publico . '/index.html')) {
         return true;   // ya hay algo publicado; no se toca
     }
 
-    $html = <<<HTML
-    <!doctype html>
-    <html lang="es">
-    <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bit &amp; Breakfast</title>
-    <link rel="stylesheet" href="/estilo.css">
-    </head>
-    <body>
-    <main>
-    <h1>Bit &amp; Breakfast</h1>
-    <p>Radar de tecnolog&iacute;a hotelera. Cinco minutos de lectura a la semana.</p>
-    <p>Pronto, la primera edici&oacute;n.</p>
-    </main>
-    </body>
-    </html>
-
-    HTML;
+    $html = inst_render('provisional', ['base' => '']);
 
     return @file_put_contents($publico . '/index.html', $html) !== false;
+}
+
+/**
+ * Renderiza una plantilla de plantillas/web/ y devuelve su salida.
+ *
+ * La misma idea que publicar_plantilla() en cron/publicar.php, repetida aqui
+ * a proposito: el instalador no puede cargar el generador, porque el
+ * generador necesita una base de datos que en ese momento todavia no esta
+ * configurada.
+ */
+function inst_render(string $plantilla, array $datos = []): string
+{
+    require_once __DIR__ . '/web.php';
+
+    $ruta = inst_raiz() . '/plantillas/web/' . $plantilla . '.php';
+
+    if (!is_readable($ruta)) {
+        return '';
+    }
+
+    extract($datos, EXTR_SKIP);
+
+    ob_start();
+    require $ruta;
+
+    return (string) ob_get_clean();
 }
 
 // -----------------------------------------------------------------------------

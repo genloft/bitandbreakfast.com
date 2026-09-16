@@ -41,22 +41,10 @@ http_response_code(503);
 header('Content-Type: text/html; charset=utf-8');
 header('Retry-After: 3600');
 
-// El estilo va en publico/estilo.css, nunca en linea: la politica de
-// seguridad de contenido del sitio no admite estilo incrustado. Si el fichero
-// todavia no existe, la pagina sale sin adornos, que tampoco pasa nada.
-echo '<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bit &amp; Breakfast</title>
-<link rel="stylesheet" href="/estilo.css">
-</head>
-<body>
-<main>
-<h1>Bit &amp; Breakfast</h1>
-<p>Todav&iacute;a no hay ninguna edici&oacute;n publicada.</p>
-</main>
-</body>
-</html>
-';
+// La misma portada provisional que escribe el instalador, desde la misma
+// plantilla: no hay una segunda version del diseno esperando a quedarse vieja.
+require_once __DIR__ . '/lib/web.php';
+
+$base = '';
+
+require __DIR__ . '/plantillas/web/provisional.php';
