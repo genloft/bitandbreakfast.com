@@ -189,7 +189,11 @@ function texto_tokens_clave(string $titulo, int $maximo = 8): array
         }
     }
 
-    $tokens = array_keys($tokens);
+    // strval no es adorno: las claves de un array en PHP se convierten a
+    // entero cuando parecen un numero, asi que "2026" sale de array_keys()
+    // como int 2026 y el resto como cadenas. Un token es siempre texto, y de
+    // ahi sale a una columna VARCHAR y a comparaciones estrictas.
+    $tokens = array_map('strval', array_keys($tokens));
     sort($tokens);
 
     return array_slice($tokens, 0, $maximo);
