@@ -46,9 +46,9 @@ const AUTO_CRITERIOS = 4;
 function auto_categoria(array $items): string
 {
     foreach ($items as $item) {
-        $categoria = (string) ($item['categoria_defecto'] ?? '');
+        $categoria = bits_categoria_canonica((string) ($item['categoria_defecto'] ?? ''));
 
-        if (array_key_exists($categoria, bits_categorias())) {
+        if ($categoria !== '') {
             return $categoria;
         }
     }
@@ -320,9 +320,9 @@ function auto_categoria_diccionario(string $texto, array $terminos): string
 
     foreach ($terminos as $fila) {
         $peso      = (int) ($fila['peso'] ?? 0);
-        $categoria = (string) ($fila['categoria'] ?? '');
+        $categoria = bits_categoria_canonica((string) ($fila['categoria'] ?? ''));
 
-        if ($peso <= $cuanto || $categoria === '' || !array_key_exists($categoria, bits_categorias())) {
+        if ($peso <= $cuanto || $categoria === '') {
             continue;
         }
 

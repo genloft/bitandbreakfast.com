@@ -25,7 +25,7 @@ $valido = [
     'titular'   => 'Oracle OPERA Cloud sufre una caida global de cuatro horas',
     'cuerpo'    => palabras(40),
     'por_que'   => 'Si tu PMS es OPERA Cloud, esto explica por que el jueves no pudiste hacer check-in.',
-    'categoria' => 'pms-gestion',
+    'categoria' => 'pms-crs',
     'madurez'   => 'anuncio',
     'tipo'      => 'incidente',
 ];

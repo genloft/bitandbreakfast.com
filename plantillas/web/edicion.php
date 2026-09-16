@@ -95,7 +95,7 @@ $idiomas       = web_idiomas();
         <?php foreach ($bits as $bit): ?>
           <li>
             <a href="#bit-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></a>
-            <span class="sumario-etiqueta"><?= web_e($categorias[$bit['categoria']] ?? $bit['categoria']) ?></span>
+            <span class="sumario-etiqueta"><?= web_e($categorias[bits_categoria_canonica((string) $bit['categoria'])] ?? $bit['categoria']) ?></span>
           </li>
         <?php endforeach; ?>
         </ol>
@@ -111,7 +111,7 @@ $idiomas       = web_idiomas();
           <h2 id="titular-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></h2>
 
           <p class="etiquetas">
-            <span class="etiqueta etiqueta-categoria"><?= web_e($categorias[$bit['categoria']] ?? $bit['categoria']) ?></span>
+            <span class="etiqueta etiqueta-categoria"><?= web_e($categorias[bits_categoria_canonica((string) $bit['categoria'])] ?? $bit['categoria']) ?></span>
             <span class="etiqueta"><?= web_e($tipos[$bit['tipo']] ?? $bit['tipo']) ?></span>
             <span class="etiqueta"><?= web_e($madureces[$bit['madurez']] ?? $bit['madurez']) ?></span>
             <?php if (($bit['idioma'] ?? 'es') !== 'es'): ?>

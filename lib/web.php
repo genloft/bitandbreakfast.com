@@ -11,6 +11,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/texto.php';
+require_once __DIR__ . '/bits.php';
 
 /** Meses en espanol. No se usa strftime: esta obsoleta desde PHP 8.1. */
 function web_meses(): array
@@ -148,7 +149,7 @@ function web_fila_indice(array $bit): array
         'i' => (int) $bit['id'],
         't' => (string) $bit['titular'],
         'q' => (string) ($bit['por_que'] ?? ''),
-        'c' => (string) $bit['categoria'],
+        'c' => bits_categoria_canonica((string) $bit['categoria']) ?: (string) $bit['categoria'],
         // Las tres facetas que se pueden filtrar, ademas de la categoria.
         'fu' => (string) ($bit['fuente'] ?? ''),
         'a'  => (string) ($bit['ambito'] ?? 'global'),

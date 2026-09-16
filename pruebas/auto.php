@@ -19,18 +19,26 @@ comprobar(
     'ciberseguridad-cumplimiento',
     auto_categoria([
         ['categoria_defecto' => 'ciberseguridad-cumplimiento'],
-        ['categoria_defecto' => 'pms-gestion'],
+        ['categoria_defecto' => 'pms-crs'],
     ])
 );
 
 // Una categoria que no esta en el catalogo no puede colarse: luego no filtra.
 comprobar(
     'una categoria desconocida se ignora y se pasa a la siguiente',
-    'pms-gestion',
+    'pms-crs',
     auto_categoria([
         ['categoria_defecto' => 'lo-que-sea'],
-        ['categoria_defecto' => 'pms-gestion'],
+        ['categoria_defecto' => 'pms-crs'],
     ])
+);
+
+// Los bits y las fuentes escritos con el catalogo viejo siguen ahi: su
+// categoria tiene que seguir significando algo.
+comprobar(
+    'el nombre viejo de una categoria sigue valiendo',
+    'pms-crs',
+    auto_categoria([['categoria_defecto' => 'pms-gestion']])
 );
 
 comprobar(
@@ -297,7 +305,7 @@ comprobar(
 // --- Categoria segun el diccionario -----------------------------------------
 
 $diccionario = [
-    ['termino' => 'pms',        'peso' => 6, 'categoria' => 'pms-gestion'],
+    ['termino' => 'pms',        'peso' => 6, 'categoria' => 'pms-crs'],
     ['termino' => 'ransomware', 'peso' => 9, 'categoria' => 'ciberseguridad-cumplimiento'],
     ['termino' => 'ronda',      'peso' => 5, 'categoria' => 'inversion-mercado'],
     ['termino' => 'revolucion', 'peso' => -5, 'categoria' => ''],

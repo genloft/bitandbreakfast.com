@@ -27,19 +27,61 @@ const BITS_PORQUE_MAX = 220;
 
 /**
  * Categorias tematicas. Las mismas que usan las fuentes y el diccionario.
+ *
+ * "Las mismas" llevaba tiempo siendo mentira: el catalogo decia 'pms-gestion'
+ * y 'distribucion-revenue', y las 48 fuentes y los 130 terminos del
+ * diccionario decian 'pms-crs', 'distribucion-otas', 'revenue-rms',
+ * 'pagos-fraude', 'operaciones-iot' e 'ia-aplicada'. Como una categoria que no
+ * esta en el catalogo se ignora -y bien ignorada esta, porque luego no
+ * filtra-, casi todo acababa en "Tecnologia general". Una edicion entera con
+ * la misma etiqueta, que es como no tener etiquetas.
+ *
+ * Manda el vocabulario de las semillas: son cuarenta y ocho fuentes y ciento
+ * treinta terminos contra ocho lineas, y ademas distingue mejor -pagos no es
+ * lo mismo que ciberseguridad, y revenue no es lo mismo que distribucion-.
  */
 function bits_categorias(): array
 {
     return [
         'tecnologia-general'          => 'Tecnología general',
-        'pms-gestion'                 => 'PMS y gestión',
-        'distribucion-revenue'        => 'Distribución y revenue',
+        'pms-crs'                     => 'PMS y CRS',
+        'distribucion-otas'           => 'Distribución y OTAs',
+        'revenue-rms'                 => 'Revenue y RMS',
+        'pagos-fraude'                => 'Pagos y fraude',
         'ciberseguridad-cumplimiento' => 'Ciberseguridad y cumplimiento',
-        'operaciones-personal'        => 'Operaciones y personal',
+        'operaciones-iot'             => 'Operaciones e IoT',
         'experiencia-huesped'         => 'Experiencia del huésped',
+        'ia-aplicada'                 => 'IA aplicada',
         'sostenibilidad-energia'      => 'Sostenibilidad y energía',
         'inversion-mercado'           => 'Inversión y mercado',
     ];
+}
+
+/**
+ * La categoria buena a partir de cualquiera de sus nombres.
+ *
+ * Los bits escritos con el catalogo viejo siguen en la base de datos con la
+ * categoria de entonces. Cambiar el catalogo sin esto los dejaria con una
+ * etiqueta que ya no existe: sin nombre que ensenar y sin filtro que los
+ * encuentre.
+ *
+ * @return string La categoria del catalogo, o '' si no se reconoce.
+ */
+function bits_categoria_canonica(string $categoria): string
+{
+    $categoria = trim($categoria);
+
+    if (array_key_exists($categoria, bits_categorias())) {
+        return $categoria;
+    }
+
+    $viejas = [
+        'pms-gestion'          => 'pms-crs',
+        'distribucion-revenue' => 'distribucion-otas',
+        'operaciones-personal' => 'operaciones-iot',
+    ];
+
+    return $viejas[$categoria] ?? '';
 }
 
 function bits_madureces(): array

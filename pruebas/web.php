@@ -162,7 +162,7 @@ $fila = web_fila_indice([
     'titular'        => 'Oracle OPERA Cloud se cae durante cuatro horas',
     'por_que'        => 'Si tu PMS es OPERA Cloud, el jueves volviste al papel.',
     'cuerpo'         => 'El corte afectó a media Europa.',
-    'categoria'      => 'pms-gestion',
+    'categoria'      => 'pms-crs',
     'numero'         => 38,
     'slug'           => '2026-w39-038',
     'fecha_prevista' => '2026-09-22',
@@ -262,6 +262,21 @@ comprobar('doscientas palabras son un minuto', 1, web_minutos(200));
 comprobar('mil palabras son cinco minutos', 5, web_minutos(1000));
 comprobar('lo que sobra redondea hacia arriba', 6, web_minutos(1001));
 comprobar('una edicion vacia sigue siendo un minuto', 1, web_minutos(0));
+
+// --- Categorias viejas ------------------------------------------------------
+//
+// El catalogo cambio para hablar el mismo idioma que las fuentes y el
+// diccionario. Los bits escritos antes siguen en la base con el nombre de
+// entonces, y tienen que seguir teniendo nombre y filtro.
+
+comprobar('una categoria del catalogo se queda igual', 'revenue-rms', bits_categoria_canonica('revenue-rms'));
+comprobar('el nombre viejo lleva al nuevo', 'pms-crs', bits_categoria_canonica('pms-gestion'));
+comprobar('y el de distribucion tambien', 'distribucion-otas', bits_categoria_canonica('distribucion-revenue'));
+comprobar('lo que no se reconoce, cadena vacia', '', bits_categoria_canonica('lo-que-sea'));
+
+// El indice del buscador guarda la categoria buena: si guardase la vieja, el
+// filtro de la web -que se pinta con el catalogo- no encontraria esos bits.
+comprobar('el indice guarda la categoria del catalogo', 'pms-crs', $fila['c']);
 
 // --- Lo que sobra en publico/ -----------------------------------------------
 //

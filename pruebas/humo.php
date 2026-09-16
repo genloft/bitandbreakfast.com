@@ -285,7 +285,7 @@ $contenido = [
     'titular'   => 'Oracle OPERA Cloud se cae durante cuatro horas en toda Europa',
     'cuerpo'    => trim(str_repeat('palabra ', 40)),
     'por_que'   => 'Si tu PMS es OPERA Cloud, esto explica por que el jueves no pudiste hacer check-in.',
-    'categoria' => 'pms-gestion',
+    'categoria' => 'pms-crs',
     'madurez'   => 'anuncio',
     'tipo'      => 'incidente',
     'estado'    => 'aprobado',
@@ -365,7 +365,7 @@ comprobar('y su idioma', 'es', $bits_indice[0]['l'] ?? '');
 comprobar(
     'el indice trae las etiquetas de las facetas',
     true,
-    isset($indice['etiquetas']['c']['pms-gestion'], $indice['etiquetas']['a']['es'], $indice['etiquetas']['l']['en'])
+    isset($indice['etiquetas']['c']['pms-crs'], $indice['etiquetas']['a']['es'], $indice['etiquetas']['l']['en'])
 );
 
 // El bit habla de Oracle OPERA, asi que su ficha tiene que existir y llevarlo.
