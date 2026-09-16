@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 3;
+const AUTO_CRITERIOS = 4;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.
@@ -123,11 +123,7 @@ function auto_cuerpo(array $items, int $max_palabras = BITS_CUERPO_MAX): string
  */
 function auto_limpiar(string $bruto): string
 {
-    $texto = html_entity_decode(
-        strip_tags(texto_limpiar_html($bruto)),
-        ENT_QUOTES | ENT_HTML5,
-        'UTF-8'
-    );
+    $texto = auto_decodificar(strip_tags(texto_limpiar_html($bruto)));
 
     $coletillas = [
         // WordPress y compañia, en ingles y en espanol.
@@ -136,6 +132,9 @@ function auto_limpiar(string $bruto): string
         '/\s*(Continue reading|Read more|Read the full|Leer m[aá]s|Seguir leyendo|Sigue leyendo).*$/sui',
         // La entradilla cortada que dejan muchos feeds.
         '/\s*\[\s*[…\.]+\s*\]\s*/u',
+        // La firma que deja Drupal en el resumen: "mcottam Mon, 09/14/2026 -
+        // 12:31". Es el usuario que publico y la hora, no la noticia.
+        '/\s*\S+\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*\d{1,2}\/\d{1,2}\/\d{4}\s*-\s*\d{1,2}:\d{2}\s*/u',
     ];
 
     foreach ($coletillas as $patron) {
@@ -147,6 +146,85 @@ function auto_limpiar(string $bruto): string
     // Ademas de espacios, se quitan los guiones y barras con los que muchos
     // feeds separan el resumen de la firma del medio.
     return trim($texto, " \t\n\r\0\x0B-–—·|");
+}
+
+/**
+ * Decodifica las entidades hasta que dejan de ser entidades.
+ *
+ * Una vez no basta: hay feeds que escapan el HTML que ya venia escapado, asi
+ * que "&amp;#039;" se queda en "&#039;" y se publica tal cual. Se repite, con
+ * un tope, porque un texto que se decodifica sin fin es un texto que alguien
+ * ha preparado para que esto no termine nunca.
+ */
+function auto_decodificar(string $texto): string
+{
+    for ($vuelta = 0; $vuelta < 3; $vuelta++) {
+        $antes = $texto;
+        $texto = html_entity_decode($texto, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        if ($texto === $antes) {
+            break;
+        }
+    }
+
+    return $texto;
+}
+
+/**
+ * Quita del cuerpo el titular, cuando el feed lo repite al principio.
+ *
+ * Muchos gestores meten el titular como primera linea del resumen. En el bit
+ * queda el mismo texto dos veces seguidas, una en grande y otra en pequeno,
+ * y lo poco que el resumen anadia se pierde al recortar.
+ */
+function auto_sin_titular(string $cuerpo, string $titular): string
+{
+    $titular = trim($titular);
+
+    if ($titular === '' || $cuerpo === '') {
+        return $cuerpo;
+    }
+
+    $largo = mb_strlen($titular);
+
+    if (mb_strtolower(mb_substr($cuerpo, 0, $largo)) !== mb_strtolower($titular)) {
+        return $cuerpo;
+    }
+
+    $resto = ltrim(mb_substr($cuerpo, $largo), " \t\n\r.:;,-–—|·");
+
+    // Si el resumen no era mas que el titular, se deja como estaba: quien
+    // llama decide si un cuerpo vacio vale, y aqui no se puede saber.
+    return trim($resto) !== '' ? $resto : $cuerpo;
+}
+
+/**
+ * ¿Esto es material promocional en vez de una noticia?
+ *
+ * Los medios del sector publican en el mismo feed sus noticias y sus libros
+ * blancos, seminarios y guias descargables. Para el lector no es lo mismo: lo
+ * segundo es un formulario, no una noticia, y el bit le estaria prometiendo
+ * algo que no hay. El diccionario no lo caza porque habla de tecnologia
+ * hotelera con el mismo vocabulario que una noticia de verdad.
+ */
+function auto_es_promocional(string $texto): bool
+{
+    $aguja = ' ' . texto_normalizar($texto) . ' ';
+
+    $marcas = [
+        'e-book', 'ebook', 'libro blanco', 'whitepaper', 'white paper',
+        'webinar', 'seminario web', 'contenido patrocinado', 'sponsored content',
+        'download the', 'descarga la guia', 'descarga el informe',
+        'register now', 'inscribete', 'reserva tu plaza',
+    ];
+
+    foreach ($marcas as $marca) {
+        if (str_contains($aguja, ' ' . texto_normalizar($marca) . ' ')) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -165,12 +243,7 @@ function auto_limpiar(string $bruto): string
  */
 function auto_titular(string $bruto, array $medios = []): string
 {
-    $titular = html_entity_decode(
-        strip_tags(texto_limpiar_html($bruto)),
-        ENT_QUOTES | ENT_HTML5,
-        'UTF-8'
-    );
-
+    $titular = auto_decodificar(strip_tags(texto_limpiar_html($bruto)));
     $titular = trim((string) preg_replace('/\s+/u', ' ', $titular));
 
     foreach ($medios as $medio) {

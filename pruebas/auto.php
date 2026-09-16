@@ -226,6 +226,74 @@ comprobar(
     )
 );
 
+// --- Entidades dobles y sellos del gestor -----------------------------------
+//
+// Hay feeds que escapan el HTML que ya venia escapado. Una sola pasada deja
+// "&#039;" en la portada, que es exactamente lo que se publico.
+
+comprobar(
+    'las entidades escapadas dos veces tambien se decodifican',
+    "Hilton at St George's Park",
+    auto_limpiar('Hilton at St George&amp;#039;s Park')
+);
+
+comprobar(
+    'la firma que deja Drupal en el resumen se va',
+    'El resumen de verdad empieza aqui.',
+    auto_limpiar('mcottam Mon, 09/14/2026 - 12:31 El resumen de verdad empieza aqui.')
+);
+
+// --- El titular repetido dentro del cuerpo ----------------------------------
+//
+// Muchos gestores meten el titular como primera linea del resumen: en el bit
+// sale el mismo texto dos veces, una grande y otra pequena.
+
+comprobar(
+    'el titular repetido al principio del cuerpo se quita',
+    'Learn how top hotel owners use the data.',
+    auto_sin_titular(
+        'Beyond Clean and Repaired: Learn how top hotel owners use the data.',
+        'Beyond Clean and Repaired:'
+    )
+);
+
+comprobar(
+    'si el cuerpo no empieza por el titular, no se toca',
+    'Otra cosa distinta.',
+    auto_sin_titular('Otra cosa distinta.', 'Un titular')
+);
+
+// Quitarlo dejaria el bit sin cuerpo, y un bit sin cuerpo no es mejor que uno
+// que repite: quien llama decide, y para eso tiene que llegarle algo.
+comprobar(
+    'si el cuerpo era solo el titular, se deja como estaba',
+    'Mews compra Atomize',
+    auto_sin_titular('Mews compra Atomize', 'Mews compra Atomize')
+);
+
+// --- Material promocional ---------------------------------------------------
+//
+// Los medios del sector publican en el mismo feed sus noticias y sus libros
+// blancos. Detras de lo segundo hay un formulario, no una noticia.
+
+comprobar(
+    'un libro blanco no es una noticia',
+    true,
+    auto_es_promocional('This practical e-book explores the metrics that help hotels optimize labor')
+);
+
+comprobar(
+    'ni un seminario',
+    true,
+    auto_es_promocional('Apuntate al webinar sobre pagos en el hotel')
+);
+
+comprobar(
+    'una noticia normal si lo es',
+    false,
+    auto_es_promocional('Cloudbeds lanza su RMS con datos de mercado en tiempo real')
+);
+
 // --- Categoria segun el diccionario -----------------------------------------
 
 $diccionario = [

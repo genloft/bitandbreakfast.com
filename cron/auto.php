@@ -179,12 +179,14 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
     $titular = $racimo !== null
         ? auto_titular((string) $racimo['titulo_representativo'], auto_medios($items))
         : '';
+    $cuerpo  = auto_sin_titular($cuerpo, $titular);
     $senal   = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
     if ($racimo === null
         || $senal['puntos'] < $minimo
         || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN
         || auto_es_recopilatorio($titular)
+        || auto_es_promocional($titular . ' ' . $cuerpo)
     ) {
         datos_borrar_bit((int) $bit['id']);
 
@@ -228,6 +230,7 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     $items   = auto_items($racimo_id);
     $cuerpo  = auto_cuerpo($items);
     $titular = auto_titular((string) $racimo['titulo_representativo'], auto_medios($items));
+    $cuerpo  = auto_sin_titular($cuerpo, $titular);
     $texto   = $titular . ' ' . $cuerpo;
 
     // Dos filtros que el umbral de puntuacion no cubre, y que son la
@@ -240,12 +243,16 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     //      le ahorra el clic a nadie.
     //   3. Tiene que contar una sola noticia. Hay boletines que meten cinco en
     //      una entrada del feed, y ese titular no es un bit: es un indice.
+    //   4. Tiene que ser una noticia y no un libro blanco, un seminario o una
+    //      guia descargable. El diccionario no los distingue porque hablan de
+    //      lo mismo; para el lector, detras hay un formulario, no una noticia.
     $senal = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
     $motivo = match (true) {
         $senal['puntos'] < $minimo                        => 'automatico: sin senal tematica',
         texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN  => 'automatico: sin resumen utilizable',
         auto_es_recopilatorio($titular)                   => 'automatico: recopilatorio, no una noticia',
+        auto_es_promocional($titular . ' ' . $cuerpo)     => 'automatico: material promocional',
         default                                           => '',
     };
 
