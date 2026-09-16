@@ -1,0 +1,25 @@
+# Bit & Breakfast - zona privada de curacion.
+#
+# index.php y estilo.css se sirven; el resto del directorio, no. datos.php
+# solo declara funciones y pedirlo por la web no devuelve nada, pero un
+# fichero que habla con la base de datos no tiene por que ser alcanzable.
+
+<FilesMatch "\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<Files "index.php">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>

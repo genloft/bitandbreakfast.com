@@ -23,10 +23,10 @@ index.php     arranque: sin configuración lleva al instalador, con ella a la po
 instalar.php  instalador web; se borra solo al terminar
 config/       configuración (config.php no está en el repositorio)
 lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
-              puntuación y motor del instalador
+              puntuación, reglas del bit, sesión del panel e instalador
 cron/         tareas programadas; tareas.php es el despachador único
 api/          endpoints públicos: redirección contada, votos, redacción asistida
-panel/        zona privada de curación
+panel/        zona privada de curación: cola, edición del bit y cierre
 plantillas/   plantillas de la web, del correo y del instalador
 publico/      salida estática generada (no se versiona)
 pruebas/      scripts de prueba sin framework
@@ -52,10 +52,11 @@ php pruebas/texto.php
 php pruebas/canonica.php
 php pruebas/instalacion.php
 php pruebas/procesar.php
+php pruebas/panel.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las cuatro primeras no tocan la base de datos. La quinta sí la lee, y sale a la
+Las cinco primeras no tocan la base de datos. La sexta sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
 
 Hay una sexta, `pruebas/humo.php`, que monta el esquema y las semillas desde
@@ -74,7 +75,7 @@ un MariaDB 10.6 para la de humo.
 |---|---|---|
 | 1 | Esquema, utilidades de texto y URL, ingesta, semillas | completada |
 | 2 | Agrupación, puntuación, `cron/procesar.php` | completada |
-| 3 | Panel de curación | pendiente |
+| 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | pendiente |
 | 5 | Proveedor de correo y alta con doble confirmación | pendiente |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | pendiente |
@@ -105,6 +106,13 @@ un MariaDB 10.6 para la de humo.
   tope en cinco: que la cuenten seis medios en vez de cinco ya no añade
   información, y sin tope cualquier nota de prensa muy distribuida ganaría a
   una exclusiva buena.
+- **Ningún bit llega a una edición sin pasar por el formato.** El titular
+  cabe en 120 caracteres, el cuerpo entre 25 y 110 palabras y el "por qué
+  importa" es obligatorio. Un borrador se guarda como sea, pero aprobarlo
+  exige cumplirlo: la promesa de los cinco minutos se rompe aquí o no se
+  rompe en ningún sitio.
+- **La cuota de fuentes españolas y europeas avisa, no bloquea.** Es una
+  intención editorial, y una semana floja en Europa no puede impedir el envío.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

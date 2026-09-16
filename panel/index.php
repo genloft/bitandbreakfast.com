@@ -1,0 +1,252 @@
+<?php
+/**
+ * Panel de curacion.
+ *
+ * Un solo punto de entrada: todo el panel cuelga de index.php?p=... Asi hay
+ * un unico sitio donde se comprueba la sesion y un unico sitio donde se
+ * comprueba el testigo del formulario, en lugar de repetirlo en cada pagina y
+ * olvidarlo en la septima.
+ *
+ * El flujo del curador es este y no tiene mas:
+ *
+ *   cola    - los racimos candidatos ordenados por puntuacion. Se descartan
+ *             o se convierten en bit.
+ *   bit     - se escribe el bit y se aprueba.
+ *   edicion - los bits aprobados se ordenan y la edicion se cierra.
+ *
+ * Toda accion es un POST con testigo y termina en una redireccion, para que
+ * recargar no repita nada.
+ */
+
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/lib/panel.php';
+require_once dirname(__DIR__) . '/lib/bits.php';
+require_once __DIR__ . '/datos.php';
+
+date_default_timezone_set('UTC');
+
+panel_sesion();
+
+header('X-Robots-Tag: noindex, nofollow');
+header('Cache-Control: no-store');
+
+$pagina  = (string) ($_GET['p'] ?? 'cola');
+$usuario = panel_usuario();
+$errores = [];
+
+// -----------------------------------------------------------------------------
+// Entrada y salida
+// -----------------------------------------------------------------------------
+
+if ($pagina === 'salir') {
+    panel_salir();
+    panel_ir('entrar');
+}
+
+if ($usuario === null) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pagina === 'entrar') {
+        panel_penalizacion();
+
+        if (!panel_csrf_valido()) {
+            $errores[] = 'La sesión ha caducado. Vuelve a intentarlo.';
+        } elseif (panel_entrar(trim((string) ($_POST['usuario'] ?? '')), (string) ($_POST['clave'] ?? ''))) {
+            panel_ir('cola');
+        } else {
+            $errores[] = 'Usuario o contraseña incorrectos.';
+        }
+    }
+
+    $vista = 'entrar';
+    require dirname(__DIR__) . '/plantillas/panel/marco.php';
+    exit;
+}
+
+// -----------------------------------------------------------------------------
+// Acciones
+// -----------------------------------------------------------------------------
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!panel_csrf_valido()) {
+        panel_avisar('La sesión ha caducado y la acción no se ha ejecutado. Vuelve a intentarlo.', 'error');
+        panel_ir($pagina === 'entrar' ? 'cola' : $pagina);
+    }
+
+    $accion = (string) ($_POST['accion'] ?? '');
+
+    switch ($accion) {
+        case 'descartar':
+            $racimo_id = (int) ($_POST['racimo_id'] ?? 0);
+            datos_descartar_racimo($racimo_id, (string) ($_POST['motivo'] ?? 'sin interés'));
+            panel_avisar('Racimo descartado.');
+            panel_ir('cola');
+            // no continua
+
+        case 'crear_bit':
+            $racimo = datos_racimo((int) ($_POST['racimo_id'] ?? 0));
+
+            if ($racimo === null) {
+                panel_avisar('Ese racimo ya no existe.', 'error');
+                panel_ir('cola');
+            }
+
+            $bit_id = datos_crear_bit($racimo, datos_items_racimo((int) $racimo['id']));
+            panel_avisar('Bit creado en borrador. Escríbelo y apruébalo.');
+            panel_ir('bit', ['id' => $bit_id]);
+            // no continua
+
+        case 'guardar_bit':
+        case 'aprobar_bit':
+            $bit_id = (int) ($_POST['id'] ?? 0);
+            $bit    = datos_bit($bit_id);
+
+            if ($bit === null) {
+                panel_avisar('Ese bit ya no existe.', 'error');
+                panel_ir('cola');
+            }
+
+            $nuevo = [
+                'titular'   => trim((string) ($_POST['titular'] ?? '')),
+                'cuerpo'    => trim((string) ($_POST['cuerpo'] ?? '')),
+                'por_que'   => trim((string) ($_POST['por_que'] ?? '')),
+                'categoria' => (string) ($_POST['categoria'] ?? ''),
+                'madurez'   => (string) ($_POST['madurez'] ?? ''),
+                'tipo'      => (string) ($_POST['tipo'] ?? ''),
+            ];
+
+            $fallos = bits_validar($nuevo);
+
+            // Un borrador se guarda como este: lo que no se puede es aprobar
+            // algo que no cumple el formato.
+            if ($accion === 'aprobar_bit' && $fallos) {
+                foreach ($fallos as $fallo) {
+                    panel_avisar($fallo, 'error');
+                }
+                panel_avisar('El bit se ha guardado como borrador.', 'aviso');
+                $nuevo['estado'] = 'borrador';
+            } else {
+                $nuevo['estado'] = $accion === 'aprobar_bit' ? 'aprobado' : (string) $bit['estado'];
+
+                if ($accion === 'aprobar_bit') {
+                    panel_avisar('Bit aprobado.');
+                } else {
+                    panel_avisar('Bit guardado.');
+                }
+            }
+
+            datos_guardar_bit($bit_id, $nuevo);
+
+            // Un bit aprobado entra solo en la edicion abierta: es lo unico
+            // que se puede querer hacer con el.
+            if ($nuevo['estado'] === 'aprobado' && $bit['edicion_id'] === null) {
+                datos_asignar_bit($bit_id, (int) datos_edicion_abierta()['id']);
+            }
+
+            panel_ir('bit', ['id' => $bit_id]);
+            // no continua
+
+        case 'borrar_bit':
+            datos_borrar_bit((int) ($_POST['id'] ?? 0));
+            panel_avisar('Bit borrado. El racimo vuelve a la cola.');
+            panel_ir('cola');
+            // no continua
+
+        case 'mover_bit':
+            $edicion = datos_edicion_abierta();
+            datos_mover_bit(
+                (int) ($_POST['id'] ?? 0),
+                (int) $edicion['id'],
+                (string) ($_POST['direccion'] ?? '') === 'subir' ? 'subir' : 'bajar'
+            );
+            panel_ir('edicion');
+            // no continua
+
+        case 'sacar_bit':
+            datos_asignar_bit((int) ($_POST['id'] ?? 0), null);
+            panel_avisar('Bit fuera de la edición.');
+            panel_ir('edicion');
+            // no continua
+
+        case 'meter_bit':
+            datos_asignar_bit((int) ($_POST['id'] ?? 0), (int) datos_edicion_abierta()['id']);
+            panel_avisar('Bit añadido a la edición.');
+            panel_ir('edicion');
+            // no continua
+
+        case 'guardar_edicion':
+            $edicion = datos_edicion_abierta();
+
+            bd()->prepare('UPDATE ediciones SET titulo = ?, intro = ?, fecha_prevista = ? WHERE id = ?')
+                ->execute([
+                    texto_recortar(trim((string) ($_POST['titulo'] ?? '')), 190),
+                    trim((string) ($_POST['intro'] ?? '')),
+                    (string) ($_POST['fecha_prevista'] ?? $edicion['fecha_prevista']),
+                    (int) $edicion['id'],
+                ]);
+
+            panel_avisar('Edición guardada.');
+            panel_ir('edicion');
+            // no continua
+
+        case 'cerrar_edicion':
+            $edicion = datos_edicion_abierta();
+            $revision = bits_revisar_edicion(
+                datos_bits_edicion((int) $edicion['id']),
+                datos_conf_edicion()
+            );
+
+            if ($revision['errores']) {
+                foreach ($revision['errores'] as $fallo) {
+                    panel_avisar($fallo, 'error');
+                }
+                panel_ir('edicion');
+            }
+
+            datos_cerrar_edicion((int) $edicion['id']);
+            panel_avisar('Edición cerrada. La siguiente se abre sola con el primer bit aprobado.');
+            panel_ir('edicion');
+            // no continua
+
+        default:
+            panel_avisar('Acción desconocida.', 'error');
+            panel_ir('cola');
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Paginas
+// -----------------------------------------------------------------------------
+
+switch ($pagina) {
+    case 'bit':
+        $bit = datos_bit((int) ($_GET['id'] ?? 0));
+
+        if ($bit === null) {
+            panel_avisar('Ese bit no existe.', 'error');
+            panel_ir('cola');
+        }
+
+        $racimo = $bit['racimo_id'] !== null ? datos_racimo((int) $bit['racimo_id']) : null;
+        $items  = $bit['racimo_id'] !== null ? datos_items_racimo((int) $bit['racimo_id']) : [];
+        $vista  = 'bit';
+        break;
+
+    case 'edicion':
+        $edicion  = datos_edicion_abierta();
+        $bits     = datos_bits_edicion((int) $edicion['id']);
+        $sueltos  = datos_bits_sueltos();
+        $revision = bits_revisar_edicion($bits, datos_conf_edicion());
+        $vista    = 'edicion';
+        break;
+
+    case 'entrar':
+        // Ya hay sesion: no tiene sentido volver a pedirla.
+        panel_ir('cola');
+        // no continua
+
+    default:
+        $cola  = datos_cola();
+        $vista = 'cola';
+}
+
+require dirname(__DIR__) . '/plantillas/panel/marco.php';

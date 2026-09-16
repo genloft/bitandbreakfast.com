@@ -206,6 +206,33 @@ siguiente visita—, pero bórralo desde el Administrador de archivos.
 
 ---
 
+## 6.bis El panel de curación
+
+```
+https://bitandbreakfast.com/panel/
+```
+
+Con el usuario y la contraseña que pusiste en el instalador. Si dejaste esos
+campos vacíos, no hay usuario y hay que crearlo a mano en phpMyAdmin:
+
+```sql
+INSERT INTO usuarios (usuario, hash_clave, nombre, activo)
+VALUES ('juan', '<el hash>', 'Juan', 1);
+```
+
+El hash se genera con `password_hash`, nunca a mano. Por SSH:
+
+```bash
+php -r 'echo password_hash("tu contraseña larga", PASSWORD_DEFAULT), "
+";'
+```
+
+Dentro hay tres pantallas: la **cola** de candidatos por puntuación, el
+**editor del bit** con las fuentes del racimo al lado, y la **edición**
+semanal, que se cierra cuando todos sus bits están aprobados.
+
+---
+
 ## 7. Criterio de aceptación de la fase 1
 
 Deja pasar tres o cuatro ejecuciones del cron. Para no esperar, en Terminal SSH:

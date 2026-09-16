@@ -1,0 +1,176 @@
+/* Bit & Breakfast - panel de curacion.
+ *
+ * Fichero aparte y no estilo en linea: la politica de seguridad del sitio es
+ * style-src 'self' y al panel no se le hace excepcion. CSS a mano, sin build,
+ * como el resto del proyecto.
+ */
+
+:root {
+  color-scheme: light;
+  --fondo: #f6f5f2;
+  --papel: #fff;
+  --tinta: #1b1b1a;
+  --apagado: #6b675e;
+  --borde: #e0ddd6;
+  --verde: #1a7f37;
+  --rojo: #b42318;
+  --ambar: #d98a00;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--tinta);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+/* --- Barra superior ------------------------------------------------------ */
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: .75rem 1.5rem;
+  background: var(--papel);
+  border-bottom: 1px solid var(--borde);
+}
+
+.barra .marca { font-size: 1rem; }
+.barra nav { display: flex; gap: 1rem; }
+.barra .quien { margin-left: auto; color: var(--apagado); font-size: .85rem; }
+
+.barra a { color: var(--tinta); text-decoration: none; }
+.barra a.activo { font-weight: 600; border-bottom: 2px solid var(--tinta); }
+.barra a:hover { text-decoration: underline; }
+
+/* --- Estructura ---------------------------------------------------------- */
+
+main { max-width: 62rem; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+main.estrecho { max-width: 22rem; padding-top: 4rem; }
+
+h1 { font-size: 1.4rem; margin: 0 0 1.5rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 1rem; }
+h3 { font-size: 1rem; margin: 0 0 .25rem; }
+
+.nota, .vacio { color: var(--apagado); font-size: .9rem; }
+.vacio { background: var(--papel); border: 1px dashed var(--borde); padding: 1.5rem; border-radius: 6px; }
+.limite { color: var(--apagado); font-weight: 400; font-size: .8rem; }
+.meta { color: var(--apagado); font-size: .82rem; margin: .25rem 0 0; }
+.resumen { color: var(--apagado); font-size: .85rem; margin: .4rem 0 0; }
+
+/* --- Avisos -------------------------------------------------------------- */
+
+.aviso {
+  padding: .7rem 1rem;
+  margin: 0 0 1rem;
+  border-left: 3px solid var(--verde);
+  background: #eaf6ed;
+  font-size: .9rem;
+}
+.aviso.error { border-color: var(--rojo); background: #fdeceb; }
+.aviso.aviso, .aviso.aviso-suave { border-color: var(--ambar); background: #fff6e5; }
+
+/* --- Formularios --------------------------------------------------------- */
+
+label { display: block; margin: 1rem 0 .25rem; font-weight: 600; font-size: .85rem; }
+
+input[type="text"], input[type="password"], input[type="date"], input:not([type]),
+textarea, select {
+  width: 100%;
+  padding: .5rem .65rem;
+  border: 1px solid #c9c5ba;
+  border-radius: 4px;
+  font: inherit;
+  background: var(--papel);
+}
+
+textarea { resize: vertical; }
+
+button {
+  padding: .5rem 1rem;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  background: var(--tinta);
+  color: var(--papel);
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.suave { background: var(--papel); color: var(--tinta); border: 1px solid #c9c5ba; }
+button[disabled] { opacity: .4; cursor: not-allowed; }
+
+.botones { display: flex; gap: .75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+
+/* --- Cola ---------------------------------------------------------------- */
+
+.cola, .bits, .sueltos, .items { list-style: none; padding: 0; margin: 1rem 0 0; }
+
+.cola li, .bits li {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: var(--papel);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: .75rem;
+}
+
+.cola .puntos {
+  min-width: 3rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding: .35rem 0;
+  background: var(--fondo);
+  border-radius: 4px;
+}
+
+.cola .cuerpo, .bits .cuerpo { flex: 1; min-width: 0; }
+.cola h2 { font-size: 1rem; margin: 0; }
+
+.cola .acciones, .bits .acciones { display: flex; gap: .5rem; align-items: flex-start; flex-wrap: wrap; }
+.cola .acciones form { display: flex; gap: .4rem; align-items: center; }
+.cola .acciones input[type="text"] { width: 9rem; font-size: .85rem; }
+
+/* --- Editor de bit ------------------------------------------------------- */
+
+.dos-columnas { display: grid; grid-template-columns: 3fr 2fr; gap: 2rem; align-items: start; }
+
+.editor, .fuentes, .cabecera-edicion {
+  background: var(--papel);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.campos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+.items li { padding: .75rem 0; border-bottom: 1px solid var(--borde); }
+.items li:last-child { border-bottom: 0; }
+.items a { color: var(--tinta); }
+
+.peligro { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--borde); }
+
+/* --- Edicion ------------------------------------------------------------- */
+
+.sueltos li {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  padding: .5rem 0;
+  border-bottom: 1px solid var(--borde);
+}
+.sueltos form { margin-left: auto; }
+
+.cerrar { margin-top: 2rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+
+@media (max-width: 48rem) {
+  .dos-columnas { grid-template-columns: 1fr; }
+  .campos { grid-template-columns: 1fr; }
+  .cola li, .bits li { flex-wrap: wrap; }
+}
