@@ -24,6 +24,7 @@ require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/auto.php';
+require_once dirname(__DIR__) . '/lib/puntuar.php';
 require_once dirname(__DIR__) . '/panel/datos.php';
 
 /**
@@ -34,7 +35,7 @@ require_once dirname(__DIR__) . '/panel/datos.php';
  */
 function auto_publicar_lote(float $limite): array
 {
-    $resumen = ['estado' => 'nada que hacer', 'bits' => 0, 'cerrada' => 0];
+    $resumen = ['estado' => 'nada que hacer', 'bits' => 0, 'descartados' => 0, 'cerrada' => 0];
 
     // Por defecto encendido: es lo que pidio el dueno del sitio. Se apaga
     // poniendo el ajuste auto_publicar a 0 desde la base de datos.
@@ -44,20 +45,32 @@ function auto_publicar_lote(float $limite): array
         return $resumen;
     }
 
-    $tope    = max(1, (int) ajuste('edicion_max_bits', '20'));
-    $umbral  = (int) ajuste('auto_umbral', '30');
-    $edicion = datos_edicion_abierta();
-    $dentro  = count(datos_bits_edicion((int) $edicion['id']));
+    $tope     = max(1, (int) ajuste('edicion_max_bits', '20'));
+    $umbral   = (int) ajuste('auto_umbral', '30');
+    $minimo   = (int) ajuste('auto_min_diccionario', '8');
+    $terminos = auto_terminos();
+    $edicion  = datos_edicion_abierta();
+    $dentro   = count(datos_bits_edicion((int) $edicion['id']));
 
-    foreach (auto_elegir(datos_cola($tope * 2), $umbral, $tope - $dentro) as $candidato) {
-        if (microtime(true) >= $limite) {
+    // Se miran mas candidatos que huecos: muchos se caen por no hablar de
+    // tecnologia hotelera, y si solo se pidieran los justos la edicion se
+    // quedaria a medias.
+    $resumen['descartados'] = 0;
+
+    foreach (auto_elegir(datos_cola($tope * 5), $umbral, ($tope - $dentro) * 4) as $candidato) {
+        if (microtime(true) >= $limite || $dentro >= $tope) {
             break;
         }
 
         try {
-            auto_escribir_bit((int) $candidato['id'], (int) $edicion['id']);
-            $resumen['bits']++;
-            $dentro++;
+            $hecho = auto_escribir_bit((int) $candidato['id'], (int) $edicion['id'], $terminos, $minimo);
+
+            if ($hecho) {
+                $resumen['bits']++;
+                $dentro++;
+            } else {
+                $resumen['descartados']++;
+            }
         } catch (Throwable $e) {
             error_log('Bit & Breakfast, auto racimo ' . $candidato['id'] . ': ' . $e->getMessage());
         }
@@ -79,29 +92,57 @@ function auto_publicar_lote(float $limite): array
  * Todo dentro de una transaccion: un bit a medias en una edicion es peor que
  * un racimo que se queda esperando a la siguiente pasada.
  */
-function auto_escribir_bit(int $racimo_id, int $edicion_id): void
+function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int $minimo): bool
 {
     $racimo = datos_racimo($racimo_id);
 
     if ($racimo === null) {
-        return;
+        return false;
     }
 
-    $items = auto_items($racimo_id);
+    $items  = auto_items($racimo_id);
+    $cuerpo = auto_cuerpo($items);
+    $texto  = (string) $racimo['titulo_representativo'] . ' ' . $cuerpo;
+
+    // Dos filtros que el umbral de puntuacion no cubre, y que son la
+    // diferencia entre un radar y un tablon de novedades del sector:
+    //
+    //   1. Tiene que hablar de tecnologia hotelera. La puntuacion se la puede
+    //      ganar un medio con peso publicando una entrevista o un congreso;
+    //      si el diccionario no reconoce nada, no es para este boletin.
+    //   2. Tiene que tener cuerpo. Un bit que solo dice quien lo publica no
+    //      le ahorra el clic a nadie.
+    $senal = puntuar_diccionario((string) $racimo['titulo_representativo'], $cuerpo, $terminos, 100);
+
+    if ($senal['puntos'] < $minimo || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN) {
+        // Se saca de la cola con el motivo escrito: si no, se volveria a
+        // evaluar en cada pasada y taparia a los que si valen.
+        bd()->prepare("UPDATE racimos SET estado = 'descartado', motivo_descarte = ? WHERE id = ?")
+            ->execute([
+                $senal['puntos'] < $minimo ? 'automatico: sin senal tematica' : 'automatico: sin resumen utilizable',
+                $racimo_id,
+            ]);
+
+        return false;
+    }
 
     bd()->beginTransaction();
 
     try {
         $bit_id = datos_crear_bit($racimo, $items);
 
+        $categoria = auto_categoria_diccionario($texto, $terminos);
+
         datos_guardar_bit($bit_id, [
             'titular'   => texto_recortar((string) $racimo['titulo_representativo'], BITS_TITULAR_MAX),
-            'cuerpo'    => auto_cuerpo($items),
+            'cuerpo'    => $cuerpo,
             // El "por que importa" se queda vacio a proposito: es un juicio
             // editorial y aqui no hay nadie para hacerlo. Inventarlo seria
             // exactamente lo que este proyecto dice no hacer.
             'por_que'   => '',
-            'categoria' => auto_categoria($items),
+            // El diccionario sabe de que va la noticia; la fuente solo sabe de
+            // que suele ir. Se prefiere el primero y se cae al segundo.
+            'categoria' => $categoria !== '' ? $categoria : auto_categoria($items),
             'madurez'   => 'anuncio',
             'tipo'      => auto_tipo($items),
             'estado'    => 'aprobado',
@@ -113,6 +154,8 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id): void
         datos_asignar_bit($bit_id, $edicion_id);
 
         bd()->commit();
+
+        return true;
     } catch (Throwable $e) {
         if (bd()->inTransaction()) {
             bd()->rollBack();
@@ -120,6 +163,17 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id): void
 
         throw $e;
     }
+}
+
+/**
+ * El diccionario entero, con su categoria, para clasificar y para medir si la
+ * noticia habla de lo que tiene que hablar.
+ */
+function auto_terminos(): array
+{
+    return bd()->query(
+        'SELECT termino, peso, categoria FROM diccionario WHERE activo = 1'
+    )->fetchAll();
 }
 
 /**

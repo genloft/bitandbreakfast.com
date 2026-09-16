@@ -351,6 +351,7 @@ INSERT INTO ajustes (clave, valor, descripcion) VALUES
   ('punt_publirreportaje',   '12', 'Penalizacion del filtro anti-publirreportaje'),
   ('auto_publicar',          '1',  'Publicar solo los racimos mejor puntuados, sin revision humana'),
   ('auto_umbral',            '30', 'Puntuacion minima de un racimo para publicarse solo'),
+  ('auto_min_diccionario',   '8',  'Puntos del diccionario exigidos para publicar sin revision'),
   ('edicion_max_bits',       '20', 'Techo de bits por edicion'),
   ('edicion_cuota_es_eu',    '30', 'Porcentaje minimo aconsejado de bits de fuentes ES o EU'),
   ('retencion_items_dias',   '180','Dias que se conservan los items no usados'),

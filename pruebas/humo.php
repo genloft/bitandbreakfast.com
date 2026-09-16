@@ -443,6 +443,10 @@ require_once $raiz . '/cron/auto.php';
 ajuste_guardar('auto_publicar', '1');
 ajuste_guardar('auto_umbral', '10');
 
+// El filtro tematico se prueba aparte, con sus propias funciones: aqui lo que
+// se comprueba es que la cadena entera funciona.
+ajuste_guardar('auto_min_diccionario', '0');
+
 $auto = auto_publicar_lote(microtime(true) + 20);
 
 comprobar('el modo automatico escribe el bit que quedaba', 1, $auto['bits']);

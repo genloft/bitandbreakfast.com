@@ -101,6 +101,82 @@ comprobar(
 
 comprobar('sin nada de nada, cuerpo vacio', '', auto_cuerpo([]));
 
+// --- Limpieza del resumen de los feeds --------------------------------------
+//
+// Los gestores de contenidos enganchan una coletilla al final de cada entrada
+// que no es parte de la noticia y encima repite el titular.
+
+comprobar(
+    'se quita la coletilla de WordPress',
+    'Cloudbeds lanza su RMS.',
+    auto_limpiar('Cloudbeds lanza su RMS. The post Cloudbeds Announces Launch appeared first on LODGING Magazine.')
+);
+
+comprobar(
+    'y la version en espanol',
+    'Mews compra un motor de reservas.',
+    auto_limpiar('Mews compra un motor de reservas. El artículo Mews compra se publicó primero en Hosteltur.')
+);
+
+comprobar(
+    'y el "seguir leyendo"',
+    'La AEPD multa a una cadena.',
+    auto_limpiar('La AEPD multa a una cadena. Continue reading at Skift')
+);
+
+// Las entidades llegan sin decodificar en la mitad de los feeds.
+comprobar(
+    'las entidades se decodifican',
+    'Oracle «cayó» durante 4 horas',
+    auto_limpiar('Oracle &laquo;cay&oacute;&raquo; durante 4 horas')
+);
+
+comprobar(
+    'el HTML se va entero',
+    'Texto con negrita dentro.',
+    auto_limpiar('<p>Texto con <b>negrita</b> dentro.</p>')
+);
+
+comprobar(
+    'los puntos suspensivos entre corchetes no se quedan',
+    'Empieza la noticia y sigue.',
+    auto_limpiar('Empieza la noticia [&hellip;] y sigue.')
+);
+
+// --- Categoria segun el diccionario -----------------------------------------
+
+$diccionario = [
+    ['termino' => 'pms',        'peso' => 6, 'categoria' => 'pms-gestion'],
+    ['termino' => 'ransomware', 'peso' => 9, 'categoria' => 'ciberseguridad-cumplimiento'],
+    ['termino' => 'ronda',      'peso' => 5, 'categoria' => 'inversion-mercado'],
+    ['termino' => 'revolucion', 'peso' => -5, 'categoria' => ''],
+];
+
+comprobar(
+    'gana el termino de mas peso que este presente',
+    'ciberseguridad-cumplimiento',
+    auto_categoria_diccionario('Ransomware en el PMS de una cadena', $diccionario)
+);
+
+comprobar(
+    'con un solo termino, el suyo',
+    'inversion-mercado',
+    auto_categoria_diccionario('Cierra una ronda de doce millones', $diccionario)
+);
+
+// Si el diccionario no reconoce nada, que lo diga: quien llama decide.
+comprobar(
+    'sin nada reconocible, cadena vacia',
+    '',
+    auto_categoria_diccionario('Entrevista con el director del hotel', $diccionario)
+);
+
+comprobar(
+    'un termino sin categoria no clasifica',
+    '',
+    auto_categoria_diccionario('La revolucion del sector', $diccionario)
+);
+
 // --- Medios y enumeracion ---------------------------------------------------
 
 comprobar(

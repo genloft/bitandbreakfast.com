@@ -415,10 +415,14 @@ function procesar_recalcular_racimo(int $racimo_id, array $conf): void
     // El titular que representa al racimo es el del mejor item, no el del
     // primero: si una nota de prensa llega antes que el analisis, el que
     // aparece en la cola del panel tiene que ser el analisis.
+    //
+    // Y a igualdad, el que este en espanol. El boletin se lee en espanol, y
+    // publicar el titular ingles de una noticia que tambien cuenta Hosteltur
+    // es regalarle al lector una traduccion que no ha pedido.
     $st = bd()->prepare(
         "SELECT titulo FROM items
           WHERE racimo_id = ? AND estado <> 'descartado'
-          ORDER BY puntuacion DESC, id ASC LIMIT 1"
+          ORDER BY (idioma = 'es') DESC, puntuacion DESC, id ASC LIMIT 1"
     );
     $st->execute([$racimo_id]);
     $titulo = (string) $st->fetchColumn();

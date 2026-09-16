@@ -77,8 +77,7 @@ function auto_tipo(array $items): string
 function auto_cuerpo(array $items, int $max_palabras = BITS_CUERPO_MAX): string
 {
     foreach ($items as $item) {
-        $resumen = trim(strip_tags(texto_limpiar_html((string) ($item['resumen_origen'] ?? ''))));
-        $resumen = trim(preg_replace('/\s+/', ' ', $resumen) ?? '');
+        $resumen = auto_limpiar((string) ($item['resumen_origen'] ?? ''));
 
         if (texto_contar_palabras($resumen) >= BITS_CUERPO_MIN) {
             return auto_recortar_palabras($resumen, $max_palabras);
@@ -98,6 +97,76 @@ function auto_cuerpo(array $items, int $max_palabras = BITS_CUERPO_MAX): string
             count($medios),
             auto_enumerar($medios)
         );
+}
+
+/**
+ * Deja el resumen de un feed en algo publicable.
+ *
+ * Los feeds vienen con de todo: HTML, entidades sin decodificar y sobre todo
+ * la coletilla que engancha el gestor de contenidos al final de cada entrada
+ * -"The post X appeared first on Y", "Continue reading"-, que no es parte de
+ * la noticia y encima repite el titular.
+ */
+function auto_limpiar(string $bruto): string
+{
+    $texto = html_entity_decode(
+        strip_tags(texto_limpiar_html($bruto)),
+        ENT_QUOTES | ENT_HTML5,
+        'UTF-8'
+    );
+
+    $coletillas = [
+        // WordPress y compañia, en ingles y en espanol.
+        '/\s*The post.*$/su',
+        '/\s*El art[ií]culo.*?(aparec[eió]|se public[oó]).*$/sui',
+        '/\s*(Continue reading|Read more|Read the full|Leer m[aá]s|Seguir leyendo|Sigue leyendo).*$/sui',
+        // La entradilla cortada que dejan muchos feeds.
+        '/\s*\[\s*[…\.]+\s*\]\s*/u',
+    ];
+
+    foreach ($coletillas as $patron) {
+        $texto = (string) preg_replace($patron, ' ', $texto);
+    }
+
+    $texto = (string) preg_replace('/\s+/u', ' ', $texto);
+
+    // Ademas de espacios, se quitan los guiones y barras con los que muchos
+    // feeds separan el resumen de la firma del medio.
+    return trim($texto, " \t\n\r\0\x0B-–—·|");
+}
+
+/**
+ * Categoria a partir del diccionario, que es quien sabe de que va la noticia.
+ *
+ * Gana el termino presente de mas peso que tenga categoria. Es mucho mejor
+ * senal que la categoria por defecto de la fuente, que en un medio generalista
+ * es siempre la misma y deja toda la edicion en "tecnologia general".
+ *
+ * @param array $terminos Filas con 'termino', 'peso' y 'categoria'.
+ */
+function auto_categoria_diccionario(string $texto, array $terminos): string
+{
+    $aguja  = ' ' . texto_normalizar($texto) . ' ';
+    $mejor  = '';
+    $cuanto = 0;
+
+    foreach ($terminos as $fila) {
+        $peso      = (int) ($fila['peso'] ?? 0);
+        $categoria = (string) ($fila['categoria'] ?? '');
+
+        if ($peso <= $cuanto || $categoria === '' || !array_key_exists($categoria, bits_categorias())) {
+            continue;
+        }
+
+        $termino = texto_normalizar((string) $fila['termino']);
+
+        if ($termino !== '' && str_contains($aguja, ' ' . $termino . ' ')) {
+            $mejor  = $categoria;
+            $cuanto = $peso;
+        }
+    }
+
+    return $mejor;
 }
 
 /**
