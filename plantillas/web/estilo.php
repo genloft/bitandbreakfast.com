@@ -336,6 +336,81 @@ h1 {
   color: var(--apagado);
 }
 
+/* --- Alta en el boletin ---------------------------------------------------
+   Va al final, despues de los bits: quien ha llegado hasta aqui ya sabe si le
+   interesa. En el movil el boton se pone debajo del campo, a ancho completo,
+   porque un boton de 80 pixeles al lado de un campo estrecho no se acierta
+   con el pulgar. */
+
+.alta {
+  margin: 3rem 0 0;
+  padding: 1.5rem var(--gutter);
+  margin-left: calc(var(--gutter) * -1);
+  margin-right: calc(var(--gutter) * -1);
+  background: var(--papel);
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
+}
+
+.alta h2 {
+  margin: 0 0 .6rem;
+  font-size: clamp(1.2rem, 4.6vw, 1.45rem);
+  line-height: 1.25;
+}
+
+.alta p { margin: 0 0 1rem; }
+
+.alta-formulario label {
+  display: block;
+  margin-bottom: .35rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--apagado);
+}
+
+.alta-fila { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+.alta-fila input {
+  flex: 1 1 14rem;
+  min-width: 0;
+  padding: .7rem .8rem;
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  background: var(--fondo);
+  color: var(--tinta);
+  /* 16px o mas: por debajo, Safari en iPhone hace zoom al enfocar. */
+  font: 1rem/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.alta-fila button {
+  flex: 1 1 9rem;
+  min-height: 2.9rem;
+  padding: .7rem 1.2rem;
+  border: 0;
+  border-radius: 4px;
+  background: var(--acento);
+  color: var(--fondo);
+  font: 600 .95rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.alta-fila button:hover { filter: brightness(1.1); }
+
+.alta .letra-pequena { margin-top: .8rem; }
+
+/* La trampa para robots: fuera de la vista pero sin display:none, que algunos
+   la detectan. */
+.trampa {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.alta-respuesta { margin: 1.5rem 0; font-size: 1.05em; }
+
 /* --- Pie ------------------------------------------------------------------ */
 
 .pie {

@@ -16,6 +16,7 @@ foreach ($ediciones as $edicion) {
 }
 
 $enlace_activo = 'archivo';
+$alta_abierta  = $alta_abierta ?? false;
 
 ?><!doctype html>
 <html lang="es">
@@ -74,6 +75,8 @@ $enlace_activo = 'archivo';
       </ul>
     </section>
   <?php endforeach; ?>
+
+  <?php require __DIR__ . '/suscribir.php'; ?>
 </main>
 
 <?php require __DIR__ . '/pie.php'; ?>

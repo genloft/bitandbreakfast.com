@@ -368,8 +368,13 @@ function inst_plantilla_config(array $datos): string
         ],
 
         'correo' => [
+            // 'mailerlite' o 'brevo'. Ver docs/INSTALACION.md, apartado 9.
             'proveedor'        => 'mailerlite',
             'api_key'          => '',
+            // Grupo de MailerLite o lista de Brevo donde entra el suscriptor.
+            'lista'            => '',
+            // Solo Brevo: plantilla del correo de doble confirmacion.
+            'doi_plantilla'    => 0,
             'remitente'        => {$remitente},
             'nombre_remitente' => 'Bit & Breakfast',
         ],

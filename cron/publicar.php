@@ -29,6 +29,7 @@ require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/web.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
+require_once dirname(__DIR__) . '/lib/correo.php';
 
 /**
  * Publica lo que haya pendiente.
@@ -52,6 +53,11 @@ function publicar_pendiente(float $limite): array
     $ficheros = 0;
     $hechas   = 0;
 
+    // Si no hay proveedor de correo configurado, el bloque de alta se pinta
+    // como "todavia no". Mejor eso que un formulario que no lleva a ningun
+    // sitio.
+    $alta = correo_configurado();
+
     // La hoja de estilo y robots.txt no dependen de las ediciones, pero se
     // escriben aqui: son parte de la salida y no tienen otro sitio donde vivir.
     $ficheros += publicar_escribir($publico . '/estilo.css', publicar_plantilla('estilo', [])) ? 1 : 0;
@@ -66,9 +72,10 @@ function publicar_pendiente(float $limite): array
         }
 
         $datos = [
-            'edicion' => $edicion,
-            'bits'    => publicar_bits((int) $edicion['id']),
-            'base'    => $base,
+            'edicion'      => $edicion,
+            'bits'         => publicar_bits((int) $edicion['id']),
+            'base'         => $base,
+            'alta_abierta' => $alta,
         ];
 
         $html = publicar_plantilla('edicion', $datos);
@@ -84,7 +91,7 @@ function publicar_pendiente(float $limite): array
 
     $ficheros += publicar_escribir(
         $publico . '/archivo.html',
-        publicar_plantilla('archivo', ['ediciones' => $ediciones, 'base' => $base])
+        publicar_plantilla('archivo', ['ediciones' => $ediciones, 'base' => $base, 'alta_abierta' => $alta])
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
@@ -155,6 +162,10 @@ function publicar_firma(array $ediciones): string
     $bits = $st->fetch();
 
     $partes = [
+        // Sin esto, configurar el proveedor de correo no cambiaria nada
+        // visible hasta que se publicara una edicion nueva: las paginas ya
+        // generadas seguirian diciendo que el alta no esta abierta.
+        correo_configurado() ? 'alta' : 'sin-alta',
         count($ediciones),
         (string) ($ediciones[0]['slug'] ?? ''),
         (int) ($bits['bits'] ?? 0),

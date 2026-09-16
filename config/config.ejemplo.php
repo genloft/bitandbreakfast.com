@@ -59,11 +59,15 @@ return [
         'sal_hash'     => '',  // sal del hash de IP y de user-agent
     ],
 
-    // Se elige el proveedor en la fase 5. Interfaz comun en lib/esp/Esp.php.
+    // El alta del boletin. Ver docs/INSTALACION.md, apartado 9.
     'correo' => [
-        'proveedor' => 'mailerlite',   // mailerlite | brevo
-        'api_key'   => '',
-        'remitente' => 'hola@bitandbreakfast.com',
+        'proveedor'     => 'mailerlite',   // mailerlite | brevo
+        'api_key'       => '',
+        // Grupo de MailerLite o lista de Brevo donde entra el suscriptor.
+        'lista'         => '',
+        // Solo Brevo: identificador de la plantilla de doble confirmacion.
+        'doi_plantilla' => 0,
+        'remitente'     => 'hola@bitandbreakfast.com',
         'nombre_remitente' => 'Bit & Breakfast',
     ],
 

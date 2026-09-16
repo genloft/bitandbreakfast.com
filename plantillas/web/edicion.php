@@ -35,6 +35,7 @@ $descripcion = trim((string) $edicion['intro']) !== ''
     : sprintf('%d bits de tecnología hotelera, %d minutos de lectura.', count($bits), web_minutos($palabras));
 
 $enlace_activo = 'portada';
+$alta_abierta  = $alta_abierta ?? false;
 
 ?><!doctype html>
 <html lang="es">
@@ -132,6 +133,8 @@ $enlace_activo = 'portada';
     <?php endif; ?>
 
   </article>
+
+  <?php require __DIR__ . '/suscribir.php'; ?>
 </main>
 
 <?php require __DIR__ . '/pie.php'; ?>

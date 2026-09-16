@@ -54,10 +54,11 @@ php pruebas/instalacion.php
 php pruebas/procesar.php
 php pruebas/panel.php
 php pruebas/web.php
+php pruebas/correo.php
 php pruebas/comprobar_feeds.php
 ```
 
-Las seis primeras no tocan la base de datos. La séptima sí la lee, y sale a la
+Las siete primeras no tocan la base de datos. La octava sí la lee, y sale a la
 red a comprobar que las fuentes del catálogo siguen vivas.
 
 Y una más, `pruebas/humo.php`, que monta el esquema y las semillas desde
@@ -78,7 +79,7 @@ un MariaDB 10.6 para la de humo.
 | 2 | Agrupación, puntuación, `cron/procesar.php` | completada |
 | 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | completada |
-| 5 | Proveedor de correo y alta con doble confirmación | pendiente |
+| 5 | Proveedor de correo y alta con doble confirmación | alta hecha; envío pendiente |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | pendiente |
 
 ## Decisiones que conviene no olvidar
@@ -121,6 +122,13 @@ un MariaDB 10.6 para la de humo.
 - **La portada se lee con el pulgar.** El sumario va antes que los bits porque
   un radar tiene que decir en diez segundos si esta semana traía algo. Todo lo
   demás es consecuencia de eso.
+- **La lista de correo no se guarda aquí.** Vive entera en el proveedor. Una
+  base de datos en alojamiento compartido no es sitio para una lista de
+  direcciones, y el proveedor ya sabe gestionar bajas, rebotes y doble
+  confirmación mejor de lo que se escribiría aquí.
+- **Al que ya estaba suscrito se le dice lo mismo que al que no.** Distinguir
+  las dos respuestas permitiría averiguar quién está en la lista probando
+  direcciones.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.

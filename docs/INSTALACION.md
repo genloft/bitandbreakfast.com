@@ -291,9 +291,53 @@ segunda puerta del agrupador, y sin él solo agrupa la similitud de titulares.
 
 ---
 
-## 9. Registros DNS del correo (fase 5)
+## 9. El boletín: alta con doble confirmación
 
-Todavía no hace falta. Cuando decidas proveedor, en hPanel → **Dominios → DNS**:
+El sitio no guarda ni una dirección de correo: la lista vive entera en el
+proveedor. El formulario del final de cada página envía a
+`api/suscribir.php`, que llama al proveedor y deja que sea él quien mande el
+correo de confirmación.
+
+Mientras no esté configurado, el bloque dice que el alta no está abierta y
+ofrece el RSS. No hay formulario roto en ningún momento.
+
+### 9.1 Elegir proveedor y rellenar la configuración
+
+En `config/config.php`, sección `correo`:
+
+| Clave | MailerLite | Brevo |
+|---|---|---|
+| `proveedor` | `mailerlite` | `brevo` |
+| `api_key` | Integrations → MailerLite API | SMTP & API → API Keys |
+| `lista` | el id del **grupo** | el id de la **lista** |
+| `doi_plantilla` | déjalo a `0` | id de la plantilla de confirmación |
+
+Con MailerLite el alta se crea con estado `unconfirmed`, y es el propio
+MailerLite quien manda el correo de confirmación **siempre que el grupo tenga
+activada la doble confirmación en su panel**. Compruébalo antes de dar por
+buena la primera alta.
+
+Con Brevo hay que crear antes la plantilla del correo de confirmación y poner
+aquí su identificador.
+
+Después de tocar la configuración, la próxima pasada del cron regenera las
+páginas con el formulario ya activo: el generador incluye ese dato en su
+firma.
+
+### 9.2 Comprobarlo
+
+Suscríbete tú con una dirección de verdad y confirma. Si algo falla, la página
+de respuesta lo dice sin contar nada del servidor, y el detalle queda en el
+registro de errores de PHP.
+
+El endpoint permite cinco altas por hora y por IP, contadas en `cache/altas/`
+con la IP convertida en HMAC: sirve para contar, no para saber quién es.
+
+---
+
+## 10. Registros DNS del correo
+
+Cuando tengas proveedor, en hPanel → **Dominios → DNS**:
 
 ### SPF
 
@@ -328,7 +372,7 @@ tus propios envíos desaparezcan.
 
 ---
 
-## 10. Si algo falla
+## 11. Si algo falla
 
 | Síntoma | Causa probable | Arreglo |
 |---|---|---|
