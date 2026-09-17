@@ -52,15 +52,23 @@ $alta_abierta  = $alta_abierta ?? false;
     una cola de candidatos.</p>
 
     <p>De esa cola salen cada semana entre quince y veinte <strong>bits</strong>.
-    Los elige y los escribe una persona. Ninguno se publica sin que alguien lo
-    haya leído entero y haya decidido que merece tu tiempo.</p>
+    Los elige la puntuación, no una persona: entran los mejor puntuados que
+    además hablan de tecnología hotelera según el diccionario del sistema.
+    Conviene que lo sepas, y por eso está escrito aquí y no en la letra
+    pequeña.</p>
+
+    <p>Lo que <em>no</em> hace es inventar. El titular es el de la fuente, y el
+    párrafo es el resumen que publica la propia fuente, sin reescribir y sin
+    adornos. Todo lo que lees aquí se puede comprobar pulsando el enlace. Si un
+    titular está en inglés, lo verás en inglés y con su etiqueta: traducirlo
+    sería reescribir lo que dijo quien lo dijo.</p>
 
     <h2>Qué es un bit</h2>
 
-    <p>Un titular, un párrafo corto y una línea que se llama <em>por qué
-    importa</em>: qué cambia esto para un hotel. Si esa línea no se puede
-    escribir, la noticia no entra. Es el filtro que separa un radar de una
-    lista de enlaces.</p>
+    <p>Un titular, un párrafo corto y los medios que lo cuentan. Cuando lo
+    escribe una persona lleva además una línea, <em>por qué importa</em>, que
+    dice qué cambia esto para un hotel; los bits automáticos no la llevan,
+    porque ese juicio no se puede automatizar sin inventárselo.</p>
 
     <h2>Cómo se decide qué entra</h2>
 
@@ -69,6 +77,10 @@ $alta_abierta  = $alta_abierta ?? false;
     mismo, que es la mejor señal de que algo importa de verdad. Y resta: hay un
     filtro específico contra el publirreportaje, porque medio sector vive de
     publicar notas de prensa como si fueran noticias.</p>
+
+    <p>Además se cae todo lo que no llega a ser una noticia: los libros blancos
+    y los seminarios disfrazados de artículo, los resúmenes que meten cinco
+    noticias en un titular y lo que no trae ni un párrafo que leer.</p>
 
     <h2>Qué no vas a encontrar</h2>
 
