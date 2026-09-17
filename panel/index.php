@@ -244,7 +244,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Con traductor, lo que no esta en espanol deja de descartarse.
                 // Sin el, vuelve a descartarse: es la misma decision al reves.
                 ajuste_guardar('auto_solo_espanol', traducir_configurado() ? '0' : '1');
-                panel_avisar($guardado['mensaje']);
+
+                // Y vuelven a la cola las que se descartaron solo por el
+                // idioma. Son las que el radar encontro, entendio y tiro por
+                // no estar en espanol -trescientas en dos dias-, y sin esto se
+                // quedarian descartadas para siempre: el traductor solo
+                // serviria de aqui en adelante, y lo de antes se perderia por
+                // una cuestion de calendario.
+                $recuperados = 0;
+
+                if (traducir_configurado()) {
+                    $st = bd()->prepare(
+                        "UPDATE racimos
+                            SET estado = 'candidato', motivo_descarte = ''
+                          WHERE estado = 'descartado'
+                            AND motivo_descarte LIKE '%espanol%'"
+                    );
+                    $st->execute();
+                    $recuperados = $st->rowCount();
+                }
+
+                panel_avisar($guardado['mensaje'] . ($recuperados > 0
+                    ? ' Vuelven a la cola ' . $recuperados . ' noticias que se habían descartado por el idioma.'
+                    : ''));
             } else {
                 panel_avisar($guardado['mensaje'], 'error');
             }
