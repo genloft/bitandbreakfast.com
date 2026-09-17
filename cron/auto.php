@@ -256,7 +256,9 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
     $forma = (bool) ($bit['sin_enviar'] ?? false)
         && (auto_es_recopilatorio($titular)
             || auto_es_promocional($titular . ' ' . $cuerpo)
-            || auto_es_didactico($titular));
+            || auto_es_didactico($titular)
+            || auto_es_entrevista($titular)
+            || !auto_es_del_sector($titular . ' ' . $cuerpo));
 
     if ($racimo === null
         || $senal['puntos'] < $minimo
@@ -327,6 +329,11 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     //   5. Ni un tutorial ni una columna. Media tecnologia hotelera publica su
     //      marketing en el mismo feed que sus notas, y una guia no caduca: si
     //      entra una vez entra siempre, desplazando a lo que si ha pasado.
+    //   6. Ni una entrevista: no es un hecho, es la opinion de alguien que
+    //      vende algo, y el bit no la puede resumir sin volverse su titular.
+    //   7. Y tiene que hablar de hoteles. El diccionario puntua palabras, no
+    //      contextos: una vulnerabilidad de Chrome puntua igual en una noticia
+    //      sobre un PMS que en una sobre Outlook.
     $senal = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
     $motivo = match (true) {
@@ -335,6 +342,8 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         auto_es_recopilatorio($titular)                   => 'automatico: recopilatorio, no una noticia',
         auto_es_promocional($titular . ' ' . $cuerpo)     => 'automatico: material promocional',
         auto_es_didactico($titular)                       => 'automatico: guia, no noticia',
+        auto_es_entrevista($titular)                      => 'automatico: entrevista',
+        !auto_es_del_sector($texto)                       => 'automatico: no habla de hoteles',
         default                                           => '',
     };
 

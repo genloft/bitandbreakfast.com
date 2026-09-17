@@ -395,6 +395,70 @@ comprobar(
     auto_es_didactico('Apaleo and IDeaS Announce Expanded Integration With Advanced Revenue Controls')
 );
 
+// --- De que va la noticia ---------------------------------------------------
+//
+// El diccionario puntua palabras, no contextos: "malware" vale lo mismo en
+// una noticia sobre un PMS que en una sobre Outlook.
+
+comprobar(
+    'una noticia de hoteles pasa',
+    true,
+    auto_es_del_sector('Airbnb pone precio a la reserva directa y cobra menos al hotel que trae al cliente')
+);
+
+comprobar(
+    'y una de un PMS tambien, aunque no diga la palabra hotel',
+    true,
+    auto_es_del_sector('Apaleo amplia su integracion con el channel manager de turno')
+);
+
+comprobar(
+    'una vulnerabilidad de Chrome no',
+    false,
+    auto_es_del_sector('Malware bypasses browser checks to force install Chrome and Edge extensions')
+);
+
+comprobar(
+    'ni un juzgado de California',
+    false,
+    auto_es_del_sector('A US judge orders X and SpaceX to explain why they dropped antitrust claims against Apple')
+);
+
+// --- Entrevistas ------------------------------------------------------------
+//
+// Los medios del sector viven de ellas y se reconocen a la legua.
+
+comprobar(
+    'nombre, empresa y frase entrecomillada',
+    true,
+    auto_es_entrevista('Cinta Masso (James y Rita): «La IA no sirve de nada sin digitalizar»')
+);
+
+comprobar(
+    'con comillas inglesas igual',
+    true,
+    auto_es_entrevista('Sonia Mateos: “La IA debe liberar tiempo del equipo”')
+);
+
+comprobar(
+    'y solo con el parentesis de la empresa',
+    true,
+    auto_es_entrevista('David Gonzalez (Lybra): un RMS es el GPS del revenue')
+);
+
+// Un titular normal con dos puntos no es una entrevista.
+comprobar(
+    'un titular con subtitulo no lo es',
+    false,
+    auto_es_entrevista('Aprobado el DORA III: las tarifas moderan su subida')
+);
+
+comprobar(
+    'ni un apostrofo en un nombre propio',
+    false,
+    auto_es_entrevista('Spain’s data agency gets first report of AI-powered data breach')
+);
+
 // --- Categoria segun el diccionario -----------------------------------------
 
 $diccionario = [

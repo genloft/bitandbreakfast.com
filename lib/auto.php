@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 8;
+const AUTO_CRITERIOS = 9;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.
@@ -382,6 +382,66 @@ function auto_es_didactico(string $titular): bool
     }
 
     return false;
+}
+
+/**
+ * ¿Habla esto de hoteles, o solo de tecnologia?
+ *
+ * El diccionario puntua palabras, no contextos: "malware", "zero-day" o
+ * "agente de IA" valen lo mismo en una noticia sobre un PMS que en una sobre
+ * Outlook. Por eso se colaban en la edicion cosas ciertas y bien puntuadas que
+ * a un director de sistemas de un hotel no le cambian el dia: una vulnerabilidad
+ * de Chrome, un juzgado de California, el rastreador de despidos de Crunchbase.
+ *
+ * Esta es la puerta que faltaba, y es la mas barata de todas: que en alguna
+ * parte del texto aparezca el sector. Si no aparece, no es para este boletin,
+ * por buena que sea la noticia.
+ */
+function auto_es_del_sector(string $texto): bool
+{
+    $aguja = ' ' . texto_normalizar($texto) . ' ';
+
+    $sector = [
+        'hotel', 'hoteles', 'hotelero', 'hotelera', 'hoteleros', 'hoteleras',
+        'hoteleria', 'hospitality', 'hotelier', 'hoteliers',
+        'alojamiento', 'alojamientos', 'hospedaje', 'hospedajes',
+        'huesped', 'huespedes', 'guest', 'guests',
+        'resort', 'resorts', 'hostel', 'parador', 'balneario',
+        'cadena hotelera', 'apartamento turistico', 'apartamentos turisticos',
+        'recepcion', 'front desk', 'check in', 'checkin', 'housekeeping',
+        'pms', 'crs', 'rms', 'channel manager', 'motor de reservas',
+        'booking engine', 'revenue management', 'revpar', 'adr', 'overbooking',
+        'ota', 'otas', 'turismo', 'turistico', 'turistica', 'travel', 'viajeros',
+    ];
+
+    foreach ($sector as $palabra) {
+        if (str_contains($aguja, ' ' . texto_normalizar($palabra) . ' ')) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * ¿Es esto una entrevista?
+ *
+ * Los medios del sector viven de ellas y se reconocen a la legua: el nombre,
+ * la empresa entre parentesis, los dos puntos y la frase entrecomillada. No
+ * son malas -a veces son lo mejor de la semana-, pero no son un hecho: son la
+ * opinion de alguien que vende algo, y el bit no puede resumirlas sin
+ * convertirse en su titular.
+ */
+function auto_es_entrevista(string $titular): bool
+{
+    // Dos puntos seguidos de comillas: "Fulano: «lo que sea»".
+    // El apostrofo recto no entra: "Spain's data agency" no es una entrevista.
+    if (preg_match('/:\s*[«“”‘"]/u', $titular)) {
+        return true;
+    }
+
+    // "Nombre Apellido (Empresa):", que es la otra mitad del genero.
+    return (bool) preg_match('/^[^:]{3,70}\([^:()]{2,50}\)\s*:/u', $titular);
 }
 
 /**
