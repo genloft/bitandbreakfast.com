@@ -94,6 +94,20 @@ function salud_fallando(): array
 }
 
 /**
+ * MariaDB o MySQL, sin numero de version.
+ */
+function salud_motor(): string
+{
+    try {
+        $version = (string) bd()->getAttribute(PDO::ATTR_SERVER_VERSION);
+    } catch (Throwable $e) {
+        return 'desconocido';
+    }
+
+    return stripos($version, 'mariadb') !== false ? 'mariadb' : 'mysql';
+}
+
+/**
  * Las marcas que dejan en disco el cron y la portada.
  */
 function salud_marcas(string $raiz, int $ahora): array
@@ -179,6 +193,12 @@ $informe = [
             ''
         ) ?: 'ninguna',
         'escritas'   => count(glob(__DIR__ . '/sql/migraciones/*.sql') ?: []),
+        // La familia del servidor, no su version: MariaDB acepta cosas que
+        // MySQL no -ADD COLUMN IF NOT EXISTS, sin ir mas lejos- y las
+        // migraciones se escriben contando con una de las dos. La version
+        // exacta no sale: esta pagina es publica y un numero de parche es
+        // media pista para quien busque por donde entrar.
+        'motor'      => salud_motor(),
         // Vacio es lo normal. Con algo dentro, ahi esta el problema: esa
         // migracion y todas las de detras no se han aplicado, y el codigo
         // nuevo esta esperando algo que no existe.
