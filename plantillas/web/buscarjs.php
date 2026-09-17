@@ -195,22 +195,29 @@ declare(strict_types=1);
     var hayFiltros = GRUPOS.some(function (g) { return seleccion[g].length > 0; });
     var hayTexto = terminos().length > 0;
 
-    if (!hayFiltros && !hayTexto) {
-      lista.innerHTML = '';
-      estado.textContent = 'Escribe o toca un filtro para empezar.';
-      return;
-    }
+    // Sin filtros se ensena todo lo publicado, lo mas reciente primero. Antes
+    // esto era una pagina en blanco con un "escribe algo": el lector llega a
+    // "En todo lo publicado" y se encuentra con que no hay nada publicado.
 
     if (!resultados.length) {
       lista.innerHTML = '';
-      estado.textContent = 'Nada con esos criterios. Prueba a quitar un filtro.';
+      estado.textContent = hayFiltros || hayTexto
+        ? 'Nada con esos criterios. Prueba a quitar un filtro.'
+        : 'Todavía no hay nada publicado.';
       return;
     }
 
-    estado.textContent = resultados.length === 1
-      ? '1 resultado'
-      : resultados.length + ' resultados' +
-        (resultados.length > MAXIMO ? ' (se muestran los ' + MAXIMO + ' primeros)' : '');
+    var recorte = resultados.length > MAXIMO ? ' (se muestran los ' + MAXIMO + ' primeros)' : '';
+
+    if (!hayFiltros && !hayTexto) {
+      estado.textContent = resultados.length === 1
+        ? 'Un bit publicado'
+        : resultados.length + ' bits publicados, del más reciente al más antiguo' + recorte;
+    } else {
+      estado.textContent = resultados.length === 1
+        ? '1 resultado'
+        : resultados.length + ' resultados' + recorte;
+    }
 
     var html = '';
 
@@ -351,6 +358,7 @@ declare(strict_types=1);
   cargar(refrescar);
 
   if (!hayEstado) {
-    estado.textContent = 'Escribe o toca un filtro para empezar.';
+    // Mientras baja el indice; en cuanto llega, se pinta la lista entera.
+    estado.textContent = 'Cargando lo publicado…';
   }
 })();
