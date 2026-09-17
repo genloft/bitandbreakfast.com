@@ -322,6 +322,13 @@ y el recuento, en `/salud.php` → `fuentes.dormidas`.
 Si duermen varias a la vez y todas por 403, casi nunca es cosa de los feeds:
 es la IP del alojamiento compartido, que está en alguna lista. Se pasa solo.
 
+Caso aparte: `robots.txt prohíbe la descarga de este feed`. Eso no es una
+avería, es que el medio no quiere que nadie automático le lea —le pasa a
+Preferente, a Finextra y a Canary Technologies, que solo abren la puerta a
+Google y poco más—. Esas fuentes duermen una semana entera de golpe, para no
+volver cada hora a que nos repitan lo mismo. La única forma de recuperarlas es
+pedirles permiso; saltarse el `robots.txt` no es una opción.
+
 Para despertar una a mano:
 
 ```sql

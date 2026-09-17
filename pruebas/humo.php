@@ -620,4 +620,73 @@ comprobar(
     auto_publicar_lote(microtime(true) + 5)['estado']
 );
 
+// -----------------------------------------------------------------------------
+// Fuentes que fallan: se duermen, no se mueren
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/cron/ingesta.php';
+
+$dormilona = humo_fuente('Fuente que falla', 'prensa', 5, 'es');
+
+function humo_fuente_fila(int $id): array
+{
+    $st = bd()->prepare('SELECT * FROM fuentes WHERE id = ?');
+    $st->execute([$id]);
+
+    return (array) $st->fetch();
+}
+
+// Cuatro fallos seguidos no duermen a nadie: un feed se cae un rato y vuelve.
+for ($i = 0; $i < 4; $i++) {
+    ingesta_marcar_fallo(humo_fuente_fila($dormilona), 'HTTP 502');
+}
+
+$fila = humo_fuente_fila($dormilona);
+
+comprobar('cuatro fallos se cuentan', 4, (int) $fila['fallos_consecutivos']);
+comprobar('pero no duermen la fuente', null, $fila['dormida_hasta']);
+comprobar('y desde luego no la apagan', 1, (int) $fila['activa']);
+
+// El quinto si.
+ingesta_marcar_fallo($fila, 'HTTP 502');
+$fila = humo_fuente_fila($dormilona);
+
+comprobar('al quinto se duerme', true, $fila['dormida_hasta'] !== null);
+comprobar('sin apagarse', 1, (int) $fila['activa']);
+
+comprobar(
+    'y mientras duerme no se le pide nada',
+    false,
+    in_array($dormilona, array_map(
+        static fn (array $f): int => (int) $f['id'],
+        ingesta_siguientes(0, 200)
+    ), true)
+);
+
+// Un intento que sale bien la despierta del todo.
+ingesta_marcar_ok($dormilona, ['etag' => null, 'last_modified' => null]);
+$fila = humo_fuente_fila($dormilona);
+
+comprobar('un acierto la despierta', null, $fila['dormida_hasta']);
+comprobar('y borra la cuenta de fallos', 0, (int) $fila['fallos_consecutivos']);
+
+comprobar(
+    'y vuelve al lote',
+    true,
+    in_array($dormilona, array_map(
+        static fn (array $f): int => (int) $f['id'],
+        ingesta_siguientes(0, 200)
+    ), true)
+);
+
+// Un "no" de robots.txt duerme una semana a la primera: no es una averia que
+// se vaya a arreglar sola dentro de un rato.
+ingesta_marcar_fallo(humo_fuente_fila($dormilona), 'robots.txt prohibe', INGESTA_SUENO_ROBOTS);
+
+$horas = (int) bd()->query(
+    'SELECT TIMESTAMPDIFF(HOUR, UTC_TIMESTAMP(), dormida_hasta) FROM fuentes WHERE id = ' . $dormilona
+)->fetchColumn();
+
+comprobar('robots.txt duerme una semana a la primera', true, $horas >= 167 && $horas <= 168);
+
 resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');

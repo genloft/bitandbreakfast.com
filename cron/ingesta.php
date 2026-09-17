@@ -26,6 +26,14 @@ require_once dirname(__DIR__) . '/lib/texto.php';
  * eso, y el dia que cambie lo que significa "se puede pedir" no puede
  * cambiarse en una y olvidarse en la otra.
  */
+/**
+ * Lo que duerme una fuente cuyo robots.txt nos cierra la puerta: una semana.
+ *
+ * No es un castigo, es cortesia. Volver cada hora a leer el mismo "no" es
+ * gastar la banda de otro para nada.
+ */
+const INGESTA_SUENO_ROBOTS = 168;
+
 const INGESTA_DESPIERTAS = 'SELECT * FROM fuentes
                              WHERE activa = 1
                                AND (dormida_hasta IS NULL OR dormida_hasta <= UTC_TIMESTAMP())';
@@ -119,7 +127,7 @@ function ingesta_fuente(array $fuente): array
 
     try {
         if (!robots_permite($fuente['url_feed'])) {
-            throw new RuntimeException('robots.txt prohibe la descarga de este feed');
+            throw new RobotsProhibido('robots.txt prohibe la descarga de este feed');
         }
 
         $respuesta = feed_descargar($fuente['url_feed'], $fuente['etag'], $fuente['last_modified']);
@@ -147,7 +155,16 @@ function ingesta_fuente(array $fuente): array
     } catch (Throwable $e) {
         $resultado = 'error';
         $mensaje   = texto_recortar($e->getMessage(), 480);
-        ingesta_marcar_fallo($fuente, $mensaje);
+
+        // Un "no" en robots.txt no es una averia que se arregle sola: se
+        // duerme la semana entera de golpe en vez de volver cada hora a que
+        // nos repitan lo mismo. Si el medio cambia de idea, en siete dias se
+        // entera este radar; mientras tanto, ni una peticion de mas.
+        ingesta_marcar_fallo(
+            $fuente,
+            $mensaje,
+            $e instanceof RobotsProhibido ? INGESTA_SUENO_ROBOTS : 0
+        );
     }
 
     $sql = 'INSERT INTO log_ingesta (fuente_id, inicio, fin, nuevos, resultado, mensaje)
@@ -228,11 +245,14 @@ function ingesta_marcar_ok(int $fuente_id, array $respuesta): void
  *
  * Ahora se duerme y despierta sola. Apagarla del todo -activa = 0- sigue
  * estando ahi, pero como lo que es: una decision de una persona.
+ *
+ * @param int $minimo_horas Suelo para el plazo, cuando quien llama sabe algo
+ *                          que la cuenta de fallos no dice.
  */
-function ingesta_marcar_fallo(array $fuente, string $mensaje): void
+function ingesta_marcar_fallo(array $fuente, string $mensaje, int $minimo_horas = 0): void
 {
     $fallos = (int) $fuente['fallos_consecutivos'] + 1;
-    $horas  = feed_sueno($fallos);
+    $horas  = max(feed_sueno($fallos), $minimo_horas);
 
     if ($horas === 0) {
         bd()->prepare('UPDATE fuentes SET fallos_consecutivos = ? WHERE id = ?')

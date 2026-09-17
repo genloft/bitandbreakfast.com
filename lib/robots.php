@@ -14,6 +14,18 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/feed.php';   // feed_descargar()
 
 /**
+ * Lo que se lanza cuando el robots.txt del dominio dice que no.
+ *
+ * Tiene tipo propio para poder distinguirlo de un fallo: un 403 de paso se
+ * reintenta dentro de un rato, pero un "no" escrito en robots.txt es una
+ * decision del medio, no una averia, y se respeta hasta que la cambie. Quien
+ * lo captura sabe asi que no tiene sentido volver mañana.
+ */
+class RobotsProhibido extends RuntimeException
+{
+}
+
+/**
  * Dice si podemos pedir una URL segun el robots.txt de su dominio.
  * Ante la duda (error de red, fichero ilegible), se permite: un robots.txt
  * caido no es una prohibicion.
