@@ -172,11 +172,11 @@ un MariaDB 10.6 para la de humo.
   traducción automática en un radar que presume de comprobable es una mentira
   pequeña repetida veinte veces por edición. Se pierde alguna primicia
   internacional: se sabe, y se prefiere. Se apaga con `auto_solo_espanol` a 0.
-- **Un color y un icono por temática, y solo ahí.** Los once iconos se dibujan
-  en `plantillas/web/iconos.php` y de ahí salen la edición, el sumario, los
-  filtros y los resultados: una sola lista, no cuatro copias. El color pinta
-  el icono y su marco, nunca el texto, porque once colores de texto en una
-  página son un arcoíris, no una guía.
+- **Un icono por temática, y de una sola lista.** Los once se dibujan en
+  `plantillas/web/iconos.php` y de ahí salen la edición, los filtros, los
+  resultados y el archivo: una lista, no cuatro copias. Los colores por tema
+  se quitaron con el cambio a papel —en una retícula en blanco y negro, once
+  colores son un arcoíris y no una guía—, pero siguen definidos por si vuelven.
 - **La portada se lee con el pulgar.** El sumario va antes que los bits porque
   un radar tiene que decir en diez segundos si esta semana traía algo. Todo lo
   demás es consecuencia de eso.
@@ -260,10 +260,21 @@ un MariaDB 10.6 para la de humo.
 - **El ámbito no es el país.** `fuentes.region` dice si un medio cubre España,
   Europa o el mundo; no se guarda el país de cada medio. Llamarlo «país» sería
   prometer una precisión que el dato no tiene.
-- **Oscuro siempre, no según el sistema.** Es una decisión de marca, como la
-  iluminación del vestíbulo de un hotel: no se enciende y se apaga según quién
-  entre. Y serif para todo lo que se lee, con el sans reservado a las
-  etiquetas diminutas, que es donde una serif pequeña se ensucia.
+- **Papel y retícula de filetes.** El sitio ha pasado por un oscuro elegante y
+  por un retrofuturismo con rejilla; los dos hacían que pareciera una
+  aplicación. Es un agregador de noticias, así que se maqueta como un
+  periódico: fondo hueso, tinta negra, cada noticia en una celda con filete de
+  un píxel y las celdas compartiendo borde. Tres voces tipográficas —condensada
+  en mayúsculas para rótulos y aperturas, sans en negrita para titulares, serif
+  para el texto seguido— y un solo acento rojo que sale dos o tres veces por
+  página.
+- **Sin fotos, y a propósito.** Este sitio agrega titulares ajenos: las fotos
+  son de sus medios y no se toman prestadas. Un agregador con huecos grises
+  donde deberían ir imágenes parece roto; sin ellas, con el peso en la
+  tipografía y los filetes, parece deliberado.
+- **Sin índice lateral.** Lo hubo y se quitó: repetía los titulares que estaban
+  dos dedos más abajo, se apelotonaba en una columna estrecha y no había scroll
+  que indexar. Un índice sirve cuando hay mucho que recorrer.
 - **`item_token`** existe para no comparar cada item nuevo contra toda la
   ventana de 72 horas. Sin ese índice invertido, agrupar no cabe en el límite
   de tiempo del alojamiento.
