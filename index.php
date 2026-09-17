@@ -171,6 +171,7 @@ function arranque_trabajar(string $raiz, string $trabajo, bool $holgado = false)
 {
     if ($trabajo === 'cadena') {
         arranque_cadena($raiz, $holgado);
+        arranque_constancia($raiz, 'cadena');
         return;
     }
 
@@ -180,6 +181,21 @@ function arranque_trabajar(string $raiz, string $trabajo, bool $holgado = false)
     }
 
     arranque_tarea($raiz, 'publicar', 'publicar_pendiente', $holgado ? 25 : 15);
+    arranque_constancia($raiz, $trabajo);
+}
+
+/**
+ * Deja constancia de que el trabajo llego hasta el final.
+ *
+ * La marca de intentarlo se pone antes de empezar, asi que no distingue "lo
+ * hizo" de "se murio a la mitad". Y cuando el trabajo va detras de la
+ * respuesta ya enviada, morirse a la mitad es una posibilidad real: hay
+ * servidores que reciclan el proceso en cuanto el cliente tiene su pagina.
+ * Sin esta segunda marca, eso pasaria en silencio para siempre.
+ */
+function arranque_constancia(string $raiz, string $trabajo): void
+{
+    @file_put_contents($raiz . '/cache/.trabajo', $trabajo . ' ' . gmdate('Y-m-d H:i:s') . PHP_EOL);
 }
 
 /**

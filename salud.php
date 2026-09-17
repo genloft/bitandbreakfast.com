@@ -69,6 +69,7 @@ function salud_marcas(string $raiz, int $ahora): array
     $marcas = [
         'cron'     => $raiz . ESTADO_MARCA_CRON,
         'portada'  => $raiz . '/cache/.publicar',
+        'trabajo'  => $raiz . '/cache/.trabajo',
         'generado' => $raiz . '/publico/archivo.html',
     ];
 
@@ -108,8 +109,12 @@ $informe = [
         'suplencia'  => $callado ? 'la portada empuja la cadena en cada visita' : 'no hace falta',
     ],
     'web'       => [
-        'generada'      => $marcas['generado']['cuando'],
+        'generada'       => $marcas['generado']['cuando'],
         'ultimo_intento' => $marcas['portada']['cuando'],
+        // La diferencia entre las dos marcas es la que importa: la primera se
+        // pone antes de empezar y la segunda al terminar. Si el intento es
+        // reciente y el trabajo no, es que algo se queda a medias.
+        'ultimo_trabajo' => trim((string) @file_get_contents($raiz . '/cache/.trabajo')) ?: 'nunca',
     ],
     // La version de criterios que lleva el codigo frente a la que se ha
     // aplicado ya a lo publicado. Si la primera es mayor, hay una revision
