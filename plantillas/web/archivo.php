@@ -47,7 +47,8 @@ $alta_abierta  = $alta_abierta ?? false;
   <header class="edicion-cabecera">
     <h1>Archivo</h1>
     <p class="datos">
-      <?= count($ediciones) ?> edición<?= count($ediciones) === 1 ? '' : 'es' ?> publicada<?= count($ediciones) === 1 ? '' : 's' ?>
+      <?php // "edicion" pierde la tilde en plural: edicion / ediciones. ?>
+      <?= count($ediciones) ?> <?= count($ediciones) === 1 ? 'edición publicada' : 'ediciones publicadas' ?>
     </p>
   </header>
 
