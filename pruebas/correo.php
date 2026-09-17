@@ -357,4 +357,51 @@ comprobar('el html escapa lo que pinta', true, str_contains(
 comprobar('el html no trae imagenes', false, str_contains($html_ed, '<img'));
 comprobar('ni hojas de estilo externas', false, str_contains($html_ed, '<link'));
 
+// --- El aviso del cron ------------------------------------------------------
+//
+// Llega cada hora, asi que el asunto tiene que decir si hace falta abrirlo sin
+// abrirlo: en el movil se ven cuarenta caracteres.
+
+comprobar(
+    'el asunto dice lo que ha entrado',
+    'Radar · 7 nuevas',
+    aviso_asunto(['nuevos' => 7, 'archivados' => 0, 'errores' => 0])
+);
+
+comprobar(
+    'y en singular cuando es una',
+    'Radar · 1 nueva',
+    aviso_asunto(['nuevos' => 1, 'archivados' => 0, 'errores' => 0])
+);
+
+comprobar(
+    'lo archivado tambien sale',
+    'Radar · 5 nuevas · 12 al archivo',
+    aviso_asunto(['nuevos' => 5, 'archivados' => 12, 'errores' => 0])
+);
+
+// Un error tiene que verse en el asunto: es lo unico que exige abrirlo.
+comprobar(
+    'y los errores tambien',
+    'Radar · 2 errores',
+    aviso_asunto(['nuevos' => 0, 'archivados' => 0, 'errores' => 2])
+);
+
+comprobar(
+    'sin nada que contar, lo dice',
+    'Radar · sin novedades',
+    aviso_asunto(['nuevos' => 0, 'archivados' => 0, 'errores' => 0])
+);
+
+$parte = aviso_cuerpo(
+    ['nuevos' => 3, 'archivados' => 9],
+    ['ingesta: 12 fuentes', 'procesar: 40 items'],
+    'https://ejemplo.com'
+);
+
+comprobar('el parte cuenta lo que entro', true, str_contains($parte, '3 noticias nuevas'));
+comprobar('y lo que se archivo', true, str_contains($parte, '9 han pasado'));
+comprobar('y lleva el registro de las tareas', true, str_contains($parte, 'procesar: 40 items'));
+comprobar('y dice como dejar de recibirlo', true, str_contains($parte, 'cron_aviso'));
+
 resumen_pruebas('Pruebas de la fase 5: alta con doble confirmacion');

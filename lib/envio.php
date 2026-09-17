@@ -180,3 +180,84 @@ function envio_html(array $edicion, array $bits, string $base, string $url_baja)
 
     return $h;
 }
+
+/**
+ * El asunto del aviso del cron.
+ *
+ * Lo importante primero, porque en el movil se ven cuarenta caracteres: si ha
+ * entrado algo, cuanto; si no, que no. Asi se puede saber si hace falta abrirlo
+ * sin abrirlo, que es lo que se le pide a un aviso que llega cada hora.
+ */
+function aviso_asunto(array $datos): string
+{
+    $nuevos     = (int) ($datos['nuevos'] ?? 0);
+    $archivados = (int) ($datos['archivados'] ?? 0);
+    $errores    = (int) ($datos['errores'] ?? 0);
+
+    $partes = [];
+
+    if ($nuevos > 0) {
+        $partes[] = $nuevos . ' nueva' . ($nuevos === 1 ? '' : 's');
+    }
+
+    if ($archivados > 0) {
+        $partes[] = $archivados . ' al archivo';
+    }
+
+    if ($errores > 0) {
+        $partes[] = $errores . ' error' . ($errores === 1 ? '' : 'es');
+    }
+
+    if (!$partes) {
+        $partes[] = 'sin novedades';
+    }
+
+    return 'Radar · ' . implode(' · ', $partes);
+}
+
+/**
+ * El cuerpo del aviso: lo que ha hecho la pasada, en texto plano.
+ *
+ * Sin HTML a proposito. Esto no es un boletin, es un parte: se lee en diez
+ * segundos, se archiva y no se ensena a nadie.
+ *
+ * @param array $datos  nuevos, archivados, errores, cuando
+ * @param array $lineas El registro de la pasada, una linea por tarea.
+ */
+function aviso_cuerpo(array $datos, array $lineas, string $base): string
+{
+    $nuevos     = (int) ($datos['nuevos'] ?? 0);
+    $archivados = (int) ($datos['archivados'] ?? 0);
+
+    $texto = [];
+
+    $texto[] = 'Pasada del ' . gmdate('d/m/Y H:i') . ' UTC.';
+    $texto[] = '';
+
+    $texto[] = $nuevos > 0
+        ? '- Han entrado ' . $nuevos . ' noticia' . ($nuevos === 1 ? '' : 's') . ' nueva' . ($nuevos === 1 ? '' : 's') . '.'
+        : '- No ha entrado ninguna noticia nueva.';
+
+    if ($archivados > 0) {
+        $texto[] = '- ' . $archivados . ($archivados === 1 ? ' ha pasado' : ' han pasado')
+                 . ' al archivo al cerrarse la edicion anterior.';
+    }
+
+    $texto[] = '';
+    $texto[] = 'Lo que ha hecho cada tarea:';
+    $texto[] = '';
+
+    foreach ($lineas as $linea) {
+        $texto[] = '  ' . trim((string) $linea);
+    }
+
+    $texto[] = '';
+    $texto[] = 'La web: ' . $base . '/';
+    $texto[] = 'El estado: ' . $base . '/salud.php';
+    $texto[] = '';
+    $texto[] = 'Este aviso sale en cada pasada del cron. Para recibirlo solo';
+    $texto[] = 'cuando haya cambios, pon el ajuste cron_aviso a "cambios";';
+    $texto[] = 'para no recibirlo, a "no".';
+
+    return implode(PHP_EOL, $texto) . PHP_EOL;
+}

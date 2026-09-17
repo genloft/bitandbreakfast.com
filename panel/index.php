@@ -231,6 +231,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             panel_ir('correo');
             // no continua
 
+        case 'guardar_aviso':
+            $modo = (string) ($_POST['cron_aviso'] ?? 'siempre');
+
+            // Lista blanca: de aqui sale el comportamiento del cron, y un valor
+            // inventado lo dejaria en un estado que no contempla nadie.
+            ajuste_guardar('cron_aviso', in_array($modo, ['siempre', 'cambios', 'no'], true) ? $modo : 'siempre');
+
+            $correo_aviso = correo_normalizar(trim((string) ($_POST['cron_aviso_correo'] ?? '')));
+
+            if ($correo_aviso !== '' && !correo_valido($correo_aviso)) {
+                panel_avisar('Esa dirección para el aviso no es válida.', 'error');
+                panel_ir('correo');
+            }
+
+            ajuste_guardar('cron_aviso_correo', $correo_aviso);
+            panel_avisar('Aviso del cron guardado.');
+            panel_ir('correo');
+            // no continua
+
         case 'enviar_tanda':
             require_once dirname(__DIR__) . '/cron/enviar.php';
 
@@ -301,6 +320,8 @@ switch ($pagina) {
         $configurado = correo_configurado();
         $cuentas     = lista_cuentas();
         $envio       = panel_estado_envio();
+        $aviso_modo   = (string) ajuste('cron_aviso', 'siempre');
+        $aviso_correo = (string) ajuste('cron_aviso_correo', '');
         $vista       = 'correo';
         break;
 

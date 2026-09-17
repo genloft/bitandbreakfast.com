@@ -164,6 +164,54 @@ a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
 }
 .saltar:focus { left: 1rem; top: 1rem; z-index: 10; }
 
+/* --- La barra de arriba ----------------------------------------------------
+   Lo primero que se ve y lo unico que dice algo antes de leer nada: cuando se
+   actualizo esto y que cambio. Fina, monoespaciada y con un punto cian que
+   hace de piloto encendido. */
+
+.aviso-barra {
+  border-bottom: 1px solid var(--borde);
+  background: linear-gradient(90deg, rgba(92, 225, 230, .07), transparent 55%), var(--papel);
+}
+
+.aviso-texto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem .9rem;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: .6rem var(--gutter);
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .08em;
+  color: var(--apagado);
+}
+
+/* El piloto. Sin parpadeo: en una barra que se lee de reojo, algo que se mueve
+   es algo que estorba. */
+.aviso-punto {
+  width: .45rem;
+  height: .45rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--enlace);
+  box-shadow: 0 0 6px var(--enlace);
+}
+
+.aviso-cuando { color: var(--tinta); }
+
+.aviso-dato::before {
+  content: "·";
+  margin-right: .9rem;
+  color: var(--borde);
+}
+
+.aviso-nuevos strong { color: var(--acento); }
+.aviso-archivo strong { color: var(--enlace); }
+.aviso-archivo a { color: var(--apagado); }
+.aviso-quieto { color: var(--apagado); opacity: .8; }
+
 /* --- Cabecera ------------------------------------------------------------
    El logotipo manda: grande, serif y a la derecha. Todo lo demas se aparta. */
 

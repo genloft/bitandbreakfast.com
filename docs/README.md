@@ -194,6 +194,21 @@ un MariaDB 10.6 para la de humo.
   tres días. Y la baja es un clic sin preguntas y sin sesión: cualquier
   fricción ahí solo consigue que marquen el correo como spam, que para un
   boletín es mucho peor que perder un lector.
+- **La barra de arriba contesta la única pregunta de quien vuelve.** Cuándo se
+  actualizó esto, cuántas noticias entraron y cuántas pasaron al archivo. Es
+  una foto del momento en que se generó la página, no un dato en vivo: el sitio
+  es HTML estático y esa es la razón de que aguante. Si no ha cambiado nada, lo
+  dice; escribir «0 noticias nuevas» es ruido con forma de dato.
+- **El delta se calcula con tres ajustes, no con un histórico.** Cuándo fue la
+  última generación, qué edición estaba en portada y con cuántos bits. Si la
+  portada sigue siendo la misma, lo nuevo es lo que le ha crecido; si ha
+  cambiado, la nueva entra entera y la anterior pasa al archivo con todo lo que
+  llevaba. Tres números contestan la pregunta; un diario de operaciones habría
+  sido otra tabla que mantener.
+- **El cron manda un parte por correo al terminar.** Con `cron_aviso` en
+  `siempre` —lo que se pidió— son veinticuatro correos al día por el mismo
+  buzón que envía el boletín, que tiene límite por hora; con `cambios`, uno o
+  dos. Se elige en el panel → Correo.
 - **El boletín se manda por tandas, y la tabla `envios` es la que lo permite.**
   Un buzón de alojamiento compartido tiene un límite de correos por hora, y
   pasárselo no devuelve un error amable: bloquea el buzón. Se manda un puñado

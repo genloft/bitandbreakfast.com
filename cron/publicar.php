@@ -68,6 +68,7 @@ function publicar_pendiente(float $limite): array
     $temas  = publicar_temas();
     $medios = publicar_medios();
     $resumen_ediciones = publicar_resumen_ediciones();
+    $aviso  = publicar_aviso($ediciones);
 
     // La hoja de estilo, el guion y robots.txt no dependen de las ediciones,
     // pero se escriben aqui: son parte de la salida y no tienen otro sitio
@@ -89,6 +90,7 @@ function publicar_pendiente(float $limite): array
         'temas'        => $temas,
         'medios'       => $medios,
         'resumen'      => $resumen_ediciones,
+        'aviso'        => $aviso,
     ];
 
     foreach ($ediciones as $indice => $edicion) {
@@ -227,12 +229,18 @@ function publicar_pendiente(float $limite): array
     // sintoma de que algo ha ido mal.
     $barridos += publicar_barrer($publico . '/p', [], true);
 
+    publicar_recordar($ediciones, $aviso);
+
     ajuste_guardar('publicar_firma', $firma);
 
     return [
         'ediciones' => $hechas,
         'ficheros'  => $ficheros,
         'barridos'  => $barridos,
+        // Lo que ha cambiado viaja en el resumen: el despachador lo usa para
+        // el aviso por correo sin tener que volver a preguntarselo a la base.
+        'nuevos'      => (int) $aviso['nuevos'],
+        'archivados'  => (int) $aviso['archivados'],
         'estado'    => 'publicado',
     ];
 }
@@ -331,6 +339,69 @@ function publicar_temas(): array
     }
 
     return $temas;
+}
+
+/**
+ * Que ha cambiado desde la ultima vez que se genero la web.
+ *
+ * Contesta tres cosas y nada mas: cuando fue, cuantas noticias han entrado y
+ * cuantas han pasado al archivo. Es lo que se pinta arriba de la web y lo que
+ * va en el aviso del cron.
+ *
+ * No hay historico ni tabla de cambios: hacen falta tres numeros, no un diario
+ * de operaciones. La memoria son tres ajustes -cuando, que edicion estaba en
+ * portada y con cuantos bits-, y el delta sale de compararlos con lo de ahora.
+ *
+ * @param array $ediciones Las publicables, de la mas reciente a la mas antigua.
+ *
+ * @return array ['cuando' => string, 'nuevos' => int, 'archivados' => int]
+ */
+function publicar_aviso(array $ediciones): array
+{
+    $antes_numero = (int) ajuste('web_edicion_frente', '0');
+    $antes_bits   = (int) ajuste('web_bits_frente', '0');
+
+    $frente = $ediciones[0] ?? null;
+    $ahora  = gmdate('Y-m-d H:i:s');
+
+    if ($frente === null) {
+        return ['cuando' => $ahora, 'nuevos' => 0, 'archivados' => 0];
+    }
+
+    $numero = (int) $frente['numero'];
+    $bits   = count(publicar_bits((int) $frente['id']));
+
+    // Primera vez: todo lo que hay es nuevo, y no hay nada archivado todavia.
+    if ($antes_numero === 0) {
+        return ['cuando' => $ahora, 'nuevos' => $bits, 'archivados' => 0];
+    }
+
+    // Sigue la misma portada: lo nuevo es lo que le ha crecido. Puede crecer
+    // porque el modo automatico anade bits a una edicion ya cerrada solo si
+    // alguien los mueve a mano, asi que casi siempre sera cero.
+    if ($numero === $antes_numero) {
+        return ['cuando' => $ahora, 'nuevos' => max(0, $bits - $antes_bits), 'archivados' => 0];
+    }
+
+    // Portada nueva: entra entera, y la que estaba se va al archivo con todo
+    // lo que llevaba dentro.
+    return ['cuando' => $ahora, 'nuevos' => $bits, 'archivados' => $antes_bits];
+}
+
+/**
+ * Guarda el estado con el que se compara la proxima vez.
+ *
+ * Se llama al final y solo si la generacion ha terminado: si se guardara antes
+ * y el proceso muriera a la mitad, el cambio se habria dado por contado sin
+ * que nadie lo hubiera visto publicado.
+ */
+function publicar_recordar(array $ediciones, array $aviso): void
+{
+    $frente = $ediciones[0] ?? null;
+
+    ajuste_guardar('web_actualizada_en', (string) $aviso['cuando']);
+    ajuste_guardar('web_edicion_frente', (string) ($frente === null ? 0 : (int) $frente['numero']));
+    ajuste_guardar('web_bits_frente', (string) ($frente === null ? 0 : count(publicar_bits((int) $frente['id']))));
 }
 
 /**

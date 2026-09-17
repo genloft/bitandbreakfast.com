@@ -231,6 +231,30 @@ function web_proveedores(?string $empaquetados): array
 
 
 /**
+ * Fecha y hora en la hora de Espana, que es donde se lee esto.
+ *
+ * El sistema trabaja en UTC de principio a fin -es lo unico que no se
+ * complica con los cambios de hora-, pero un lector de Madrid que ve
+ * "actualizado a las 14:05" cuando en su reloj son las 16:05 no piensa
+ * "diferencia horaria": piensa que la web va atrasada.
+ */
+function web_fecha_hora(string $utc): string
+{
+    try {
+        $momento = new DateTimeImmutable($utc, new DateTimeZone('UTC'));
+        $aqui    = $momento->setTimezone(new DateTimeZone('Europe/Madrid'));
+    } catch (Throwable $e) {
+        return '';
+    }
+
+    $meses = web_meses();
+    $dia   = (int) $aqui->format('j');
+    $mes   = $meses[(int) $aqui->format('n')] ?? '';
+
+    return sprintf('%d de %s a las %s', $dia, $mes, $aqui->format('H:i'));
+}
+
+/**
  * Rutas y direcciones de las fichas de tema y de medio.
  *
  * Una letra por tipo -t de tema, m de medio- y el slug. Cortas a proposito:

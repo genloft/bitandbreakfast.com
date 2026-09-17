@@ -21,6 +21,8 @@ declare(strict_types=1);
 $enlace_activo = $enlace_activo ?? '';
 
 ?>
+<?php require __DIR__ . '/aviso.php'; ?>
+
 <header class="cabecera">
   <div class="cabecera-interior">
     <nav class="menu" aria-label="Principal">

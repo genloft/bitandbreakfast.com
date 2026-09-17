@@ -87,6 +87,38 @@ declare(strict_types=1);
   </p>
 </form>
 
+<h2>El aviso del cron</h2>
+
+<p class="explicacion">
+  Un correo con el parte de cada pasada: qué ha entrado, qué ha pasado al
+  archivo y qué ha hecho cada tarea. El cron corre cada hora, así que
+  «siempre» son veinticuatro correos al día, y salen por este mismo buzón, que
+  tiene límite por hora. Con «solo cuando haya cambios» suelen ser uno o dos.
+</p>
+
+<form method="post" action="index.php?p=correo">
+  <input type="hidden" name="csrf" value="<?= panel_e(panel_csrf()) ?>">
+  <input type="hidden" name="accion" value="guardar_aviso">
+
+  <p>
+    <label for="cron_aviso">Cuándo avisar</label>
+    <select id="cron_aviso" name="cron_aviso">
+      <option value="siempre"<?= $aviso_modo === 'siempre' ? ' selected' : '' ?>>En cada pasada</option>
+      <option value="cambios"<?= $aviso_modo === 'cambios' ? ' selected' : '' ?>>Solo cuando haya cambios</option>
+      <option value="no"<?= $aviso_modo === 'no' ? ' selected' : '' ?>>Nunca</option>
+    </select>
+  </p>
+
+  <p>
+    <label for="cron_aviso_correo">A qué dirección</label>
+    <input id="cron_aviso_correo" name="cron_aviso_correo" type="email"
+           value="<?= panel_e($aviso_correo) ?>">
+    <span class="pista">Si lo dejas vacío, al propio buzón.</span>
+  </p>
+
+  <p class="acciones"><button type="submit">Guardar</button></p>
+</form>
+
 <h2>El envío</h2>
 
 <p class="explicacion">

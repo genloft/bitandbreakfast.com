@@ -45,6 +45,10 @@ ini_set('display_errors', $config['depuracion'] ? '1' : '0');
 
 $arranque    = microtime(true);
 
+// El registro de la pasada, que despues es el cuerpo del aviso por correo.
+$GLOBALS['tareas_lineas']  = [];
+$GLOBALS['tareas_errores'] = 0;
+
 // El presupuesto es POR TAREA, no para la ejecucion entera. Compartirlo era
 // un error: la ingesta se lo gastaba casi todo y el procesado arrancaba ya
 // sin tiempo, asi que la cola de items nuevos no bajaba nunca. Como esto solo
@@ -64,6 +68,78 @@ $forzada = $argv[1] ?? '';
 function tareas_log(string $mensaje): void
 {
     printf("[%s] %s\n", gmdate('Y-m-d H:i:s'), $mensaje);
+
+    // Y se guarda en memoria: el mismo registro es el cuerpo del aviso que
+    // sale por correo al terminar. Dos formatos del mismo parte habrian
+    // acabado contando cosas distintas.
+    $GLOBALS['tareas_lineas'][] = $mensaje;
+}
+
+/**
+ * Manda el parte de la pasada por correo.
+ *
+ * Tres modos, en el ajuste cron_aviso:
+ *
+ *   siempre  una vez por pasada, que con un cron horario son veinticuatro al
+ *            dia. Es lo que se pidio y es el valor de fabrica.
+ *   cambios  solo cuando ha entrado algo, se ha archivado algo o ha fallado
+ *            alguna tarea. En la practica, una o dos veces al dia.
+ *   no       nunca.
+ *
+ * Sale por el mismo buzon que el boletin, asi que comparte su limite por hora:
+ * si algun dia los avisos estorban al envio de la edicion, esto es lo primero
+ * que hay que bajar a 'cambios'.
+ */
+function tareas_avisar(array $resumenes): void
+{
+    $modo = (string) ajuste('cron_aviso', 'siempre');
+
+    if ($modo === 'no') {
+        return;
+    }
+
+    $nuevos     = (int) ($resumenes['publicar']['nuevos'] ?? 0);
+    $archivados = (int) ($resumenes['publicar']['archivados'] ?? 0);
+    $errores    = (int) ($GLOBALS['tareas_errores'] ?? 0);
+
+    if ($modo === 'cambios' && $nuevos === 0 && $archivados === 0 && $errores === 0) {
+        return;
+    }
+
+    require_once dirname(__DIR__) . '/lib/correo.php';
+    require_once dirname(__DIR__) . '/lib/smtp.php';
+    require_once dirname(__DIR__) . '/lib/envio.php';
+
+    $conf = correo_conf();
+
+    if (!correo_configurado($conf) || $conf['proveedor'] !== 'propio') {
+        // Sin buzon no hay aviso, y no es un error: el sitio funciona igual.
+        return;
+    }
+
+    $destino = trim((string) ajuste('cron_aviso_correo', ''));
+    $destino = $destino !== '' ? $destino : (string) $conf['usuario'];
+
+    if (!correo_valido($destino)) {
+        return;
+    }
+
+    $datos = ['nuevos' => $nuevos, 'archivados' => $archivados, 'errores' => $errores];
+    $base  = rtrim((string) config_opcional('sitio.url', ''), '/');
+
+    $envio = smtp_enviar($conf, [
+        'para'   => $destino,
+        'asunto' => aviso_asunto($datos),
+        'texto'  => aviso_cuerpo($datos, $GLOBALS['tareas_lineas'] ?? [], $base),
+        'cabeceras' => [
+            'Auto-Submitted: auto-generated',
+            'Precedence: bulk',
+        ],
+    ]);
+
+    if (!$envio['ok']) {
+        error_log('Bit & Breakfast, aviso del cron: ' . $envio['mensaje']);
+    }
 }
 
 /**
@@ -98,6 +174,8 @@ $tareas = [
     'enviar'        => dirname(__DIR__) . '/cron/enviar.php',
     'mantenimiento' => dirname(__DIR__) . '/cron/mantenimiento.php',
 ];
+
+$resumenes = [];
 
 tareas_log('--- arranca el despachador' . ($forzada !== '' ? " (forzado: $forzada)" : ''));
 
@@ -162,13 +240,24 @@ foreach ($tareas as $nombre => $fichero) {
             ? microtime(true) + $presupuesto
             : min($arranque + $techo, microtime(true) + $presupuesto);
         $resumen = $funcion($limite);
+        $resumenes[$nombre] = is_array($resumen) ? $resumen : [];
 
         tareas_log($nombre . ': ' . json_encode($resumen, JSON_UNESCAPED_UNICODE));
     } catch (Throwable $e) {
         // Una tarea rota no puede impedir que corran las demas.
+        $GLOBALS['tareas_errores']++;
         tareas_log("ERROR en $nombre: " . $e->getMessage());
         error_log('Bit & Breakfast, error en ' . $nombre . ': ' . $e->getMessage());
     }
 }
 
 tareas_log(sprintf('--- fin, %.1f segundos', microtime(true) - $arranque));
+
+// El aviso, lo ultimo de todo: asi el parte lleva dentro la pasada entera,
+// incluido lo que haya fallado.
+try {
+    tareas_avisar($resumenes);
+} catch (Throwable $e) {
+    // Que no salga el aviso no puede hacer que la pasada cuente como fallida.
+    error_log('Bit & Breakfast, aviso del cron: ' . $e->getMessage());
+}
