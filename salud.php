@@ -48,6 +48,20 @@ function salud_valor(string $sql, $defecto = null)
 }
 
 /**
+ * Una consulta de una sola columna, en lista.
+ */
+function salud_lista(string $sql): array
+{
+    try {
+        $sentencia = bd()->query($sql);
+
+        return $sentencia === false ? [] : array_map('strval', $sentencia->fetchAll(PDO::FETCH_COLUMN));
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+/**
  * Las marcas que dejan en disco el cron y la portada.
  */
 function salud_marcas(string $raiz, int $ahora): array
@@ -113,6 +127,16 @@ $informe = [
             0
         ),
         'ultima_lectura' => (string) (salud_valor('SELECT MAX(inicio) FROM log_ingesta', '') ?: 'nunca'),
+        // Solo el nombre, nunca el mensaje del error: un mensaje de PDO lleva
+        // rutas del servidor dentro y esta pagina la ve cualquiera.
+        'fallando'     => salud_lista(
+            "SELECT f.nombre FROM fuentes f
+               JOIN log_ingesta l ON l.fuente_id = f.id
+              WHERE l.resultado = 'error' AND l.inicio > (NOW() - INTERVAL 1 DAY)
+              GROUP BY f.id, f.nombre
+              ORDER BY f.nombre
+              LIMIT 12"
+        ),
         'nuevos_24h'   => (int) salud_valor(
             'SELECT COALESCE(SUM(nuevos), 0) FROM log_ingesta WHERE inicio > (NOW() - INTERVAL 1 DAY)',
             0
@@ -125,7 +149,10 @@ $informe = [
     ],
     'ediciones' => [
         'publicadas' => (int) salud_valor("SELECT COUNT(*) FROM ediciones WHERE estado <> 'abierta'", 0),
-        'abierta'    => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado' AND edicion_id IN (SELECT id FROM ediciones WHERE estado = 'abierta')", 0),
+        // Los bits de la edicion abierta cuentan aunque todavia no esten en
+        // estado 'publicado': lo estaran en cuanto se cierre, y lo que interesa
+        // saber aqui es si se esta llenando.
+        'abierta'    => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE edicion_id IN (SELECT id FROM ediciones WHERE estado = 'abierta')", 0),
         'bits'       => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'", 0),
         'sin_revisar' => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE redactado_por = 'ia' AND revisado = 0", 0),
     ],
