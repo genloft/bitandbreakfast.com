@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 4;
+const AUTO_CRITERIOS = 5;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.

@@ -49,29 +49,58 @@ function procesar_lote(float $limite): array
         'errores'        => 0,
     ];
 
-    foreach (procesar_pendientes($tamano) as $item) {
-        if (microtime(true) >= $limite) {
-            break;
+    // El lote es el tamano de cada consulta, no el techo de la pasada: manda el
+    // presupuesto de tiempo. Con un solo lote por ejecucion la cuenta no salia
+    // -cuarenta items por hora contra mil al dia que entran- y la cola crecia
+    // sola hasta no vaciarse nunca.
+    $vistos = [];
+
+    while (microtime(true) < $limite) {
+        $pendientes = procesar_pendientes($tamano);
+        $nuevos     = 0;
+
+        foreach ($pendientes as $item) {
+            $id = (int) $item['id'];
+
+            // Un item que falla por algo transitorio se queda en la cola, asi
+            // que la consulta siguiente vuelve a traerlo. Sin esta cuenta, la
+            // pasada se quedaria dando vueltas sobre los mismos cuarenta hasta
+            // agotar el presupuesto.
+            if (isset($vistos[$id])) {
+                continue;
+            }
+
+            $vistos[$id] = true;
+            $nuevos++;
+
+            if (microtime(true) >= $limite) {
+                break 2;
+            }
+
+            try {
+                $hecho = procesar_item($item, $conf, $alias, $terminos);
+
+                $resumen['items']++;
+                $resumen[$hecho['nuevo'] ? 'racimos_nuevos' : 'agrupados']++;
+                $resumen['fusionados'] += $hecho['fusionados'];
+            } catch (Throwable $e) {
+                $resumen['errores']++;
+                error_log('Bit & Breakfast, procesar item ' . $item['id'] . ': ' . $e->getMessage());
+
+                // Un item que revienta no puede parar el lote. Pero descartarlo
+                // siempre tampoco vale: un interbloqueo de InnoDB o una conexion
+                // caida no dicen nada de la noticia, y marcarla 'descartado' la
+                // perderia para siempre sin dejar rastro distinguible de un
+                // descarte editorial. Lo transitorio se queda en la cola.
+                if (!procesar_error_transitorio($e)) {
+                    procesar_descartar((int) $item['id']);
+                }
+            }
         }
 
-        try {
-            $hecho = procesar_item($item, $conf, $alias, $terminos);
-
-            $resumen['items']++;
-            $resumen[$hecho['nuevo'] ? 'racimos_nuevos' : 'agrupados']++;
-            $resumen['fusionados'] += $hecho['fusionados'];
-        } catch (Throwable $e) {
-            $resumen['errores']++;
-            error_log('Bit & Breakfast, procesar item ' . $item['id'] . ': ' . $e->getMessage());
-
-            // Un item que revienta no puede parar el lote. Pero descartarlo
-            // siempre tampoco vale: un interbloqueo de InnoDB o una conexion
-            // caida no dicen nada de la noticia, y marcarla 'descartado' la
-            // perderia para siempre sin dejar rastro distinguible de un
-            // descarte editorial. Lo transitorio se queda en la cola.
-            if (!procesar_error_transitorio($e)) {
-                procesar_descartar((int) $item['id']);
-            }
+        // Ni items nuevos que mirar ni cola que vaciar: se ha terminado.
+        if ($nuevos === 0) {
+            break;
         }
     }
 
