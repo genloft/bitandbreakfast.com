@@ -586,18 +586,28 @@ comprobar(
     auto_elegir($candidatos, 90, 10)
 );
 
-// --- Cuando se cierra la edicion --------------------------------------------
+// --- Cuando se cierra el cajon del dia --------------------------------------
+//
+// Ya no es una edicion que decide alguien: es el cajon donde caen los bits de
+// un dia, y se cierra cuando ese dia ha terminado. Con el cron cada cinco
+// minutos, cerrarlo "hasta hoy" habria abierto casi trescientos al dia.
 
 comprobar(
-    'una edicion llena se cierra',
+    'un cajon lleno se cierra',
     true,
     auto_toca_cerrar(20, 20, '2026-12-31', '2026-09-16')
 );
 
 comprobar(
-    'una edicion a medias, pero con la fecha cumplida, tambien',
-    true,
+    'mientras dura el dia, no',
+    false,
     auto_toca_cerrar(6, 20, '2026-09-16', '2026-09-16')
+);
+
+comprobar(
+    'pasado el dia, si',
+    true,
+    auto_toca_cerrar(6, 20, '2026-09-15', '2026-09-16')
 );
 
 comprobar(

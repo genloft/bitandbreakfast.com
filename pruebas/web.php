@@ -191,9 +191,7 @@ $fila = web_fila_indice([
     'por_que'        => 'Si tu PMS es OPERA Cloud, el jueves volviste al papel.',
     'cuerpo'         => 'El corte afectó a media Europa.',
     'categoria'      => 'pms-crs',
-    'numero'         => 38,
-    'slug'           => '2026-w39-038',
-    'fecha_prevista' => '2026-09-22',
+    'dia'            => '2026-09-22',
     'proveedores'    => 'oracle-hospitality|Oracle Hospitality',
     'fuente'         => 'Skift',
     'ambito'         => 'global',
@@ -204,7 +202,7 @@ $fila = web_fila_indice([
 // bits, los nombres largos repetidos son decenas de kilobytes.
 comprobar('la fila lleva el identificador del bit', 7, $fila['i']);
 comprobar('y el titular sin tocar', 'Oracle OPERA Cloud se cae durante cuatro horas', $fila['t']);
-comprobar('y la edicion en la que salio', 38, $fila['n']);
+comprobar('y el dia en que se descubrio', '2026-09-22', $fila['w']);
 comprobar('y los proveedores en texto plano', 'Oracle Hospitality', $fila['v']);
 comprobar('y la fecha ya escrita en espanol', '22 de septiembre de 2026', $fila['d']);
 
