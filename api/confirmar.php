@@ -19,7 +19,7 @@ require_once __DIR__ . '/respuesta.php';
 
 date_default_timezone_set('UTC');
 
-$base = rtrim((string) (config('sitio.url') ?? ''), '/');
+$base = rtrim((string) config_opcional('sitio.url', ''), '/');
 
 $id      = (int) ($_GET['s'] ?? 0);
 $testigo = (string) ($_GET['t'] ?? '');

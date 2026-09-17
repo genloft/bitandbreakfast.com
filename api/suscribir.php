@@ -85,7 +85,7 @@ function alta_huella(): string
     $ip = (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
     $ip = trim(explode(',', $ip)[0]);
 
-    return substr(hash_hmac('sha256', $ip, (string) (config('secretos.secreto_hmac') ?? 'sin-secreto')), 0, 32);
+    return substr(hash_hmac('sha256', $ip, (string) config_opcional('secretos.secreto_hmac', 'sin-secreto')), 0, 32);
 }
 
 // -----------------------------------------------------------------------------

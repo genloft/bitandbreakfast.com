@@ -40,6 +40,25 @@ function config(?string $clave = null)
 }
 
 /**
+ * Un ajuste de configuracion que puede no estar.
+ *
+ * config() revienta cuando no hay config/config.php, y hace bien: en
+ * produccion, un sitio sin configuracion tiene que parar en seco y no seguir a
+ * medias. Pero hay codigo que se ejecuta tambien donde no hay configuracion
+ * -las pruebas, sin ir mas lejos- y que solo necesita un valor por defecto.
+ */
+function config_opcional(string $clave, $defecto = null)
+{
+    try {
+        $valor = config($clave);
+    } catch (Throwable $e) {
+        return $defecto;
+    }
+
+    return $valor ?? $defecto;
+}
+
+/**
  * Conexion PDO unica. Lanza excepciones: cualquier fallo de SQL debe romper
  * ruidosamente en el cron y quedar en el registro, no pasar desapercibido.
  */

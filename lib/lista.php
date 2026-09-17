@@ -57,7 +57,7 @@ function correo_alta_propia(string $email, array $conf, string $url_vuelta = '')
         return ['ok' => false, 'mensaje' => 'No se ha podido registrar el alta. Inténtalo más tarde.'];
     }
 
-    $base    = rtrim((string) (config('sitio.url') ?? ''), '/');
+    $base    = rtrim((string) config_opcional('sitio.url', ''), '/');
     $enlace  = $base . '/api/confirmar.php?s=' . $id . '&t=' . $testigo;
     $envio   = smtp_enviar($conf, [
         'para'      => $email,
@@ -141,7 +141,7 @@ function lista_huella(): string
         return '';
     }
 
-    return substr(hash_hmac('sha256', $ip, (string) (config('secretos.secreto_hmac') ?? 'sin-secreto')), 0, 32);
+    return substr(hash_hmac('sha256', $ip, (string) config_opcional('secretos.secreto_hmac', 'sin-secreto')), 0, 32);
 }
 
 /**
@@ -196,7 +196,7 @@ function lista_confirmar(int $id, string $testigo): bool
  */
 function lista_firma_baja(int $id): string
 {
-    $secreto = (string) (config('secretos.secreto_hmac') ?? '');
+    $secreto = (string) config_opcional('secretos.secreto_hmac', '');
 
     return substr(hash_hmac('sha256', 'baja:' . $id, $secreto), 0, 32);
 }

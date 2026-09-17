@@ -80,14 +80,8 @@ function feed_agente(bool $declarado = true): string
 {
     $defecto = 'Mozilla/5.0 (compatible; BitAndBreakfastBot/1.0; +https://bitandbreakfast.com/bot)';
 
-    try {
-        // Sin configuracion -en las pruebas, por ejemplo- se usa el de casa:
-        // presentarse mal es mejor que no presentarse, y desde luego mejor que
-        // romper por leer un ajuste.
-        $agente = (string) (config('rastreador.user_agent') ?: $defecto);
-    } catch (Throwable $e) {
-        $agente = $defecto;
-    }
+    // Sin configuracion -en las pruebas, por ejemplo- se usa el de casa.
+    $agente = (string) (config_opcional('rastreador.user_agent') ?: $defecto);
 
     if ($declarado) {
         return $agente;
