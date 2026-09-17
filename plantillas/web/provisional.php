@@ -25,7 +25,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bit &amp; Breakfast · Radar de tecnología hotelera</title>
-<meta name="description" content="Radar de tecnología hotelera. Cinco minutos de lectura a la semana. La primera edición está en camino.">
+<meta name="description" content="Agregador de tecnología hotelera en español. Las primeras noticias están en camino.">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
@@ -42,7 +42,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <main id="contenido">
   <header class="edicion-cabecera">
     <p class="sello">Próximamente</p>
-    <h1>La primera edición está en camino</h1>
+    <h1>Las primeras noticias están en camino</h1>
     <p class="datos">Sale los martes</p>
   </header>
 

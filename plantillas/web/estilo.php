@@ -277,6 +277,49 @@ h1 {
    abajo y se apelotonaba en una columna estrecha. */
 .sumario { display: none; }
 
+/* --- El rio: un dia detras de otro --------------------------------------------
+   La portada ya no es una edicion, es lo que se ha descubierto cada dia. El
+   dia se anuncia con una barra negra a todo lo ancho: no es decoracion, es lo
+   unico que separa dos dias de noticias que por dentro son identicas. */
+
+.dia-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .3rem 1rem;
+  margin-top: 2.2rem;
+  padding: .45rem .8rem;
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.dia-cabecera-primera { margin-top: 1.4rem; }
+
+.dia-titulo {
+  margin: 0;
+  font-family: var(--titular);
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.dia-titulo a { color: inherit; text-decoration: none; }
+.dia-titulo a:hover { color: var(--acento); }
+.dia-cabecera .datos { color: #b9b4ac; }
+
+.mas-dias {
+  margin: 1.6rem 0 0;
+  font-family: var(--ui);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.mas-dias a { text-decoration: none; border-bottom: 2px solid var(--acento); padding-bottom: .1rem; }
+
 /* --- La portada: retícula de filetes ------------------------------------------
    Las celdas comparten borde. Sin imagenes, es el filete el que separa una
    noticia de la siguiente y el que hace que veinte quepan sin agobiar. */

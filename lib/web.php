@@ -45,6 +45,27 @@ function web_fecha_larga(string $fecha): string
 }
 
 /**
+ * "Septiembre de 2026": el nombre de un mes, para agrupar el archivo.
+ *
+ * Con mayuscula inicial porque encabeza un bloque, no porque los meses la
+ * lleven en espanol: no la llevan.
+ */
+function web_mes_largo(string $fecha): string
+{
+    $tiempo = strtotime(substr($fecha, 0, 10) . ' UTC');
+
+    if ($tiempo === false) {
+        return '';
+    }
+
+    $mes = web_meses()[(int) gmdate('n', $tiempo)];
+
+    return mb_strtoupper(mb_substr($mes, 0, 1, 'UTF-8'), 'UTF-8')
+         . mb_substr($mes, 1, null, 'UTF-8')
+         . ' de ' . gmdate('Y', $tiempo);
+}
+
+/**
  * Fecha en el formato que exige RSS 2.0 (RFC 822).
  */
 function web_fecha_rss(string $fecha): string
@@ -62,14 +83,44 @@ function web_fecha_rss(string $fecha): string
  * extension no delata con que se genero y no hay que cambiarla el dia que
  * deje de ser un fichero.
  */
-function web_ruta_edicion(string $slug): string
+/**
+ * La pagina de un dia: /d/2026-09-17/.
+ *
+ * Un dia y no una edicion. La fecha en la direccion es fea de leer y buena de
+ * todo lo demas: se ordena sola, se adivina sin mirar el archivo y no cambia
+ * nunca, que es lo que se le pide a una URL que va a durar.
+ */
+function web_ruta_dia(string $dia): string
 {
-    return 'e/' . web_slug_seguro($slug) . '/index.html';
+    return 'd/' . web_slug_seguro(substr($dia, 0, 10)) . '/index.html';
 }
 
-function web_url_edicion(string $base, string $slug): string
+function web_url_dia(string $base, string $dia): string
 {
-    return rtrim($base, '/') . '/e/' . web_slug_seguro($slug) . '/';
+    return rtrim($base, '/') . '/d/' . web_slug_seguro(substr($dia, 0, 10)) . '/';
+}
+
+/**
+ * Como se llama un dia cuando se le pone encima de las noticias.
+ *
+ * "Hoy" y "Ayer" antes que la fecha, porque es lo que contesta la pregunta de
+ * quien entra: si esto es de ahora o de la semana pasada. A partir del tercer
+ * dia la fecha ya dice mas que la cuenta.
+ */
+function web_dia_titulo(string $dia, ?string $hoy = null): string
+{
+    $dia = substr($dia, 0, 10);
+    $hoy = $hoy ?? gmdate('Y-m-d');
+
+    if ($dia === $hoy) {
+        return 'Hoy';
+    }
+
+    if ($dia === gmdate('Y-m-d', strtotime($hoy . ' -1 day'))) {
+        return 'Ayer';
+    }
+
+    return web_fecha_larga($dia);
 }
 
 /**
@@ -154,12 +205,12 @@ function web_fila_indice(array $bit): array
         'fu' => (string) ($bit['fuente'] ?? ''),
         'a'  => (string) ($bit['ambito'] ?? 'global'),
         'l'  => (string) ($bit['idioma'] ?? 'en'),
-        'n' => (int) $bit['numero'],
-        's' => (string) $bit['slug'],
-        'f' => (string) $bit['fecha_prevista'],
-        // La fecha ya escrita: asi el buscador no repite los nombres de los
-        // meses en JavaScript ni se arriesga a que los dos formatos difieran.
-        'd' => web_fecha_larga((string) $bit['fecha_prevista']),
+        // El dia en que se descubrio. En ISO porque de ahi sale la direccion
+        // de su pagina, y ademas ordena solo.
+        'w' => substr((string) ($bit['dia'] ?? ''), 0, 10),
+        // Y el mismo dia ya escrito, para no repetir los nombres de los meses
+        // en JavaScript ni arriesgarse a que los dos formatos difieran.
+        'd' => web_fecha_larga(substr((string) ($bit['dia'] ?? ''), 0, 10)),
         'v' => $nombres,
         'b' => $buscable,
     ];

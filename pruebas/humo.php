@@ -326,21 +326,21 @@ comprobar('la edicion abierta recoge el bit', 1, count(datos_bits_edicion((int) 
 $revision = bits_revisar_edicion(datos_bits_edicion((int) $edicion['id']), datos_conf_edicion());
 comprobar('la edicion se puede cerrar', [], $revision['errores']);
 
-// Antes de cerrar nada no hay ediciones publicables. Aun asi el generador
+// Antes de cerrar nada no hay ningun bit publicado. Aun asi el generador
 // tiene que dejar la portada en pie: saltarselo es lo que dejo el sitio real
 // con la pagina del instalador durante semanas, porque publico/ no esta en el
 // repositorio y ningun despliegue lo toca.
 $publico = $raiz . '/publico';
 $previa  = publicar_pendiente(microtime(true) + 20);
 
-comprobar('sin ediciones cerradas, el generador publica igualmente', 'publicado', $previa['estado']);
+comprobar('sin nada publicado, el generador publica igualmente', 'publicado', $previa['estado']);
 comprobar('escribe la portada provisional', true, is_file($publico . '/index.html'));
 comprobar('y la hoja de estilo', true, is_file($publico . '/estilo.css'));
 
 comprobar(
-    'la portada provisional dice que la edicion esta en camino',
+    'la portada provisional dice que lo primero esta en camino',
     true,
-    str_contains((string) file_get_contents($publico . '/index.html'), 'primera edición está en camino')
+    str_contains((string) file_get_contents($publico . '/index.html'), 'están en camino')
 );
 
 datos_cerrar_edicion((int) $edicion['id']);
@@ -355,12 +355,12 @@ comprobar('y la cola de candidatos se queda con el otro racimo', 1, count(datos_
 
 $resumen_web = publicar_pendiente(microtime(true) + 30);
 
-comprobar('el generador publica una edicion', 1, $resumen_web['ediciones']);
+comprobar('el generador publica un dia', 1, $resumen_web['dias']);
 
-$slug = (string) $edicion['slug'];
+$dia = substr((string) $edicion['fecha_prevista'], 0, 10);
 
 comprobar('escribe la portada', true, is_file($publico . '/index.html'));
-comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web_ruta_edicion($slug)));
+comprobar('escribe el dia en su carpeta', true, is_file($publico . '/' . web_ruta_dia($dia)));
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
 comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
@@ -461,7 +461,7 @@ comprobar(
 $feed = (string) file_get_contents($publico . '/feed.xml');
 
 comprobar('el feed declara el canal', true, str_contains($feed, '<rss version="2.0"'));
-comprobar('y enlaza la edicion', true, str_contains($feed, web_url_edicion('https://ejemplo.test', $slug)));
+comprobar('y enlaza el dia', true, str_contains($feed, web_url_dia('https://ejemplo.test', $dia)));
 
 // La firma evita que el cron reescriba seis ficheros cada hora para nada.
 comprobar(
@@ -517,9 +517,22 @@ comprobar('el modo automatico escribe el bit que quedaba', 1, $auto['bits']);
 $abierta = datos_edicion_abierta();
 $suyos   = datos_bits_edicion((int) $abierta['id']);
 
-comprobar('y lo mete en la edicion abierta', 1, count($suyos));
-comprobar('aprobado, no en borrador', 'aprobado', $suyos[0]['estado']);
+comprobar('y lo mete en el cajon del dia', 1, count($suyos));
+
+// Publicado al escribirse, no al cerrar nada: es la diferencia entre un
+// agregador y una revista, y es lo que hace que lo de hoy se vea hoy.
+comprobar('publicado, no esperando a nada', 'publicado', $suyos[0]['estado']);
+comprobar('con el dia en que se descubrio', gmdate('Y-m-d'), substr((string) $suyos[0]['dia'], 0, 10));
 comprobar('y marcado como no escrito por una persona', 'ia', $suyos[0]['redactado_por']);
+
+// Y por eso sale en la web sin que nadie cierre nada.
+$resumen_vivo = publicar_pendiente(microtime(true) + 30);
+
+comprobar(
+    'y aparece en la portada el mismo dia',
+    true,
+    str_contains((string) file_get_contents($publico . '/index.html'), 'bit-' . (int) $suyos[0]['id'])
+);
 
 // El cuerpo sale del resumen de la fuente o de la lista de medios, nunca de
 // la nada.
@@ -529,21 +542,20 @@ comprobar(
     trim((string) $suyos[0]['cuerpo']) !== ''
 );
 
-// La edicion no esta llena y su fecha es la del proximo martes: no toca
-// cerrar todavia.
-comprobar('sin fecha ni tope, la edicion sigue abierta', 0, $auto['cerrada']);
+// El cajon es de hoy y hoy no ha terminado: no toca cerrar todavia.
+comprobar('mientras dura el dia, el cajon sigue abierto', 0, $auto['cerrada']);
 
-// Con la fecha cumplida, se cierra sola y se publica.
+// Con el dia terminado, se cierra solo.
 bd()->prepare('UPDATE ediciones SET fecha_prevista = ? WHERE id = ?')
     ->execute([gmdate('Y-m-d', time() - 86400), (int) $abierta['id']]);
 
 $auto = auto_publicar_lote(microtime(true) + 20);
 
-comprobar('cumplida la fecha, la edicion se cierra sola', (int) $abierta['numero'], $auto['cerrada']);
+comprobar('pasado el dia, el cajon se cierra solo', (int) $abierta['numero'], $auto['cerrada']);
 
 $resumen_web = publicar_pendiente(microtime(true) + 30);
 
-comprobar('y el generador publica las dos ediciones', 2, $resumen_web['ediciones']);
+comprobar('y el generador escribe los dos dias', 2, $resumen_web['dias']);
 
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 

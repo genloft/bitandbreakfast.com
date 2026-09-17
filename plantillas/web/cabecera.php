@@ -43,6 +43,6 @@ $enlace_activo = $enlace_activo ?? '';
 
   <div class="cabecera-pie">
     <p class="promesa">Agregador de tecnología hotelera <span class="promesa-punto">·</span> en español</p>
-    <p class="promesa">Cinco minutos a la semana</p>
+    <p class="promesa">Lo que aparece cada día</p>
   </div>
 </header>

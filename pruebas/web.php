@@ -41,21 +41,45 @@ comprobar(
 // --- Rutas ------------------------------------------------------------------
 
 comprobar(
-    'cada edicion vive en su carpeta con un index dentro',
-    'e/2026-w39-038/index.html',
-    web_ruta_edicion('2026-w39-038')
-);
-
-comprobar(
-    'la direccion publica de una edicion no lleva extension',
-    'https://bitandbreakfast.com/e/2026-w39-038/',
-    web_url_edicion('https://bitandbreakfast.com', '2026-w39-038')
+    'la direccion publica de un dia no lleva extension',
+    'https://bitandbreakfast.com/d/2026-09-17/',
+    web_url_dia('https://bitandbreakfast.com', '2026-09-17')
 );
 
 comprobar(
     'la barra final de la base no se duplica',
-    'https://bitandbreakfast.com/e/2026-w39-038/',
-    web_url_edicion('https://bitandbreakfast.com/', '2026-w39-038')
+    'https://bitandbreakfast.com/d/2026-09-17/',
+    web_url_dia('https://bitandbreakfast.com/', '2026-09-17')
+);
+
+// La direccion de un dia es su fecha, y de ahi sale un mkdir: nada de lo que
+// llegue puede subir de directorio.
+comprobar(
+    'cada dia tiene su carpeta con un index dentro',
+    'd/2026-09-17/index.html',
+    web_ruta_dia('2026-09-17')
+);
+
+comprobar(
+    'una fecha con hora se queda en el dia',
+    'd/2026-09-17/index.html',
+    web_ruta_dia('2026-09-17 18:42:00')
+);
+
+// Hoy y ayer antes que la fecha: es lo que contesta la pregunta de quien
+// entra, que es si esto es de ahora o de la semana pasada.
+comprobar('el dia de hoy se llama Hoy', 'Hoy', web_dia_titulo('2026-09-17', '2026-09-17'));
+comprobar('el anterior, Ayer', 'Ayer', web_dia_titulo('2026-09-16', '2026-09-17'));
+comprobar(
+    'y a partir de ahi, la fecha',
+    '15 de septiembre de 2026',
+    web_dia_titulo('2026-09-15', '2026-09-17')
+);
+
+comprobar(
+    'el mes encabeza el archivo con mayuscula',
+    'Septiembre de 2026',
+    web_mes_largo('2026-09-01')
 );
 
 // De un slug sale un mkdir, asi que no puede llevar nada que suba de

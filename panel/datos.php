@@ -160,8 +160,10 @@ function datos_edicion_abierta(): array
 
     $numero = (int) bd()->query('SELECT COALESCE(MAX(numero), 0) + 1 FROM ediciones')->fetchColumn();
 
-    // El proximo martes, que es el dia de envio.
-    $fecha = gmdate('Y-m-d', strtotime('next tuesday'));
+    // Hoy. Esto ya no es una edicion que sale los martes: es el cajon del dia,
+    // donde se van dejando los bits segun se descubren para que el boletin de
+    // mañana sepa que mandar. La web no lo nombra en ninguna parte.
+    $fecha = gmdate('Y-m-d');
 
     $sql = "INSERT INTO ediciones (numero, slug, titulo, fecha_prevista, estado)
             VALUES (?, ?, '', ?, 'abierta')";
@@ -283,7 +285,15 @@ function datos_cerrar_edicion(int $edicion_id): void
                        fecha_prevista = LEAST(fecha_prevista, UTC_DATE())
                  WHERE id = ?";
         bd()->prepare($sql)->execute([$edicion_id]);
-        bd()->prepare("UPDATE bits SET estado = 'publicado' WHERE edicion_id = ?")->execute([$edicion_id]);
+        // Con su dia puesto si no lo tenia. Los bits escritos a mano desde el
+        // panel no pasan por el modo automatico, que es quien lo rellena, y un
+        // bit sin dia no sale en ninguna parte: la web entera se ordena por el.
+        bd()->prepare(
+            "UPDATE bits
+                SET estado = 'publicado',
+                    dia = COALESCE(dia, DATE(creado))
+              WHERE edicion_id = ?"
+        )->execute([$edicion_id]);
 
         $sql = "UPDATE racimos SET estado = 'publicado'
                  WHERE id IN (SELECT racimo_id FROM bits WHERE edicion_id = ? AND racimo_id IS NOT NULL)";

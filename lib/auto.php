@@ -610,7 +610,11 @@ function auto_toca_cerrar(
         return true;
     }
 
-    return $fecha_prevista <= $hoy;
+    // Estrictamente anterior, no "hasta hoy". El cajon es de un dia y se
+    // cierra cuando ese dia ha terminado; con <= se cerraba en cuanto caia el
+    // primer bit, y con el cron cada cinco minutos eso son casi trescientos
+    // cajones al dia.
+    return $fecha_prevista < $hoy;
 }
 
 /**

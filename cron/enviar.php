@@ -38,7 +38,7 @@ require_once dirname(__DIR__) . '/cron/publicar.php';
  */
 function enviar_lote(float $limite): array
 {
-    $resumen = ['estado' => 'nada que enviar', 'edicion' => 0, 'enviados' => 0, 'fallos' => 0];
+    $resumen = ['estado' => 'nada que enviar', 'dia' => '', 'enviados' => 0, 'fallos' => 0];
 
     if ((string) ajuste('envio_automatico', '1') !== '1') {
         $resumen['estado'] = 'desactivado';
@@ -60,14 +60,20 @@ function enviar_lote(float $limite): array
         return $resumen;
     }
 
-    $resumen['edicion'] = (int) $edicion['numero'];
-    $bits    = publicar_bits((int) $edicion['id']);
+    // El cajon de un dia. Se manda lo que se descubrio ese dia, que es
+    // exactamente lo que se enseño en la web, no una seleccion aparte: si el
+    // correo trajera otra cosa que la pagina, habria dos ediciones distintas
+    // del mismo dia y una de las dos estaria mintiendo.
+    $dia = substr((string) $edicion['fecha_prevista'], 0, 10);
+
+    $resumen['dia'] = $dia;
+    $bits = publicar_bits($dia, 500);
 
     if (!$bits) {
-        // Una edicion sin bits no se manda: se da por enviada para que no
-        // bloquee a la siguiente.
+        // Un dia sin nada no se manda: se da por enviado para que no bloquee
+        // al siguiente.
         enviar_marcar_enviada((int) $edicion['id']);
-        $resumen['estado'] = 'edicion vacia';
+        $resumen['estado'] = 'dia vacio';
 
         return $resumen;
     }

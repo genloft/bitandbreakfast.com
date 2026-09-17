@@ -68,12 +68,12 @@ $url = web_url_tema($base, (string) $tema['slug']);
   <?php foreach ($bits as $bit): ?>
     <li>
       <h2>
-        <a href="<?= web_e(web_url_edicion($base, (string) $bit['slug'])) ?>#bit-<?= (int) $bit['id'] ?>">
+        <a href="<?= web_e(web_url_dia($base, (string) $bit['dia'])) ?>#bit-<?= (int) $bit['id'] ?>">
           <?= web_e($bit['titular']) ?>
         </a>
       </h2>
       <p class="datos">
-        <time datetime="<?= web_e((string) $bit['fecha_prevista']) ?>"><?= web_e(web_fecha_larga((string) $bit['fecha_prevista'])) ?></time>
+        <time datetime="<?= web_e(substr((string) $bit['dia'], 0, 10)) ?>"><?= web_e(web_fecha_larga(substr((string) $bit['dia'], 0, 10))) ?></time>
         <?php if (!empty($bit['fuente'])): ?>
           <span class="punto">·</span>
           <a href="<?= web_e(web_url_medio($base, web_slug_medio((string) $bit['fuente']))) ?>"><?= web_e($bit['fuente']) ?></a>

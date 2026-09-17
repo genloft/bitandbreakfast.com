@@ -8,7 +8,7 @@ declare(strict_types=1);
 ?>
 <footer class="pie">
   <nav class="menu" aria-label="Pie">
-    <a href="<?= web_e($base) ?>/">Última edición</a>
+    <a href="<?= web_e($base) ?>/">Lo último</a>
     <a href="<?= web_e($base) ?>/archivo.html">Archivo</a>
     <a href="<?= web_e($base) ?>/buscar.html">Buscar</a>
     <a href="<?= web_e($base) ?>/temas.html">Temas</a>

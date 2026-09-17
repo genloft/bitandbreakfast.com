@@ -134,7 +134,9 @@ require_once __DIR__ . '/iconos.php';
 
       if (puntos > 0) {
         // A igualdad de puntos, lo mas reciente primero.
-        salida.push({ p: puntos * 1000 + Math.min(bits[i].n, 999), b: bits[i] });
+        // A igualdad de puntos, lo mas reciente primero: el indice viene
+        // ordenado del ultimo al primero, asi que vale la posicion.
+        salida.push({ p: puntos * 1000 + Math.max(0, 999 - i), b: bits[i] });
       }
     }
 
@@ -243,7 +245,7 @@ require_once __DIR__ . '/iconos.php';
     var html = '';
 
     resultados.slice(0, MAXIMO).forEach(function (f) {
-      var url = '/e/' + encodeURIComponent(f.s) + '/#bit-' + f.i;
+      var url = '/d/' + encodeURIComponent(f.w) + '/#bit-' + f.i;
 
       html += '<li data-tema="' + escapar(f.c || '') + '">';
       html += '<h2>';
@@ -257,8 +259,8 @@ require_once __DIR__ . '/iconos.php';
       }
 
       html += '<a href="' + escapar(url) + '">' + escapar(f.t) + '</a></h2>';
-      html += '<p class="datos">Edición ' + f.n + '<span class="punto">·</span>';
-      html += '<time datetime="' + escapar(f.f) + '">' + escapar(f.d || f.f) + '</time>';
+      html += '<p class="datos">';
+      html += '<time datetime="' + escapar(f.w) + '">' + escapar(f.d || f.w) + '</time>';
 
       if (f.fu) {
         html += '<span class="punto">·</span>' + escapar(f.fu);

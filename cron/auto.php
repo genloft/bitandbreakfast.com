@@ -52,7 +52,10 @@ function auto_publicar_lote(float $limite): array
         microtime(true) + max(1.0, ($limite - microtime(true)) / 2)
     );
 
-    $tope     = max(1, (int) ajuste('edicion_max_bits', '20'));
+    // Ya no es un limite editorial -la portada es un rio y cabe todo lo que
+    // pase las puertas-, sino un seguro: si un dia las puertas fallan, que no
+    // se publiquen mil entradas de una agencia antes de que nadie lo note.
+    $tope     = max(1, (int) ajuste('edicion_max_bits', '200'));
     $umbral   = (int) ajuste('auto_umbral', '30');
     $minimo   = (int) ajuste('auto_min_diccionario', '8');
     $terminos = auto_terminos();
@@ -380,12 +383,23 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
             'categoria' => $categoria !== '' ? $categoria : auto_categoria($items),
             'madurez'   => 'anuncio',
             'tipo'      => auto_tipo($items),
-            'estado'    => 'aprobado',
+            // Publicado al escribirse, no al cerrar nada. Antes se quedaba en
+            // 'aprobado' esperando a que su edicion cerrara, asi que todo lo
+            // que el radar encontraba hoy no se veia hasta mañana. Un
+            // agregador que esconde lo de hoy no es un agregador.
+            'estado'    => 'publicado',
         ]);
 
-        bd()->prepare("UPDATE bits SET redactado_por = 'ia', revisado = 0 WHERE id = ?")
+        // El dia en que este sitio se entero. Es lo que ordena la web entera.
+        bd()->prepare("UPDATE bits SET redactado_por = 'ia', revisado = 0, dia = UTC_DATE() WHERE id = ?")
             ->execute([$bit_id]);
 
+        // Y el racimo deja de estar en la cola: ya tiene quien lo cuente.
+        bd()->prepare("UPDATE racimos SET estado = 'publicado' WHERE id = ?")
+            ->execute([$racimo_id]);
+
+        // El cajon del dia. La web no lo nombra en ninguna parte; existe
+        // porque el boletin necesita saber que mando ayer y a quien.
         datos_asignar_bit($bit_id, $edicion_id);
 
         bd()->commit();

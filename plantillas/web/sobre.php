@@ -21,7 +21,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Qué es · Bit &amp; Breakfast</title>
-<meta name="description" content="Bit &amp; Breakfast es un radar de tecnología hotelera: rastrea el sector, agrupa lo que cuenta lo mismo y publica quince o veinte bits a la semana.">
+<meta name="description" content="Bit &amp; Breakfast es un radar de tecnología hotelera: rastrea el sector, agrupa lo que cuenta lo mismo y publica cada día lo que encuentra.">
 <link rel="canonical" href="<?= web_e($base) ?>/sobre.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
@@ -41,7 +41,7 @@ $alta_abierta  = $alta_abierta ?? false;
   <header class="edicion-cabecera">
     <p class="sello">Qué es esto</p>
     <h1>Un agregador con criterio</h1>
-    <p class="datos">Cinco minutos de lectura a la semana</p>
+    <p class="datos">Lo que aparece cada día en el radar</p>
   </header>
 
   <div class="texto pagina">
@@ -51,7 +51,7 @@ $alta_abierta  = $alta_abierta ?? false;
     financiación. Agrupa las noticias que cuentan lo mismo, las puntúa y deja
     una cola de candidatos.</p>
 
-    <p>De esa cola salen cada edición entre quince y treinta <strong>bits</strong>.
+    <p>De esa cola salen cada día los <strong>bits</strong> que pasan las puertas.
     Los elige la puntuación, no una persona: entran los mejor puntuados que
     además hablan de tecnología hotelera según el diccionario del sistema.
     Esto es un agregador, no una redacción, y conviene que lo sepas: por eso

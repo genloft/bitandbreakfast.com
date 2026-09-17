@@ -95,7 +95,7 @@ $alta_abierta  = $alta_abierta ?? false;
   <noscript>
     <p class="vacio">El explorador necesita JavaScript. Sin él, el
     <a href="<?= web_e($base) ?>/archivo.html">archivo</a> lleva a todas las
-    ediciones, las <a href="<?= web_e($base) ?>/temas.html">fichas de tema</a>
+    los días, las <a href="<?= web_e($base) ?>/temas.html">fichas de tema</a>
     y las de <a href="<?= web_e($base) ?>/medios.html">medio</a> agrupan lo
     publicado en cada uno.</p>
   </noscript>

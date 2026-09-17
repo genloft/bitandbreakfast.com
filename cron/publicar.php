@@ -5,24 +5,30 @@
  * Se ejecuta desde cron/tareas.php, o directamente por linea de comandos:
  *   php cron/publicar.php
  *
- * Convierte las ediciones cerradas en HTML dentro de publico/. A partir de
- * ahi el sitio lo sirve Apache sin tocar PHP ni la base de datos, que es lo
- * unico que aguanta una portada compartida el dia que una edicion se comparta
- * en LinkedIn.
+ * Convierte lo publicado en HTML dentro de publico/. A partir de ahi el sitio
+ * lo sirve Apache sin tocar PHP ni la base de datos, que es lo unico que
+ * aguanta una portada compartida el dia que algo se comparta en LinkedIn.
+ *
+ * La web esta ordenada por el dia en que este radar descubrio cada noticia, no
+ * por ediciones. Una edicion solo existia al cerrarse, asi que lo de hoy no se
+ * veia hasta mañana; un dia existe en cuanto cae en el la primera noticia.
  *
  * Lo que escribe:
  *
- *   index.html          la ultima edicion, que hace de portada
- *   e/<slug>/index.html cada edicion
- *   archivo.html        el indice de todas
- *   feed.xml            RSS de las ediciones
+ *   index.html          la portada: el rio de los ultimos dias
+ *   d/<AAAA-MM-DD>/     cada dia, entero
+ *   archivo.html        la lista de dias
+ *   t/<tema>/           una ficha por tema
+ *   m/<medio>/          una ficha por medio
+ *   feed.xml            RSS de lo ultimo
+ *   buscar.html         el explorador, mas indice.json
  *   estilo.css          la hoja del sitio
  *   robots.txt
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
- * trabaja si ha cambiado. Asi el cron horario no reescribe seis ficheros cada
- * hora para nada, y a la vez cualquier correccion de un bit ya publicado se
- * recoge sola en la siguiente vuelta.
+ * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
+ * reescribe la web entera para nada, y a la vez cualquier correccion de un bit
+ * ya publicado se recoge sola en la siguiente vuelta.
  */
 
 require_once dirname(__DIR__) . '/lib/db.php';
@@ -35,15 +41,18 @@ require_once dirname(__DIR__) . '/lib/correo.php';
  * Publica lo que haya pendiente.
  *
  * @param float $limite Marca de tiempo a partir de la cual no se empiezan
- *                      ediciones nuevas.
+ *                      paginas nuevas.
  */
 function publicar_pendiente(float $limite): array
 {
-    $ediciones = publicar_ediciones();
-    $firma     = publicar_firma($ediciones);
+    $tope_portada = max(10, (int) ajuste('web_bits_portada', '80'));
+    $tope_archivo = max(10, (int) ajuste('web_dias_archivo', '180'));
+
+    $dias  = publicar_dias($tope_archivo);
+    $firma = publicar_firma($dias);
 
     if ($firma === (string) ajuste('publicar_firma', '')) {
-        return ['ediciones' => 0, 'ficheros' => 0, 'estado' => 'sin cambios'];
+        return ['dias' => 0, 'ficheros' => 0, 'estado' => 'sin cambios'];
     }
 
     $config  = config();
@@ -53,10 +62,9 @@ function publicar_pendiente(float $limite): array
     $ficheros = 0;
     $hechas   = 0;
 
-    // Los bits de cada edicion, guardados al pasar: el RSS los necesita para
-    // decir que trae la edicion, y volver a pedirlos seria repetir una
-    // consulta que ya se ha hecho.
-    $titulares = [];
+    // El rio: los ultimos bits, ya partidos por dias. Es la portada, y de aqui
+    // sale tambien el RSS, asi que se pide una vez.
+    $rio = publicar_rio($tope_portada);
 
     // Si no hay proveedor de correo configurado, el bloque de alta se pinta
     // como "todavia no". Mejor eso que un formulario que no lleva a ningun
@@ -64,13 +72,15 @@ function publicar_pendiente(float $limite): array
     $alta = correo_configurado();
 
     // Los temas y los medios que tienen algo publicado. Se piden una vez para
-    // todas las ediciones: son los mismos en todas y son dos consultas.
+    // todas las paginas: son los mismos en todas y son dos consultas.
     $temas  = publicar_temas();
     $medios = publicar_medios();
-    $resumen_ediciones = publicar_resumen_ediciones();
-    $aviso  = publicar_aviso($ediciones);
+    $resumen_dias = publicar_resumen_dias();
 
-    // La hoja de estilo, el guion y robots.txt no dependen de las ediciones,
+    $publicados = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'")->fetchColumn();
+    $aviso      = publicar_aviso($publicados, $tope_portada);
+
+    // La hoja de estilo, el guion y robots.txt no dependen de lo publicado,
     // pero se escriben aqui: son parte de la salida y no tienen otro sitio
     // donde vivir. Van los primeros porque de su contenido sale la version que
     // cuelga de sus URLs.
@@ -89,53 +99,75 @@ function publicar_pendiente(float $limite): array
         'alta_abierta' => $alta,
         'temas'        => $temas,
         'medios'       => $medios,
-        'resumen'      => $resumen_ediciones,
+        'resumen'      => $resumen_dias,
         'aviso'        => $aviso,
+        'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
     ];
 
-    foreach ($ediciones as $indice => $edicion) {
-        if (microtime(true) >= $limite) {
-            // Sin firma guardada, la proxima pasada vuelve a empezar. Se
-            // reescriben ficheros ya escritos, pero nunca queda una edicion
-            // sin generar por haberse quedado sin tiempo.
-            return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
+    // La portada: el rio entero, con sus dias por dentro. Una sola pagina y
+    // una sola consulta de fuentes para los ochenta bits.
+    if ($rio) {
+        $racimos = [];
+
+        foreach ($rio as $tramo) {
+            foreach ($tramo['bits'] as $bit) {
+                $racimos[] = (int) ($bit['racimo_id'] ?? 0);
+            }
         }
 
-        $titulares[(int) $edicion['id']] = publicar_bits((int) $edicion['id']);
-
-        $datos = $comunes + [
-            'edicion' => $edicion,
-            'bits'    => $titulares[(int) $edicion['id']],
-            'fuentes' => publicar_fuentes((int) $edicion['id']),
-            // Firma los enlaces contados. Si falta, los enlaces salen
-            // directos a la fuente y simplemente no se cuentan.
-            'secreto' => (string) ($config['secretos']['secreto_hmac'] ?? ''),
-        ];
-
-        $html = publicar_plantilla('edicion', $datos);
-
-        $ficheros += publicar_escribir($publico . '/' . web_ruta_edicion($edicion['slug']), $html) ? 1 : 0;
-        $hechas++;
-
-        // La edicion mas reciente es tambien la portada.
-        if ($indice === 0) {
-            $ficheros += publicar_escribir($publico . '/index.html', $html) ? 1 : 0;
-        }
-    }
-
-    // Sin ninguna edicion publicada, la portada es la pagina provisional. El
-    // generador es el unico que puede mantenerla al dia: el instalador la
-    // escribe una vez y despues desaparece.
-    if (!$ediciones) {
+        $ficheros += publicar_escribir(
+            $publico . '/index.html',
+            publicar_plantilla('portada', $comunes + [
+                'rio'     => $rio,
+                'fuentes' => publicar_fuentes($racimos),
+                'dias'    => $dias,
+            ])
+        ) ? 1 : 0;
+    } else {
+        // Sin nada publicado, la portada es la pagina provisional. El
+        // generador es el unico que puede mantenerla al dia: el instalador la
+        // escribe una vez y despues desaparece.
         $ficheros += publicar_escribir(
             $publico . '/index.html',
             publicar_plantilla('provisional', $comunes)
         ) ? 1 : 0;
     }
 
+    // Una pagina por dia. Se rehacen los dias que estan en la portada -que son
+    // los que pueden haber cambiado- y se escriben los antiguos solo si les
+    // falta la suya: rehacer ciento ochenta paginas cada cinco minutos para
+    // cambiar una seria gastar el presupuesto entero en no mover nada.
+    $recientes = array_column($rio, 'dia');
+
+    foreach ($dias as $dia) {
+        if (microtime(true) >= $limite) {
+            // Sin firma guardada, la proxima pasada vuelve a empezar. Se
+            // reescriben ficheros ya escritos, pero nunca queda un dia sin
+            // generar por haberse quedado sin tiempo.
+            return ['dias' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
+        }
+
+        $ruta = $publico . '/' . web_ruta_dia((string) $dia['dia']);
+
+        if (!in_array($dia['dia'], $recientes, true) && is_file($ruta)) {
+            continue;
+        }
+
+        $bits    = publicar_bits((string) $dia['dia'], 500);
+        $racimos = array_map(static fn (array $b): int => (int) ($b['racimo_id'] ?? 0), $bits);
+
+        $ficheros += publicar_escribir($ruta, publicar_plantilla('dia', $comunes + [
+            'dia'     => $dia,
+            'bits'    => $bits,
+            'fuentes' => publicar_fuentes($racimos),
+        ])) ? 1 : 0;
+
+        $hechas++;
+    }
+
     $ficheros += publicar_escribir(
         $publico . '/archivo.html',
-        publicar_plantilla('archivo', $comunes + ['ediciones' => $ediciones])
+        publicar_plantilla('archivo', $comunes + ['dias' => $dias])
     ) ? 1 : 0;
 
     // Fichas de tema. Sustituyen a las de proveedor, y el cambio no es
@@ -144,9 +176,9 @@ function publicar_pendiente(float $limite): array
     // los pagos", que es la de un hotel.
     foreach ($temas as $tema) {
         if (microtime(true) >= $limite) {
-            // Como con las ediciones: sin firma guardada, la proxima pasada
-            // vuelve a empezar y no queda ninguna ficha a medias.
-            return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
+            // Como con los dias: sin firma guardada, la proxima pasada vuelve
+            // a empezar y no queda ninguna ficha a medias.
+            return ['dias' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
         }
 
         $ficheros += publicar_escribir(
@@ -165,7 +197,7 @@ function publicar_pendiente(float $limite): array
     // Fichas de medio: a quien estamos leyendo de verdad.
     foreach ($medios as $medio) {
         if (microtime(true) >= $limite) {
-            return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
+            return ['dias' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
         }
 
         $ficheros += publicar_escribir(
@@ -212,15 +244,17 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/feed.xml',
         publicar_plantilla('feed', [
-            'ediciones' => $ediciones,
-            'base'      => $base,
-            'titulares' => $titulares,
+            'rio'  => $rio,
+            'base' => $base,
         ])
     ) ? 1 : 0;
 
-    // Y se barre lo que ya no le corresponde a nada: una edicion retirada no
-    // puede seguir servida en su direccion de siempre.
-    $barridos  = publicar_barrer($publico . '/e', array_column($ediciones, 'slug'));
+    // Y se barre lo que ya no le corresponde a nada: un dia caido del archivo
+    // no puede seguir servido en su direccion de siempre. Las ediciones se
+    // barren enteras: ya no existen como concepto y sus paginas enlazaban a un
+    // sitio que ya no tiene sentido.
+    $barridos  = publicar_barrer($publico . '/d', array_column($dias, 'dia'));
+    $barridos += publicar_barrer($publico . '/e', [], true);
     $barridos += publicar_barrer($publico . '/t', array_column($temas, 'slug'));
     $barridos += publicar_barrer($publico . '/m', array_column($medios, 'slug'));
 
@@ -229,12 +263,13 @@ function publicar_pendiente(float $limite): array
     // sintoma de que algo ha ido mal.
     $barridos += publicar_barrer($publico . '/p', [], true);
 
-    publicar_recordar($ediciones, $aviso);
+    publicar_recordar($publicados, $aviso);
 
     ajuste_guardar('publicar_firma', $firma);
 
     return [
-        'ediciones' => $hechas,
+        'dias'      => $hechas,
+        'bits'      => $publicados,
         'ficheros'  => $ficheros,
         'barridos'  => $barridos,
         // Lo que ha cambiado viaja en el resumen: el despachador lo usa para
@@ -311,8 +346,7 @@ function publicar_temas(): array
 {
     $sql = "SELECT b.categoria, COUNT(*) AS bits
               FROM bits b
-              JOIN ediciones e ON e.id = b.edicion_id
-             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
+             WHERE b.estado = 'publicado'
              GROUP BY b.categoria";
 
     $catalogo = bits_categorias();
@@ -349,43 +383,32 @@ function publicar_temas(): array
  * va en el aviso del cron.
  *
  * No hay historico ni tabla de cambios: hacen falta tres numeros, no un diario
- * de operaciones. La memoria son tres ajustes -cuando, que edicion estaba en
- * portada y con cuantos bits-, y el delta sale de compararlos con lo de ahora.
+ * de operaciones. La memoria son dos ajustes -cuando fue y cuantos bits habia-
+ * y el delta sale de compararlos con lo de ahora.
  *
- * @param array $ediciones Las publicables, de la mas reciente a la mas antigua.
+ * @param int $publicados Cuantos bits hay publicados ahora mismo.
+ * @param int $tope       Cuantos caben en la portada.
  *
  * @return array ['cuando' => string, 'nuevos' => int, 'archivados' => int]
  */
-function publicar_aviso(array $ediciones): array
+function publicar_aviso(int $publicados, int $tope): array
 {
-    $antes_numero = (int) ajuste('web_edicion_frente', '0');
-    $antes_bits   = (int) ajuste('web_bits_frente', '0');
+    $antes = (int) ajuste('web_bits_frente', '0');
+    $ahora = gmdate('Y-m-d H:i:s');
 
-    $frente = $ediciones[0] ?? null;
-    $ahora  = gmdate('Y-m-d H:i:s');
-
-    if ($frente === null) {
-        return ['cuando' => $ahora, 'nuevos' => 0, 'archivados' => 0];
+    // Primera vez: todo lo que hay es nuevo y no ha salido nada todavia.
+    if ($antes === 0) {
+        return ['cuando' => $ahora, 'nuevos' => $publicados, 'archivados' => 0];
     }
 
-    $numero = (int) $frente['numero'];
-    $bits   = count(publicar_bits((int) $frente['id']));
+    $nuevos = max(0, $publicados - $antes);
 
-    // Primera vez: todo lo que hay es nuevo, y no hay nada archivado todavia.
-    if ($antes_numero === 0) {
-        return ['cuando' => $ahora, 'nuevos' => $bits, 'archivados' => 0];
-    }
+    // Lo archivado ya no es "la edicion anterior entera": en un rio, lo que se
+    // va es lo que los nuevos empujan fuera de la portada. Si todavia cabe
+    // todo, no se ha ido nada.
+    $archivados = max(0, min($nuevos, $publicados - $tope));
 
-    // Sigue la misma portada: lo nuevo es lo que le ha crecido. Puede crecer
-    // porque el modo automatico anade bits a una edicion ya cerrada solo si
-    // alguien los mueve a mano, asi que casi siempre sera cero.
-    if ($numero === $antes_numero) {
-        return ['cuando' => $ahora, 'nuevos' => max(0, $bits - $antes_bits), 'archivados' => 0];
-    }
-
-    // Portada nueva: entra entera, y la que estaba se va al archivo con todo
-    // lo que llevaba dentro.
-    return ['cuando' => $ahora, 'nuevos' => $bits, 'archivados' => $antes_bits];
+    return ['cuando' => $ahora, 'nuevos' => $nuevos, 'archivados' => $archivados];
 }
 
 /**
@@ -395,36 +418,32 @@ function publicar_aviso(array $ediciones): array
  * y el proceso muriera a la mitad, el cambio se habria dado por contado sin
  * que nadie lo hubiera visto publicado.
  */
-function publicar_recordar(array $ediciones, array $aviso): void
+function publicar_recordar(int $publicados, array $aviso): void
 {
-    $frente = $ediciones[0] ?? null;
-
     ajuste_guardar('web_actualizada_en', (string) $aviso['cuando']);
-    ajuste_guardar('web_edicion_frente', (string) ($frente === null ? 0 : (int) $frente['numero']));
-    ajuste_guardar('web_bits_frente', (string) ($frente === null ? 0 : count(publicar_bits((int) $frente['id']))));
+    ajuste_guardar('web_bits_frente', (string) $publicados);
 }
 
 /**
- * Cuantos bits y de que temas lleva cada edicion.
+ * Cuantos bits y de que temas trae cada dia.
  *
  * Es lo que convierte el archivo en algo que se puede ojear: una lista de
- * titulos con fechas no dice nada, y con esto se ve de un vistazo que semana
- * fue la de ciberseguridad y cual la de distribucion.
+ * fechas no dice nada, y con esto se ve de un vistazo que dia fue el de
+ * ciberseguridad y cual el de distribucion.
  *
- * @return array [edicion_id => ['bits' => int, 'temas' => string[]]]
+ * @return array [dia => ['bits' => int, 'temas' => string[]]]
  */
-function publicar_resumen_ediciones(): array
+function publicar_resumen_dias(): array
 {
-    $sql = "SELECT b.edicion_id, b.categoria, COUNT(*) AS bits
+    $sql = "SELECT b.dia, b.categoria, COUNT(*) AS bits
               FROM bits b
-              JOIN ediciones e ON e.id = b.edicion_id
-             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
-             GROUP BY b.edicion_id, b.categoria";
+             WHERE b.estado = 'publicado' AND b.dia IS NOT NULL
+             GROUP BY b.dia, b.categoria";
 
     $crudo = [];
 
     foreach (bd()->query($sql) ?: [] as $fila) {
-        $id   = (int) $fila['edicion_id'];
+        $id   = substr((string) $fila['dia'], 0, 10);
         $tema = bits_categoria_canonica((string) $fila['categoria']);
 
         $crudo[$id]['bits'] = ($crudo[$id]['bits'] ?? 0) + (int) $fila['bits'];
@@ -443,7 +462,7 @@ function publicar_resumen_ediciones(): array
         $resumen[$id] = [
             'bits' => (int) ($datos['bits'] ?? 0),
             // Cinco como mucho: a partir de ahi es una fila de iconos y deja
-            // de decir de que iba la edicion.
+            // de decir de que iba el dia.
             'temas' => array_slice(array_keys($temas), 0, 5),
         ];
     }
@@ -466,18 +485,15 @@ function publicar_bits_tema(string $tema): array
     $formas = array_merge([$tema], $viejas);
     $marcas = implode(',', array_fill(0, count($formas), '?'));
 
-    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria,
-                   e.numero, e.slug, e.fecha_prevista,
+    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria, b.dia,
                    (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
                      ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente
               FROM bits b
-              JOIN ediciones e ON e.id = b.edicion_id
              WHERE b.categoria IN ($marcas)
                AND b.estado = 'publicado'
-               AND e.estado <> 'abierta'
-             ORDER BY e.numero DESC, b.orden ASC";
+             ORDER BY b.dia DESC, b.id DESC";
 
     $st = bd()->prepare($sql);
     $st->execute($formas);
@@ -495,17 +511,14 @@ function publicar_bits_tema(string $tema): array
  */
 function publicar_bits_medio(string $nombre): array
 {
-    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria,
-                   e.numero, e.slug, e.fecha_prevista
+    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria, b.dia
               FROM bits b
-              JOIN ediciones e ON e.id = b.edicion_id
              WHERE b.estado = 'publicado'
-               AND e.estado <> 'abierta'
                AND (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
                      ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) = ?
-             ORDER BY e.numero DESC, b.orden ASC";
+             ORDER BY b.dia DESC, b.id DESC";
 
     $st = bd()->prepare($sql);
     $st->execute([$nombre]);
@@ -526,14 +539,13 @@ function publicar_medios(): array
 {
     $sql = "SELECT f.nombre, f.url_sitio, COUNT(DISTINCT b.id) AS bits
               FROM bits b
-              JOIN ediciones e ON e.id = b.edicion_id
               JOIN items i     ON i.id = (
                     SELECT i2.id FROM items i2
                      WHERE i2.racimo_id = b.racimo_id AND i2.estado <> 'descartado'
                      ORDER BY (i2.idioma = 'es') DESC, i2.puntuacion DESC, i2.id ASC
                      LIMIT 1)
               JOIN fuentes f   ON f.id = i.fuente_id
-             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
+             WHERE b.estado = 'publicado'
              GROUP BY f.id, f.nombre, f.url_sitio
              ORDER BY bits DESC, f.nombre ASC";
 
@@ -550,27 +562,53 @@ function publicar_medios(): array
 }
 
 /**
- * Las ediciones publicables, de la mas reciente a la mas antigua.
+ * Los dias con algo publicado, del mas reciente al mas antiguo.
+ *
+ * Esto sustituye a la lista de ediciones, y el cambio es el corazon de todo
+ * lo demas: una edicion solo existia cuando se cerraba, asi que lo que el
+ * radar encontraba hoy no se veia hasta mañana. Un dia existe en cuanto cae
+ * en el la primera noticia.
+ *
+ * @return array Filas con 'dia' y 'bits'.
  */
-function publicar_ediciones(): array
+function publicar_dias(int $limite = 180): array
 {
-    return bd()->query(
-        "SELECT id, numero, slug, titulo, intro, fecha_prevista, fecha_envio, estado
-           FROM ediciones
-          WHERE estado IN ('cerrada', 'enviada')
-          ORDER BY numero DESC"
-    )->fetchAll();
+    $sql = "SELECT b.dia, COUNT(*) AS bits
+              FROM bits b
+             WHERE b.estado = 'publicado' AND b.dia IS NOT NULL
+             GROUP BY b.dia
+             ORDER BY b.dia DESC
+             LIMIT ?";
+
+    $st = bd()->prepare($sql);
+    $st->bindValue(1, max(1, $limite), PDO::PARAM_INT);
+    $st->execute();
+
+    $dias = [];
+
+    foreach ($st->fetchAll() as $fila) {
+        $dias[] = [
+            'dia'  => substr((string) $fila['dia'], 0, 10),
+            'bits' => (int) $fila['bits'],
+        ];
+    }
+
+    return $dias;
 }
 
 /**
- * Los bits de una edicion, en orden, con el enlace a la fuente original.
+ * Los bits publicados, del ultimo descubierto al primero.
+ *
+ * Con $dia devuelve los de ese dia; sin el, el rio entero hasta $tope. Es la
+ * misma consulta porque es la misma lista mirada por dos ventanas distintas,
+ * y tener dos habria sido tener dos sitios donde equivocarse con el orden.
  *
  * El enlace es el del mejor item del racimo: el que mas puntua es el que
  * mejor cuenta la noticia, y es el que se ofrece al lector.
  */
-function publicar_bits(int $edicion_id): array
+function publicar_bits(?string $dia = null, int $tope = 80): array
 {
-    $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo,
+    $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo, b.dia,
                    -- El enlace y el medio, con el mismo orden con el que se
                    -- eligio el titular: primero el que lo cuenta en espanol.
                    -- Con otro orden, el bit llevaria titular de un sitio y
@@ -597,37 +635,78 @@ function publicar_bits(int $edicion_id): array
                       JOIN proveedores p     ON p.id = ip.proveedor_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado') AS proveedores
               FROM bits b
-             WHERE b.edicion_id = ? AND b.estado = 'publicado'
-             ORDER BY b.orden ASC, b.id ASC";
+             WHERE b.estado = 'publicado'
+               AND b.dia IS NOT NULL"
+         . ($dia !== null ? " AND b.dia = ?" : '')
+         . " ORDER BY b.dia DESC, b.id DESC
+             LIMIT ?";
 
     $st = bd()->prepare($sql);
-    $st->execute([$edicion_id]);
+
+    if ($dia !== null) {
+        $st->bindValue(1, substr($dia, 0, 10));
+        $st->bindValue(2, max(1, $tope), PDO::PARAM_INT);
+    } else {
+        $st->bindValue(1, max(1, $tope), PDO::PARAM_INT);
+    }
+
+    $st->execute();
 
     return $st->fetchAll();
 }
 
 /**
- * Todas las fuentes que cuentan cada noticia de una edicion.
+ * El rio, partido en dias: [['dia' => '2026-09-17', 'bits' => [...]], ...].
  *
- * Una sola consulta para la edicion entera, agrupada despues en PHP: la
- * alternativa era una consulta por bit, y una edicion tiene veinte.
+ * La portada es esto. Se pide de una vez y se agrupa aqui, en vez de una
+ * consulta por dia, porque la portada son ochenta bits y eran quince
+ * consultas para enseñar una pagina.
+ */
+function publicar_rio(int $tope = 80): array
+{
+    $dias = [];
+
+    foreach (publicar_bits(null, $tope) as $bit) {
+        $dias[substr((string) $bit['dia'], 0, 10)][] = $bit;
+    }
+
+    $salida = [];
+
+    foreach ($dias as $dia => $bits) {
+        $salida[] = ['dia' => $dia, 'bits' => $bits];
+    }
+
+    return $salida;
+}
+
+/**
+ * Todas las fuentes que cuentan cada una de esas noticias.
+ *
+ * Una sola consulta para toda la pagina, agrupada despues en PHP: la
+ * alternativa era una consulta por bit, y la portada trae ochenta.
  *
  * @return array [racimo_id => filas con fuente, url, publicado, region, idioma]
  */
-function publicar_fuentes(int $edicion_id): array
+function publicar_fuentes(array $racimos): array
 {
+    $racimos = array_values(array_unique(array_filter(array_map('intval', $racimos))));
+
+    if (!$racimos) {
+        return [];
+    }
+
+    $marcas = implode(',', array_fill(0, count($racimos), '?'));
+
     $sql = "SELECT i.racimo_id, i.url, i.titulo, i.publicado, i.idioma,
                    f.nombre AS fuente, f.region, f.tipo
               FROM items i
               JOIN fuentes f ON f.id = i.fuente_id
-              JOIN bits b    ON b.racimo_id = i.racimo_id
-             WHERE b.edicion_id = ?
-               AND b.estado = 'publicado'
+             WHERE i.racimo_id IN ($marcas)
                AND i.estado <> 'descartado'
              ORDER BY i.puntuacion DESC, i.id ASC";
 
     $st = bd()->prepare($sql);
-    $st->execute([$edicion_id]);
+    $st->execute($racimos);
 
     $por_racimo = [];
 
@@ -648,8 +727,7 @@ function publicar_fuentes(int $edicion_id): array
  */
 function publicar_indice(): array
 {
-    $sql = "SELECT b.id, b.titular, b.por_que, b.cuerpo, b.categoria,
-                   e.numero, e.slug, e.fecha_prevista,
+    $sql = "SELECT b.id, b.titular, b.por_que, b.cuerpo, b.categoria, b.dia,
                    (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
@@ -669,12 +747,8 @@ function publicar_indice(): array
                       JOIN proveedores p     ON p.id = ip.proveedor_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado') AS proveedores
               FROM bits b
-              JOIN ediciones e ON e.id = b.edicion_id
-             -- La edicion tiene que estar cerrada, no solo el bit publicado:
-             -- un bit de la edicion abierta enlazaria a una pagina que todavia
-             -- no existe, y el buscador la ofreceria como resultado.
-             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
-             ORDER BY e.numero DESC, b.orden ASC";
+             WHERE b.estado = 'publicado'
+             ORDER BY b.dia DESC, b.id DESC";
 
     $filas = [];
 
@@ -695,12 +769,13 @@ function publicar_indice(): array
 }
 
 /**
- * Firma de todo lo publicable: ediciones, bits y su ultima modificacion.
+ * Firma de todo lo publicable: cuantos bits hay, cual es el ultimo y cuando
+ * se toco algo por ultima vez.
  *
  * Si un bit se corrige despues de publicar, cambia su 'modificado' y con el
  * la firma, asi que la correccion sale sola en la siguiente pasada del cron.
  */
-function publicar_firma(array $ediciones): string
+function publicar_firma(array $dias): string
 {
     // Sin ediciones tambien hay firma. Devolver cadena vacia aqui hacia que
     // coincidiera con el ajuste vacio de una instalacion recien hecha, y
@@ -709,7 +784,8 @@ function publicar_firma(array $ediciones): string
     // siempre, porque publico/ no esta en el repositorio y un despliegue no lo
     // toca.
     $st = bd()->query(
-        "SELECT COUNT(*) AS bits, COALESCE(MAX(modificado), '') AS ultimo
+        "SELECT COUNT(*) AS bits, COALESCE(MAX(modificado), '') AS ultimo,
+                COALESCE(MAX(id), 0) AS ultimo_id
            FROM bits WHERE estado = 'publicado'"
     );
     $bits = $st->fetch();
@@ -723,14 +799,15 @@ function publicar_firma(array $ediciones): string
         // visible hasta que se publicara una edicion nueva: las paginas ya
         // generadas seguirian diciendo que el alta no esta abierta.
         correo_configurado() ? 'alta' : 'sin-alta',
-        count($ediciones),
-        (string) ($ediciones[0]['slug'] ?? ''),
+        count($dias),
+        (string) ($dias[0]['dia'] ?? ''),
         (int) ($bits['bits'] ?? 0),
+        (int) ($bits['ultimo_id'] ?? 0),
         (string) ($bits['ultimo'] ?? ''),
     ];
 
-    foreach ($ediciones as $edicion) {
-        $partes[] = $edicion['id'] . ':' . $edicion['estado'] . ':' . $edicion['titulo'];
+    foreach ($dias as $dia) {
+        $partes[] = $dia['dia'] . ':' . $dia['bits'];
     }
 
     return sha1(implode('|', $partes));
@@ -818,9 +895,9 @@ if (PHP_SAPI === 'cli' && isset($argv[0]) && realpath($argv[0]) === realpath(__F
     $resumen = publicar_pendiente(microtime(true) + (float) (config('presupuesto_cron') ?? 25));
 
     printf(
-        "publicar: %s, %d ediciones, %d ficheros escritos\n",
+        "publicar: %s, %d dias, %d ficheros escritos\n",
         $resumen['estado'],
-        $resumen['ediciones'],
+        $resumen['dias'] ?? 0,
         $resumen['ficheros']
     );
 }

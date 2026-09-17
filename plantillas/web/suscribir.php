@@ -14,11 +14,11 @@ declare(strict_types=1);
 
 ?>
 <section class="alta" aria-labelledby="alta-titulo">
-  <h2 id="alta-titulo">Recíbelo cada martes</h2>
+  <h2 id="alta-titulo">Recíbelo cada mañana</h2>
 
   <?php if ($alta_abierta): ?>
 
-    <p>Un correo a la semana con lo que de verdad ha pasado en tecnología
+    <p>Un correo al día con lo que de verdad ha pasado en tecnología
     hotelera. Sin publirreportajes y sin resúmenes de resúmenes.</p>
 
     <form class="alta-formulario" method="post" action="<?= web_e($base) ?>/api/suscribir.php">

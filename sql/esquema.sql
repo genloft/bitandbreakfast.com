@@ -162,6 +162,9 @@ CREATE TABLE bits (
                              NOT NULL DEFAULT 'producto',
   seccion       VARCHAR(40)  NOT NULL DEFAULT '',
   estado        ENUM('borrador','aprobado','publicado') NOT NULL DEFAULT 'borrador',
+  -- El dia en que este sitio se entero de la noticia. Es lo que ordena la web
+  -- entera: la portada es un rio por dias, no una coleccion de ediciones.
+  dia           DATE         NULL DEFAULT NULL,
   edicion_id    INT UNSIGNED NULL DEFAULT NULL,
   orden         SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   redactado_por ENUM('ia','humano') NOT NULL DEFAULT 'humano',
@@ -171,6 +174,7 @@ CREATE TABLE bits (
                              ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_edicion (edicion_id, orden),
+  KEY idx_dia (dia, id),
   KEY idx_estado (estado),
   KEY idx_racimo (racimo_id),
   CONSTRAINT fk_bits_racimo FOREIGN KEY (racimo_id) REFERENCES racimos (id)

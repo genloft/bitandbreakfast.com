@@ -24,7 +24,7 @@ require_once __DIR__ . '/web.php';
 require_once __DIR__ . '/bits.php';
 
 /**
- * El asunto: el titulo de la edicion, o su numero.
+ * El asunto: el titulo del dia, si alguien se lo ha puesto, o su titular.
  *
  * Sin emojis, sin "no te pierdas" y sin el nombre del boletin repetido: el
  * remitente ya lo dice, y un asunto que empieza por la marca desperdicia los
@@ -39,7 +39,7 @@ function envio_asunto(array $edicion, array $bits): string
     }
 
     if (!$bits) {
-        return 'Edición ' . (int) $edicion['numero'];
+        return 'Bit & Breakfast, ' . web_fecha_larga((string) $edicion['fecha_prevista']);
     }
 
     // Sin titulo escrito a mano, manda el primer titular: es lo que de verdad
@@ -60,8 +60,8 @@ function envio_texto(array $edicion, array $bits, string $base, string $url_baja
     $lineas     = [];
 
     $lineas[] = 'BIT & BREAKFAST';
-    $lineas[] = 'Edición ' . (int) $edicion['numero'] . ' · '
-              . web_fecha_larga((string) $edicion['fecha_prevista']);
+    $lineas[] = web_fecha_larga((string) $edicion['fecha_prevista'])
+              . ' · ' . count($bits) . ' noticia' . (count($bits) === 1 ? '' : 's');
     $lineas[] = '';
 
     if (trim((string) ($edicion['intro'] ?? '')) !== '') {
@@ -92,7 +92,7 @@ function envio_texto(array $edicion, array $bits, string $base, string $url_baja
     }
 
     $lineas[] = str_repeat('-', 60);
-    $lineas[] = 'Leer en la web: ' . web_url_edicion($base, (string) $edicion['slug']);
+    $lineas[] = 'Leer en la web: ' . web_url_dia($base, (string) $edicion['fecha_prevista']);
     $lineas[] = 'Darte de baja: ' . $url_baja;
 
     return implode("\n", $lineas) . "\n";
@@ -109,12 +109,15 @@ function envio_html(array $edicion, array $bits, string $base, string $url_baja)
     $categorias = bits_categorias();
     $e = static fn (string $t): string => htmlspecialchars($t, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-    $fondo  = '#070b16';
-    $papel  = '#0d1426';
-    $tinta  = '#e7edfb';
-    $suave  = '#93a3c6';
-    $laton  = '#c9a66b';
-    $borde  = '#1e2a47';
+    // Los mismos que la web: papel, tinta negra y un rojo. El correo llevaba
+    // todavia los del diseno oscuro de antes, asi que quien recibia el boletin
+    // y despues entraba en la web veia dos sitios distintos.
+    $fondo  = '#f4f2ee';
+    $papel  = '#faf9f7';
+    $tinta  = '#0d0d0d';
+    $suave  = '#5f5c57';
+    $laton  = '#d02b1f';
+    $borde  = '#cfcac2';
 
     $serif = "Georgia,'Times New Roman',serif";
     $sans  = "-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif";
@@ -133,8 +136,8 @@ function envio_html(array $edicion, array $bits, string $base, string $url_baja)
         . '<span style="color:' . $laton . ';font-style:italic;">&amp;</span>Breakfast</p>'
         . '<p style="margin:0 0 26px;font-family:' . $sans . ';font-size:12px;'
         . 'letter-spacing:.12em;text-transform:uppercase;color:' . $suave . ';">'
-        . 'Edición ' . (int) $edicion['numero'] . ' &middot; '
-        . $e(web_fecha_larga((string) $edicion['fecha_prevista'])) . '</p>';
+        . $e(web_fecha_larga((string) $edicion['fecha_prevista'])) . ' &middot; '
+        . count($bits) . ' noticia' . (count($bits) === 1 ? '' : 's') . '</p>';
 
     if (trim((string) ($edicion['intro'] ?? '')) !== '') {
         $h .= '<div style="margin:0 0 28px;color:' . $suave . ';font-style:italic;">'
@@ -172,8 +175,8 @@ function envio_html(array $edicion, array $bits, string $base, string $url_baja)
 
     $h .= '<div style="border-top:1px solid ' . $borde . ';margin-top:8px;padding-top:20px;'
         . 'font-family:' . $sans . ';font-size:12px;line-height:1.7;color:' . $suave . ';">'
-        . '<p style="margin:0 0 6px;"><a href="' . $e(web_url_edicion($base, (string) $edicion['slug']))
-        . '" style="color:' . $suave . ';">Leer esta edición en la web</a></p>'
+        . '<p style="margin:0 0 6px;"><a href="' . $e(web_url_dia($base, (string) $edicion['fecha_prevista']))
+        . '" style="color:' . $suave . ';">Leer este día en la web</a></p>'
         . '<p style="margin:0;"><a href="' . $e($url_baja) . '" style="color:' . $suave . ';">'
         . 'Darte de baja</a> &middot; un clic, sin preguntas.</p>'
         . '</div></div></body></html>';
