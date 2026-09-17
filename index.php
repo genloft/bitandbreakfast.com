@@ -79,10 +79,13 @@ if (arranque_toca_intentar($raiz, $solo ? ARRANQUE_ESPERA_SOLO : ARRANQUE_ESPERA
         // cron da senales de vida esto deja de ejecutarse y el sitio vuelve a
         // ser estatico.
         $trabajo = 'cadena';
+    } elseif (arranque_criterios_pendientes($raiz)) {
+        // Antes que generar: la revision reescribe los bits y ademas obliga a
+        // generar de nuevo, asi que hacerlo al reves seria publicar dos veces
+        // y, con despliegues seguidos, dejar la revision siempre para luego.
+        $trabajo = 'revisar';
     } elseif (arranque_hay_que_generar($raiz, $huella)) {
         $trabajo = 'publicar';
-    } elseif (arranque_criterios_pendientes($raiz)) {
-        $trabajo = 'revisar';
     }
 }
 
