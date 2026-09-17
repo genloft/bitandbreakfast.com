@@ -106,9 +106,13 @@ foreach ($tareas as $nombre => $fichero) {
         continue;
     }
 
-    if (microtime(true) - $arranque >= $techo) {
+    // El generador no entra en el reparto: es lo unico que el lector llega a
+    // ver, y una pasada que rastrea, agrupa y publica pero no genera la web no
+    // ha servido de nada. Ademas sale enseguida cuando no hay nada que
+    // escribir, porque lo primero que hace es comparar una firma.
+    if ($nombre !== 'publicar' && microtime(true) - $arranque >= $techo) {
         tareas_log("sin presupuesto para $nombre, queda para la proxima pasada");
-        break;
+        continue;
     }
 
     try {
@@ -128,8 +132,11 @@ foreach ($tareas as $nombre => $fichero) {
         }
 
         // Cada tarea empieza a contar su presupuesto cuando le toca, sin
-        // pasarse nunca del techo de la ejecucion entera.
-        $limite  = min($arranque + $techo, microtime(true) + $presupuesto);
+        // pasarse nunca del techo de la ejecucion entera. El generador es la
+        // excepcion, por lo dicho arriba: su presupuesto es suyo.
+        $limite = $nombre === 'publicar'
+            ? microtime(true) + $presupuesto
+            : min($arranque + $techo, microtime(true) + $presupuesto);
         $resumen = $funcion($limite);
 
         tareas_log($nombre . ': ' . json_encode($resumen, JSON_UNESCAPED_UNICODE));
