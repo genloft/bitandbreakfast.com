@@ -94,6 +94,43 @@ function salud_fallando(): array
 }
 
 /**
+ * Los motivos de descarte mas repetidos, con su cuenta.
+ *
+ * Solo de lo reciente -dos dias-: los motivos de hace un mes cuentan una
+ * politica editorial que a lo mejor ya se ha cambiado, y lo que hace falta
+ * saber es por donde se esta cayendo lo de ahora.
+ *
+ * @return array [motivo => cuantos]
+ */
+function salud_descartes(): array
+{
+    $sql = "SELECT motivo_descarte, COUNT(*) AS cuantos
+              FROM racimos
+             WHERE estado = 'descartado'
+               AND motivo_descarte <> ''
+               AND ultimo_visto > (NOW() - INTERVAL 2 DAY)
+             GROUP BY motivo_descarte
+             ORDER BY cuantos DESC
+             LIMIT 8";
+
+    $salida = [];
+
+    try {
+        $filas = bd()->query($sql);
+
+        foreach ($filas === false ? [] : $filas->fetchAll() as $fila) {
+            // El prefijo 'automatico: ' lo llevan todos y no distingue nada.
+            $motivo = trim(str_replace('automatico:', '', (string) $fila['motivo_descarte']));
+            $salida[$motivo] = (int) $fila['cuantos'];
+        }
+    } catch (Throwable $e) {
+        return [];
+    }
+
+    return $salida;
+}
+
+/**
  * MariaDB o MySQL, sin numero de version.
  */
 function salud_motor(): string
@@ -238,6 +275,12 @@ $informe = [
         'items_sin_agrupar' => (int) salud_valor("SELECT COUNT(*) FROM items WHERE estado = 'nuevo'", 0),
         'racimos_candidatos' => (int) salud_valor("SELECT COUNT(*) FROM racimos WHERE estado = 'candidato'", 0),
         'racimos_descartados' => (int) salud_valor("SELECT COUNT(*) FROM racimos WHERE estado = 'descartado'", 0),
+        // Por que se cae lo que se cae, de mas a menos. Es la respuesta a la
+        // unica pregunta que se hace de verdad cuando la portada trae poco: no
+        // "cuantos se han descartado" sino "por donde". Sin esto hay que
+        // entrar a la base de datos para saber si el filtro esta afinado o
+        // roto, y a la base de datos no se entra desde fuera.
+        'descartes' => salud_descartes(),
     ],
     // El boletin: si el buzon esta configurado y cuanta gente hay. Son cuentas,
     // nunca direcciones.
