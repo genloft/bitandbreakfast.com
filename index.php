@@ -32,6 +32,7 @@ require_once __DIR__ . '/lib/estado.php';
 date_default_timezone_set('UTC');
 
 const ARRANQUE_ESPERA = 300;     // segundos entre intentos de generar
+const ARRANQUE_ESPERA_SOLO = 120;// ... o menos, si la web va sola y hay prisa
 const ARRANQUE_SILENCIO = 7200;  // sin cron en dos horas, tira la web del carro
 
 $raiz    = __DIR__;
@@ -63,18 +64,34 @@ if (!is_file($config)) {
 // Sin web generada: generarla ahora
 // -----------------------------------------------------------------------------
 
-if (arranque_toca_intentar($raiz)) {
-    if (arranque_sin_contenido($raiz) || arranque_sin_cron($raiz)) {
+$vacio   = arranque_sin_contenido($raiz);
+$solo    = $vacio || arranque_sin_cron($raiz);
+$trabajo = '';
+
+// Cuando la web va sola, se intenta mas a menudo: cada pasada avanza un lote y
+// la cola de un arranque son cientos de items. Con el cron vivo no hace falta.
+if (arranque_toca_intentar($raiz, $solo ? ARRANQUE_ESPERA_SOLO : ARRANQUE_ESPERA)) {
+    if ($solo) {
         // Sitio recien puesto en marcha, o cron que no contesta: cada visita
         // empuja la cadena entera un paso -rastrear, agrupar, publicar y
-        // generar-, como mucho una vez cada cinco minutos. Asi el radar se
-        // llena y se mantiene aunque el cron no este bien puesto, que es
-        // exactamente lo que ha pasado aqui. En cuanto el cron da senales de
-        // vida esto deja de ejecutarse y el sitio vuelve a ser estatico.
-        arranque_cadena($raiz);
+        // generar-. Asi el radar se llena y se mantiene aunque el cron no este
+        // bien puesto, que es exactamente lo que ha pasado aqui. En cuanto el
+        // cron da senales de vida esto deja de ejecutarse y el sitio vuelve a
+        // ser estatico.
+        $trabajo = 'cadena';
     } elseif (arranque_hay_que_generar($raiz, $huella)) {
-        arranque_tarea($raiz, 'publicar', 'publicar_pendiente', 15);
+        $trabajo = 'publicar';
     }
+}
+
+// Si hay portada que servir y el servidor sabe cerrar la respuesta antes de
+// terminar el proceso, se sirve primero y se trabaja despues: el visitante no
+// tiene por que esperar a que se rastreen cuarenta feeds. Sin portada no hay
+// nada que adelantar, y entonces toca trabajar antes.
+$despues = !$vacio && function_exists('fastcgi_finish_request');
+
+if ($trabajo !== '' && !$despues) {
+    arranque_trabajar($raiz, $trabajo);
 }
 
 // -----------------------------------------------------------------------------
@@ -89,7 +106,21 @@ $contenido = is_file($portada) ? @file_get_contents($portada) : false;
 if ($contenido !== false && $contenido !== '') {
     header('Content-Type: text/html; charset=utf-8');
     echo $contenido;
+
+    if ($trabajo !== '' && $despues) {
+        // El visitante ya tiene su pagina. Lo que queda es trabajo de fondo, y
+        // que se corte a la mitad no rompe nada: cada tarea trabaja por lotes
+        // con puntero y la siguiente visita sigue por donde se quedo.
+        @ignore_user_abort(true);
+        fastcgi_finish_request();
+        arranque_trabajar($raiz, $trabajo, true);
+    }
+
     exit;
+}
+
+if ($trabajo !== '' && $despues) {
+    arranque_trabajar($raiz, $trabajo);
 }
 
 arranque_provisional();
@@ -129,19 +160,34 @@ function arranque_sin_cron(string $raiz): bool
 }
 
 /**
+ * Hace el trabajo que toque, sea la cadena entera o solo generar.
+ */
+function arranque_trabajar(string $raiz, string $trabajo, bool $holgado = false): void
+{
+    if ($trabajo === 'cadena') {
+        arranque_cadena($raiz, $holgado);
+        return;
+    }
+
+    arranque_tarea($raiz, 'publicar', 'publicar_pendiente', $holgado ? 25 : 15);
+}
+
+/**
  * Una vuelta completa de la cadena, con presupuestos cortos.
  *
  * El orden importa y es el mismo que usa el cron: primero traer, luego
  * agrupar, luego decidir que se publica, y al final escribir la web.
  */
-function arranque_cadena(string $raiz): void
+function arranque_cadena(string $raiz, bool $holgado = false): void
 {
-    @set_time_limit(90);
+    @set_time_limit($holgado ? 180 : 90);
 
-    arranque_tarea($raiz, 'ingesta',  'ingesta_lote',       12);
-    arranque_tarea($raiz, 'procesar', 'procesar_lote',      10);
-    arranque_tarea($raiz, 'auto',     'auto_publicar_lote',  6);
-    arranque_tarea($raiz, 'publicar', 'publicar_pendiente', 12);
+    // Con la respuesta ya enviada nadie espera, asi que cada tarea puede
+    // trabajar de verdad en lugar de ir a trocitos.
+    arranque_tarea($raiz, 'ingesta',  'ingesta_lote',       $holgado ? 25 : 12);
+    arranque_tarea($raiz, 'procesar', 'procesar_lote',      $holgado ? 35 : 10);
+    arranque_tarea($raiz, 'auto',     'auto_publicar_lote', $holgado ? 15 : 6);
+    arranque_tarea($raiz, 'publicar', 'publicar_pendiente', $holgado ? 25 : 12);
 }
 
 /**
@@ -194,11 +240,11 @@ function arranque_hay_que_generar(string $raiz, string $huella): bool
  * permiso mal puesto-, sin esto cada visita volveria a intentarlo y una
  * portada compartida se convertiria en un martillo contra la base de datos.
  */
-function arranque_toca_intentar(string $raiz): bool
+function arranque_toca_intentar(string $raiz, int $espera = ARRANQUE_ESPERA): bool
 {
     $marca = $raiz . '/cache/.publicar';
 
-    if (is_file($marca) && time() - (int) @filemtime($marca) < ARRANQUE_ESPERA) {
+    if (is_file($marca) && time() - (int) @filemtime($marca) < $espera) {
         return false;
     }
 
