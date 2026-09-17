@@ -4,10 +4,11 @@
  *
  * Recibe $edicion, $bits y $base.
  *
- * La pagina esta pensada para escanearse antes que para leerse: primero el
- * sumario, que dice en diez segundos si esta semana te interesa algo, y
- * despues los bits. Un radar que obliga a leerlo entero para saber si tenia
- * algo no es un radar.
+ * La pagina esta pensada para ojearse antes que para leerse: la primera pieza
+ * destacada y el resto en columnas, como una portada. Hubo un sumario lateral
+ * y se quito: repetia los titulares que estaban dos dedos mas abajo y en una
+ * columna estrecha se apelotonaba. Un indice sirve cuando hay mucho que
+ * recorrer; esto se ve de una pasada.
  *
  * HTML estatico: ni script, ni estilo en linea, ni una peticion a terceros.
  * La politica de seguridad del sitio es 'self' y esta pagina es la razon de
@@ -81,11 +82,6 @@ require_once __DIR__ . '/iconos.php';
   <article class="edicion">
 
     <header class="edicion-cabecera">
-      <?php // El numero en grande, en laton y aparte del titulo: una edicion
-            // numerada se reconoce por el numero, y ademas da a la cabecera
-            // algo que mirar que no sea otra linea de texto. ?>
-      <p class="edicion-numero" aria-hidden="true"><?= (int) $edicion['numero'] ?></p>
-
       <p class="sello">Edición <?= (int) $edicion['numero'] ?></p>
       <h1>
         <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e($titulo) ?></time>
@@ -101,31 +97,19 @@ require_once __DIR__ . '/iconos.php';
       <?php endif; ?>
     </header>
 
-    <?php if ($bits): ?>
-      <nav class="sumario" aria-labelledby="sumario-titulo">
-        <h2 id="sumario-titulo">En esta edición</h2>
-        <ol>
-        <?php foreach ($bits as $bit): ?>
-          <?php $tema = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general'; ?>
-          <li data-tema="<?= web_e($tema) ?>">
-            <a href="#bit-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></a>
-            <span class="sumario-etiqueta">
-              <?= web_icono($tema, 'icono icono-mini') ?>
-              <?= web_e($categorias[$tema] ?? $bit['categoria']) ?>
-            </span>
-          </li>
-        <?php endforeach; ?>
-        </ol>
-      </nav>
-    <?php endif; ?>
-
+    <?php
+      // Sin indice lateral ni sumario: repetia los titulares que estan dos
+      // dedos mas abajo. La primera pieza va destacada y el resto en columnas,
+      // que es como se ojea una portada.
+    ?>
     <div class="bits">
     <?php foreach ($bits as $indice => $bit): ?>
       <?php $tema = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general'; ?>
-      <section class="bit" id="bit-<?= (int) $bit['id'] ?>" data-tema="<?= web_e($tema) ?>"
+      <section class="bit<?= $indice === 0 ? ' bit-lead' : '' ?>" id="bit-<?= (int) $bit['id'] ?>"
+               data-tema="<?= web_e($tema) ?>"
                aria-labelledby="titular-<?= (int) $bit['id'] ?>">
         <div class="bit-carril" aria-hidden="true">
-          <p class="numero"><?= $indice + 1 ?></p>
+          <p class="numero"><?= str_pad((string) ($indice + 1), 2, '0', STR_PAD_LEFT) ?></p>
           <span class="bit-icono"><?= web_icono($tema) ?></span>
         </div>
 
@@ -134,8 +118,10 @@ require_once __DIR__ . '/iconos.php';
 
           <p class="etiquetas">
             <a class="etiqueta etiqueta-categoria" href="<?= web_e(web_url_tema($base, $tema)) ?>"><?= web_e($categorias[$tema] ?? $bit['categoria']) ?></a>
-            <span class="etiqueta"><?= web_e($tipos[$bit['tipo']] ?? $bit['tipo']) ?></span>
-            <span class="etiqueta"><?= web_e($madureces[$bit['madurez']] ?? $bit['madurez']) ?></span>
+            <?php // El tipo y la madurez se quedan fuera de la portada: en un
+                  // titular no anaden nada y convierten la linea de arriba en
+                  // una fila de tres cosas iguales. Siguen en el dato del bit
+                  // para el explorador y el correo. ?>
             <?php if (($bit['idioma'] ?? 'es') !== 'es'): ?>
               <?php // El titular es el que publico el medio. Decir en que idioma
                     // esta evita que parezca un descuido: es la noticia tal cual
@@ -193,7 +179,6 @@ require_once __DIR__ . '/iconos.php';
               </span>
             <?php endif; ?>
 
-            <a class="volver" href="#sumario-titulo">Sumario ↑</a>
           </p>
 
           <?php if (count($suyas) > 1): ?>

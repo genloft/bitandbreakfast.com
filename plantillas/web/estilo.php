@@ -8,23 +8,29 @@
  *
  * Las decisiones de fondo, para no deshacerlas sin querer:
  *
- *   - Oscuro siempre, no segun el sistema. Es una decision de marca, como la
- *     iluminacion del vestibulo de un hotel: no se enciende y se apaga segun
- *     quien entre.
- *   - Serif para todo lo que se lee y para el logotipo. El sans se reserva a
- *     las etiquetas diminutas en versalitas, que es donde una serif pequena
- *     se ensucia.
- *   - Laton sobre casi negro, y poco. El acento aparece en el ampersand del
- *     logotipo, en los numeros de los bits y en el filete del "por que
- *     importa". Un acento que sale en todas partes deja de ser un acento.
+ *   - Papel, no pantalla. Fondo claro, tinta casi negra y filetes finos. Hubo
+ *     una version oscura y otra retrofuturista; las dos hacian que el sitio
+ *     pareciera una aplicacion. Esto es una publicacion, y una publicacion se
+ *     lee sobre papel.
+ *   - La tipografia ES el diseno. Una didona de mucho contraste para los
+ *     titulares -Didot en Mac, Bodoni en Windows, Georgia de red de seguridad-
+ *     y un sans pequeno en versalitas para todo lo que es dato. No hace falta
+ *     nada mas, y por eso no hay nada mas.
+ *   - Jerarquia por tamano, no por color. El color -un solo rojo de tinta de
+ *     imprenta- aparece dos o tres veces por pagina. Un acento que sale en
+ *     todas partes deja de ser un acento.
+ *   - Rejilla de revista: una pieza grande arriba y el resto en columnas. Una
+ *     lista vertical de veinte titulares es un listado; una portada no.
+ *   - Sin indice lateral. Repetia los titulares que estaban dos dedos mas
+ *     abajo y se apelotonaba en una columna estrecha. Un indice sirve cuando
+ *     hay mucho que recorrer; aqui la portada se ve de una pasada.
  *   - Movil primero. Las reglas base son las del telefono y las medias
  *     consultas solo anaden.
  *   - Cero dependencias: ni fuentes de Google, ni iconos, ni reset de nadie.
  *     La politica de seguridad del sitio no permite cargar nada de fuera.
  *
  * Sobre las familias: no hay fuente incrustada a proposito. Las pilas eligen
- * la mejor serif de cada sistema -Hoefler Text en Mac, Palatino en Windows,
- * Georgia en todas partes- y quedan bien en los tres sin pedirle al lector que
+ * la mejor de cada sistema y quedan bien en los tres sin pedirle al lector que
  * descargue nada. El dia que haya licencia de una fuente propia, se sirve
  * desde publico/ y solo cambia la variable --display.
  */
@@ -33,63 +39,36 @@ declare(strict_types=1);
 
 ?>
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Retrofuturismo, que no es neon por todas partes: es el azul de una sala de
-     control de 1979 con una pantalla ambar encendida. Dos acentos, el ambar de
-     los fosforos viejos y el cian de los tubos, y nada mas. El tercero, el
-     magenta, aparece cinco veces en toda la web y por eso se ve. */
-  --fondo:   #060a18;
-  --papel:   #0b1026;
-  --realce:  #111838;
-  --borde:   #232f63;
-  --borde-suave: #18204a;
-  --tinta:   #e8ecff;
-  --apagado: #97a2d8;
+  /* Papel: un blanco roto, no el del folio recien salido de la impresora, que
+     en pantalla deslumbra. */
+  --papel:   #f7f6f4;
+  --tarjeta: #ffffff;
+  --tinta:   #12100e;
+  --apagado: #6e6862;
+  --suave:   #97908a;
+  --filete:  #e3ded7;
+  --filete-fuerte: #cdc6bd;
+  --negro:   #12100e;
 
-  --acento:  #ffb454;   /* ambar de fosforo */
-  --acento-suave: #8a6a34;
-  --enlace:  #5ce1e6;   /* cian de tubo */
-  --enlace-suave: #2b6f85;
-  --magenta: #ff6ec7;
+  /* Un acento y nada mas: el rojo de la tinta de imprenta. */
+  --acento:  #c4362a;
+  --realce:  #f0ece6;
 
-  /* Un color por tematica, dentro de la misma paleta: cian, ambar y magenta
-     con desvios cortos. Juntos tienen que parecer los pilotos de un mismo
-     panel, no once rotuladores. */
-  --t-tecnologia-general:          #9fb2d6;
-  --t-pms-crs:                     #5ce1e6;
-  --t-distribucion-otas:           #56d7b0;
-  --t-revenue-rms:                 #ffb454;
-  --t-pagos-fraude:                #ff9c6e;
-  --t-ciberseguridad-cumplimiento: #ff6ec7;
-  --t-operaciones-iot:             #9aa6e8;
-  --t-experiencia-huesped:         #c78cf5;
-  --t-ia-aplicada:                 #8de06a;
-  --t-sostenibilidad-energia:      #62d79a;
-  --t-inversion-mercado:           #ffd166;
-
-  /* Futura y Century Gothic son las geometricas que ya estan en Mac y en
-     Windows, y son LA letra del futuro de hace cincuenta anos: la de 2001 y la
-     de los manuales de la NASA. Sin descargar nada, que la politica del sitio
-     no deja cargar de fuera. */
-  --marca:   Futura, "Century Gothic", "Avenir Next", Avenir, "Trebuchet MS",
-             ui-sans-serif, sans-serif;
-  --display: "Hoefler Text", "Iowan Old Style", "Palatino Linotype", Palatino,
-             "Book Antiqua", Georgia, "Times New Roman", serif;
-  --cuerpo:  Georgia, "Iowan Old Style", "Times New Roman", serif;
+  /* Didot y Bodoni son las didonas que ya estan en Mac y en Windows: mucho
+     contraste entre gruesos y finos, que es lo que hace que un titular
+     parezca de revista y no de blog. Georgia cierra la pila porque esta en
+     todas partes y no desentona. */
+  --display: Didot, "Didot LT STD", "Bodoni MT", "Hoefler Text", Garamond,
+             "Times New Roman", Georgia, serif;
+  --cuerpo:  Georgia, Charter, "Iowan Old Style", "Times New Roman", serif;
   --ui:      ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-             system-ui, sans-serif;
-  /* El monoespaciado es el que pone el "futurista" en todo lo que no es texto
-     corrido: fechas, numeros, etiquetas, filtros. Voz de terminal. */
-  --mono:    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-             "Liberation Mono", monospace;
+             Inter, system-ui, sans-serif;
 
-  --ancho:  44rem;
-  --gutter: clamp(1.25rem, 5vw, 3rem);
-
-  /* El chaflan de las esquinas, que es lo que hace que una caja parezca de un
-     panel y no de un formulario. */
-  --chaflan: 7px;
+  --ancho:   72rem;   /* el papel entero */
+  --lectura: 40rem;   /* la columna de texto seguido */
+  --gutter:  clamp(1.1rem, 4vw, 2.5rem);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -98,1030 +77,527 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
+  background: var(--papel);
   color: var(--tinta);
-
-  /* Tres capas que no se ven por separado y juntas son la sala de control: una
-     rejilla de milimetrado muy tenue, una luz cian detras del logotipo y otra
-     ambar abajo. Nada se mueve: una web que parpadea es un juguete, y esto se
-     lee cinco minutos a la semana. */
-  background:
-    linear-gradient(rgba(92, 225, 230, .035) 1px, transparent 1px) 0 0 / 100% 3rem,
-    linear-gradient(90deg, rgba(92, 225, 230, .035) 1px, transparent 1px) 0 0 / 3rem 100%,
-    radial-gradient(120% 70% at 85% -10%, rgba(92, 225, 230, .13), transparent 62%),
-    radial-gradient(90% 60% at 0% 110%, rgba(255, 180, 84, .08), transparent 60%),
-    var(--fondo);
-  background-attachment: fixed;
   font-family: var(--cuerpo);
-  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
-  line-height: 1.75;
+  font-size: clamp(1rem, .95rem + .25vw, 1.08rem);
+  line-height: 1.6;
   overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--tinta);
-  text-decoration-color: var(--enlace-suave);
-  text-decoration-thickness: 1px;
-  text-underline-offset: .2em;
-}
-a:hover { text-decoration-color: var(--enlace); }
-a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
+a { color: inherit; text-decoration-color: var(--filete-fuerte); text-underline-offset: .18em; }
+a:hover { text-decoration-color: var(--acento); }
+a:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 
-::selection { background: var(--enlace); color: var(--fondo); }
+::selection { background: var(--tinta); color: var(--papel); }
 
-/* Monoespaciada en todo lo que no es texto corrido: fechas, numeros,
-   etiquetas, filtros, pies. Es la voz de la casa y es donde vive el
-   "futurista" -una terminal-, mientras el texto que se lee de verdad sigue en
-   serif, que es donde vive el "retro". */
-.sello, .menu, .datos, .etiqueta, .letra-pequena, .sumario h2, .ano h2,
-.cuenta, .menciona, .pie-bit, .buscador label, .alta-formulario label,
-.facetas h3, .opcion, .limpiar, .sumario-etiqueta, .numero-lista,
-.nube a, .explorar-grupo, .cuenta-opcion, .numero {
-  font-family: var(--mono);
+img { max-width: 100%; height: auto; }
+
+/* Dato: todo lo que no es texto seguido. Sans, pequeno, en versalitas y con
+   aire entre letras. Es la voz secundaria de la casa y no compite con nada. */
+.sello, .datos, .menu, .etiqueta, .letra-pequena, .cuenta, .menciona,
+.pie-bit, .buscador label, .alta-formulario label, .facetas h3, .opcion,
+.limpiar, .sumario-etiqueta, .numero, .explorar-grupo, .nube a, .ano h2,
+.rejilla-cuenta, .cuenta-opcion, .aviso-texto, .promesa, .fuentes-bit summary {
+  font-family: var(--ui);
 }
 
-.sello, .sumario h2, .ano h2, .facetas h3, .explorar-grupo {
-  font-size: .66rem;
-  font-weight: 500;
-  letter-spacing: .22em;
+.sello, .facetas h3, .explorar-grupo, .ano h2 {
+  margin: 0 0 1rem;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .14em;
   text-transform: uppercase;
-}
-
-/* Los rotulos de seccion llevan delante dos barras, como un comentario de
-   codigo. Es el guino mas barato que existe y coloca el tono en una linea. */
-.sumario h2::before, .facetas h3::before, .explorar-grupo::before {
-  content: "// ";
-  color: var(--enlace-suave);
+  color: var(--apagado);
 }
 
 .saltar {
   position: absolute;
   left: -9999px;
   padding: .7rem 1.1rem;
-  background: var(--papel);
-  border: 1px solid var(--acento);
+  background: var(--tarjeta);
+  border: 1px solid var(--tinta);
 }
 .saltar:focus { left: 1rem; top: 1rem; z-index: 10; }
 
-/* --- La barra de arriba ----------------------------------------------------
-   Lo primero que se ve y lo unico que dice algo antes de leer nada: cuando se
-   actualizo esto y que cambio. Fina, monoespaciada y con un punto cian que
-   hace de piloto encendido. */
+/* --- La tira de arriba -----------------------------------------------------
+   Una banda negra con lo que ha cambiado. Es lo primero que se ve y contesta
+   la unica pregunta de quien vuelve: si hay algo nuevo desde la ultima vez. */
 
-.aviso-barra {
-  border-bottom: 1px solid var(--borde);
-  background: linear-gradient(90deg, rgba(92, 225, 230, .07), transparent 55%), var(--papel);
-}
+.aviso-barra { background: var(--negro); color: #f2efe9; }
 
 .aviso-texto {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: .3rem .9rem;
-  max-width: 78rem;
-  margin: 0 auto;
-  padding: .6rem var(--gutter);
-  font-family: var(--mono);
-  font-size: .68rem;
-  letter-spacing: .08em;
-  color: var(--apagado);
-}
-
-/* El piloto. Sin parpadeo: en una barra que se lee de reojo, algo que se mueve
-   es algo que estorba. */
-.aviso-punto {
-  width: .45rem;
-  height: .45rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--enlace);
-  box-shadow: 0 0 6px var(--enlace);
-}
-
-.aviso-cuando { color: var(--tinta); }
-
-.aviso-dato::before {
-  content: "·";
-  margin-right: .9rem;
-  color: var(--borde);
-}
-
-.aviso-nuevos strong { color: var(--acento); }
-.aviso-archivo strong { color: var(--enlace); }
-.aviso-archivo a { color: var(--apagado); }
-.aviso-quieto { color: var(--apagado); opacity: .8; }
-
-/* --- Cabecera ------------------------------------------------------------
-   El logotipo manda: grande, serif y a la derecha. Todo lo demas se aparta. */
-
-.cabecera {
+  gap: .25rem .8rem;
   max-width: var(--ancho);
   margin: 0 auto;
-  padding: clamp(2rem, 7vw, 3.5rem) var(--gutter) 1.5rem;
-}
-
-.cabecera-interior {
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  gap: .9rem;
-}
-
-.logo {
-  display: block;
-  text-decoration: none;
-  color: var(--tinta);
-}
-
-.logo:hover { text-decoration: none; color: var(--tinta); }
-
-/* El bloque: dos lineas que miden lo mismo. La de arriba se completa con un
-   filete hasta la anchura de la de abajo, asi que el conjunto es un rectangulo
-   sin haber forzado el interletrado de nadie. */
-.logo-bloque {
-  display: block;
-  width: min(100%, 26rem);
-  margin-left: auto;
-}
-
-.logo-linea {
-  display: flex;
-  align-items: center;
-  gap: .18em;
-  font-family: var(--marca);
-  font-weight: 500;
-  font-size: clamp(1.9rem, 8.2vw, 3.1rem);
-  line-height: 1.05;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-
-/* La segunda linea lleva el peso: es la palabra larga y la que fija la
-   anchura del bloque. Se separa un pelo de la primera para que se lean como
-   dos renglones de un rotulo y no como una palabra partida. */
-.logo-linea-baja { justify-content: flex-end; margin-top: .06em; }
-
-.logo-palabra { white-space: nowrap; }
-
-/* El ampersand, en ambar: el unico color del logotipo. */
-.logo-amp { color: var(--acento); font-weight: 400; }
-
-/* El filete que cierra el rectangulo. Cian, porque el ambar ya esta usado en
-   el ampersand y dos acentos en cuatro centimetros son uno de mas. */
-.logo-filete {
-  flex: 1;
-  height: 2px;
-  min-width: 1.5rem;
-  background: linear-gradient(90deg, var(--enlace-suave), var(--enlace));
-}
-
-/* Al pasar por encima, el filete se enciende. Es el unico efecto de la casa. */
-.logo:hover .logo-filete { box-shadow: 0 0 8px var(--enlace); }
-
-.promesa {
-  margin: 1.1rem 0 0 auto;
-  max-width: 30rem;
-  text-align: right;
-  color: var(--apagado);
-  font-family: var(--mono);
-  font-size: .72rem;
-  letter-spacing: .06em;
-  line-height: 1.6;
-}
-
-.promesa-punto { color: var(--acento-suave); padding: 0 .15rem; }
-
-.menu {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: .3rem 1.15rem;
-  font-size: .7rem;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-
-.menu a {
-  display: inline-block;
-  padding: .45rem 0;
-  color: var(--apagado);
-  text-decoration: none;
-}
-.menu a:hover { color: var(--tinta); }
-.menu a[aria-current="page"] { color: var(--acento); }
-
-/* La linea que cierra la cabecera: doble, como el borde de un panel. */
-.cabecera::after {
-  content: "";
-  display: block;
-  height: 3px;
-  margin-top: 1.6rem;
-  border-top: 1px solid var(--borde);
-  border-bottom: 1px solid var(--borde-suave);
-  background: linear-gradient(90deg, transparent, rgba(92, 225, 230, .25) 60%, rgba(255, 180, 84, .35));
-}
-
-/* --- Estructura ---------------------------------------------------------- */
-
-main {
-  max-width: var(--ancho);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
-}
-
-.edicion-cabecera {
-  position: relative;
-  padding: 2rem 0 0;
-  border-top: 1px solid var(--acento-suave);
-}
-
-/* El numero de la edicion, enorme y casi transparente, detras de la cabecera.
-   No se lee: se ve. Es lo que hace que la portada parezca una portada y no la
-   primera pagina de un documento. */
-.edicion-numero {
-  position: absolute;
-  top: .2rem;
-  right: 0;
-  margin: 0;
-  font-family: var(--display);
-  font-size: clamp(5rem, 22vw, 9rem);
-  line-height: .8;
-  letter-spacing: -.05em;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--borde);
-  pointer-events: none;
-  user-select: none;
-}
-
-.sello { margin: 0 0 .9rem; color: var(--acento); }
-
-h1 {
-  margin: 0 0 .8rem;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(1.9rem, 7.5vw, 2.9rem);
-  line-height: 1.12;
-  letter-spacing: -.018em;
-}
-
-.datos {
-  margin: 0;
-  color: var(--apagado);
-  font-size: .78rem;
-  letter-spacing: .02em;
-}
-.punto { padding: 0 .45rem; color: var(--acento-suave); }
-
-.intro {
-  margin-top: 1.75rem;
-  color: var(--apagado);
-  font-size: 1.06em;
-  font-style: italic;
-}
-.intro p { margin: 0 0 .9rem; }
-
-/* --- Sumario -------------------------------------------------------------
-   Lo que convierte esto en un radar: en diez segundos se sabe si la semana
-   trae algo. */
-
-.sumario {
-  margin: 3rem calc(var(--gutter) * -1) 0;
-  padding: 1.5rem var(--gutter) 1rem;
-  background: var(--papel);
-  border-top: 1px solid var(--borde);
-  border-bottom: 1px solid var(--borde);
-}
-
-.sumario h2 { margin: 0 0 1rem; color: var(--apagado); }
-
-.sumario ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: sumario;
-}
-
-.sumario li {
-  counter-increment: sumario;
-  position: relative;
-  margin-bottom: .95rem;
-  padding-left: 2.1rem;
-  line-height: 1.45;
-}
-
-.sumario li::before {
-  content: counter(sumario, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: .15em;
-  font-family: var(--ui);
-  font-size: .7rem;
-  letter-spacing: .06em;
-  color: var(--acento-suave);
-}
-
-.sumario a { text-decoration: none; }
-.sumario a:hover { text-decoration: underline; }
-
-.sumario-etiqueta {
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-  margin-top: .2rem;
-  color: var(--tema, var(--apagado));
+  padding: .5rem var(--gutter);
   font-size: .7rem;
   letter-spacing: .04em;
 }
 
-/* --- Bits ----------------------------------------------------------------- */
-
-.bit {
-  display: flex;
-  gap: 1.1rem;
-  padding: 2.75rem 0;
-  border-bottom: 1px solid var(--borde);
-  scroll-margin-top: 1.5rem;
+.aviso-punto {
+  width: .4rem;
+  height: .4rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--acento);
 }
 
-.bit:first-child { padding-top: 3rem; }
-.bit:last-child { border-bottom: 0; }
+.aviso-cuando { color: #f2efe9; }
+.aviso-dato { color: #b5ada4; }
+.aviso-dato::before { content: "·"; margin-right: .8rem; color: #5c554e; }
+.aviso-nuevos strong, .aviso-archivo strong { color: #fff; }
+.aviso-archivo a { color: #b5ada4; }
+.aviso-quieto { color: #8f8881; }
 
-/* El carril de la izquierda: el numero y el icono del tema, uno debajo del
-   otro. Es lo que convierte una lista de parrafos en una edicion con
-   estructura, y lo que deja ver de que va cada bit antes de leerlo. */
-.bit-carril {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .7rem;
-  width: 2.4rem;
+/* --- Cabecera --------------------------------------------------------------
+   El nombre centrado y grande, y debajo la navegacion. Como la cabecera de un
+   periodico: lo primero que se lee es como se llama esto. */
+
+.cabecera {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: clamp(1.6rem, 5vw, 2.8rem) var(--gutter) 0;
+  text-align: center;
 }
+
+.cabecera-interior { display: block; }
+
+.logo { display: inline-block; text-decoration: none; }
+.logo:hover { text-decoration: none; }
+
+.logo-bloque {
+  display: block;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 7.2vw, 3.3rem);
+  line-height: 1;
+  /* El interletrado ancho es lo que convierte un nombre en una cabecera. */
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  /* El interletrado deja aire de sobra a la derecha de la ultima letra: se
+     compensa para que el conjunto quede centrado de verdad. */
+  text-indent: .12em;
+}
+
+.logo-amp { font-style: italic; letter-spacing: 0; padding: 0 .16em; }
+
+.promesa {
+  margin: .9rem auto 0;
+  max-width: 34rem;
+  font-size: .76rem;
+  letter-spacing: .02em;
+  color: var(--apagado);
+}
+
+.promesa-punto { color: var(--filete-fuerte); padding: 0 .2rem; }
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .2rem 1.4rem;
+  margin-top: 1.4rem;
+  padding-top: .9rem;
+  border-top: 1px solid var(--filete);
+  font-size: .78rem;
+  letter-spacing: .02em;
+}
+
+.menu a { display: inline-block; padding: .35rem 0; color: var(--apagado); text-decoration: none; }
+.menu a:hover { color: var(--tinta); }
+.menu a[aria-current="page"] { color: var(--tinta); font-weight: 600; }
+
+/* --- Estructura ------------------------------------------------------------ */
+
+main {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 3rem;
+}
+
+.edicion-cabecera {
+  padding: clamp(1.8rem, 5vw, 3rem) 0 1.4rem;
+  border-bottom: 1px solid var(--filete);
+}
+
+h1 {
+  margin: 0 0 .6rem;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2rem, 7vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -.01em;
+}
+
+.datos { margin: 0; color: var(--apagado); font-size: .76rem; letter-spacing: .02em; }
+.punto { padding: 0 .4rem; color: var(--filete-fuerte); }
+
+.intro {
+  margin: 1.2rem 0 0;
+  max-width: var(--lectura);
+  font-size: 1.1em;
+  color: var(--apagado);
+}
+.intro p { margin: 0 0 .8rem; }
+
+/* El numero de la edicion ya no se pinta en grande: la fecha es el titulo y el
+   numero es un dato. */
+.edicion-numero { display: none; }
+
+/* El indice lateral se quito, por lo dicho arriba del fichero. */
+.sumario { display: none; }
+
+/* --- La portada: una pieza grande y una rejilla ---------------------------- */
+
+.bits { display: grid; gap: 0; margin-top: 2rem; }
+
+/* La rejilla arranca con un filete grueso, como el que separa la cabecera de
+   la portada en un periodico. */
+.bits::before { content: ""; grid-column: 1 / -1; height: 2px; background: var(--tinta); }
+
+.bit { display: block; padding: 1.6rem 0; border-top: 1px solid var(--filete); }
+.bit:first-child { border-top: 0; padding-top: .6rem; }
+
+/* El numero y el icono del tema, en linea y pequenos: son una linea de dato
+   mas, no una columna. */
+.bit-carril { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
 
 .numero {
   margin: 0;
-  font-size: .95rem;
-  line-height: 1;
-  letter-spacing: .06em;
-  color: var(--acento);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  color: var(--suave);
   font-variant-numeric: tabular-nums;
 }
 
-/* Con cero delante, como un contador: 01, 02, 03. */
-.numero::before { content: "0"; opacity: .45; }
-.bit:nth-child(n+10) .numero::before { content: ""; }
+.bit-icono { display: grid; place-items: center; width: 1.4rem; height: 1.4rem; color: var(--tinta); }
 
-/* El icono, con el color de su tema, dentro de un circulo tenue del mismo
-   color. El color vive en --tema y lo pone el atributo data-tema. */
-.bit-icono {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid color-mix(in srgb, var(--tema, var(--apagado)) 40%, transparent);
-  background: color-mix(in srgb, var(--tema, var(--apagado)) 10%, transparent);
-  color: var(--tema, var(--apagado));
-  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
-}
+.icono { width: 1rem; height: 1rem; display: block; }
+.icono-mini { width: .8rem; height: .8rem; }
 
-.icono { width: 1.15rem; height: 1.15rem; display: block; }
-.icono-mini { width: .85rem; height: .85rem; }
-
-/* Un color por tema. Si el navegador no entiende color-mix, el circulo se
-   queda sin fondo y sin borde y el icono sigue viendose: degrada solo. */
-[data-tema="tecnologia-general"]          { --tema: var(--t-tecnologia-general); }
-[data-tema="pms-crs"]                     { --tema: var(--t-pms-crs); }
-[data-tema="distribucion-otas"]           { --tema: var(--t-distribucion-otas); }
-[data-tema="revenue-rms"]                 { --tema: var(--t-revenue-rms); }
-[data-tema="pagos-fraude"]                { --tema: var(--t-pagos-fraude); }
-[data-tema="ciberseguridad-cumplimiento"] { --tema: var(--t-ciberseguridad-cumplimiento); }
-[data-tema="operaciones-iot"]             { --tema: var(--t-operaciones-iot); }
-[data-tema="experiencia-huesped"]         { --tema: var(--t-experiencia-huesped); }
-[data-tema="ia-aplicada"]                 { --tema: var(--t-ia-aplicada); }
-[data-tema="sostenibilidad-energia"]      { --tema: var(--t-sostenibilidad-energia); }
-[data-tema="inversion-mercado"]           { --tema: var(--t-inversion-mercado); }
-
-.bit-cuerpo { min-width: 0; flex: 1; }
+.bit-cuerpo { min-width: 0; }
 
 .bit h2 {
-  margin: 0 0 .7rem;
+  margin: 0 0 .5rem;
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(1.3rem, 5vw, 1.6rem);
-  line-height: 1.24;
-  letter-spacing: -.012em;
+  font-size: clamp(1.35rem, 4.4vw, 1.75rem);
+  line-height: 1.12;
+  letter-spacing: -.005em;
 }
 
-.etiquetas { margin: 0 0 1.1rem; display: flex; flex-wrap: wrap; gap: .35rem; }
-
-.etiqueta {
-  display: inline-block;
-  padding: .24rem .65rem;
-  border: 1px solid var(--borde);
-  color: var(--apagado);
-  font-size: .62rem;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  /* La esquina cortada: es lo que hace que una caja parezca de un panel y no
-     de un formulario. Un pixel de diferencia y toda la diferencia. */
-  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
-}
-
-/* La etiqueta del tema lleva su color y ademas lleva a algun sitio: filtra el
-   explorador por ese tema. */
-.etiqueta-categoria {
-  border-color: color-mix(in srgb, var(--tema, var(--acento)) 45%, transparent);
-  color: var(--tema, var(--acento));
-  text-decoration: none;
-}
-.etiqueta-categoria:hover {
-  background: color-mix(in srgb, var(--tema, var(--acento)) 12%, transparent);
-  text-decoration: none;
-}
-
-/* El idioma es un aviso, no una categoria: se queda en el borde discontinuo
-   para que se lea sin competir con la etiqueta que de verdad clasifica. */
-.etiqueta-idioma { border-style: dashed; }
-
-.texto p { margin: 0 0 1rem; }
+.texto p { margin: 0 0 .7rem; color: var(--apagado); }
 
 .por-que {
-  margin: 1.4rem 0;
-  padding: 1rem 1.2rem;
-  background: var(--realce);
+  margin: .9rem 0;
+  padding-left: .9rem;
   border-left: 2px solid var(--acento);
-  font-size: .97em;
+  font-size: .98em;
 }
-.por-que strong { font-variant: small-caps; letter-spacing: .04em; }
+.por-que strong { font-weight: 600; }
 
-.menciona {
-  margin: 1.1rem 0 0;
-  font-size: .76rem;
-  color: var(--apagado);
+/* La primera pieza manda: titular al doble y cuerpo a la anchura de lectura.
+   Es lo que convierte una lista en una portada. */
+.bit-lead { padding-bottom: 2rem; }
+.bit-lead h2 { font-size: clamp(2rem, 6.5vw, 3rem); line-height: 1.02; }
+.bit-lead .texto { max-width: var(--lectura); font-size: 1.05em; }
+
+.etiquetas { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem; margin: 0 0 .6rem; }
+
+.etiqueta {
+  font-size: .64rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--suave);
 }
+
+/* Solo la del tema se ve de verdad; las otras dos son contexto. */
+.etiqueta-categoria { color: var(--tinta); text-decoration: none; }
+.etiqueta-categoria:hover { color: var(--acento); }
+.etiqueta-idioma { color: var(--acento); }
+
+.menciona { margin: .6rem 0 0; font-size: .74rem; color: var(--apagado); }
 .menciona a { color: var(--apagado); }
 
 .pie-bit {
   display: flex;
   flex-wrap: wrap;
-  gap: .5rem 1.5rem;
   align-items: baseline;
-  margin: 1.2rem 0 0;
-  font-size: .76rem;
-  letter-spacing: .06em;
-  text-transform: uppercase;
+  gap: .3rem .9rem;
+  margin: .9rem 0 0;
+  font-size: .72rem;
+  letter-spacing: .02em;
 }
 
-.fuente { color: var(--acento); text-decoration: none; }
-.fuente:hover { text-decoration: underline; }
+.fuente { color: var(--tinta); font-weight: 600; text-decoration: none; }
+.fuente:hover { color: var(--acento); }
+.ficha-medio { color: var(--suave); text-decoration: none; }
+.ficha-medio:hover { color: var(--tinta); }
+.pie-bit .datos { font-size: .72rem; color: var(--suave); }
 
-/* Los datos de la fuente unica van en el mismo pie, en minusculas: ahi no son
-   una etiqueta, son una frase corta. */
-.pie-bit .datos { font-size: .72rem; text-transform: none; letter-spacing: .04em; }
+/* El "volver al sumario" sobra sin sumario. */
+.volver { display: none; }
 
-.volver { margin-left: auto; color: var(--apagado); text-decoration: none; }
-.volver:hover { color: var(--tinta); }
+.fuentes-bit { margin: .9rem 0 0; font-size: .82rem; }
+.fuentes-bit summary { cursor: pointer; color: var(--apagado); font-size: .74rem; }
+.fuentes-bit ul { margin: .8rem 0 0; padding: 0; list-style: none; }
+.fuentes-bit li { padding: .6rem 0; border-top: 1px solid var(--filete); }
+.titular-fuente { display: block; color: var(--apagado); }
 
-/* --- Paginas de texto ----------------------------------------------------- */
-
-.pagina { margin-top: 2rem; }
-
-.pagina h2 {
-  margin: 2.5rem 0 .7rem;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(1.2rem, 4.6vw, 1.45rem);
-  line-height: 1.25;
-}
-
-.pagina ul { margin: 0 0 1.2rem; padding-left: 1.2rem; }
-.pagina li { margin-bottom: .5rem; }
-
-/* --- Buscador y filtros ---------------------------------------------------- */
-
-.buscador { margin: 2rem 0 1.5rem; }
-
-.buscador label {
-  display: block;
-  margin-bottom: .45rem;
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--apagado);
-}
-
-.buscador input {
-  width: 100%;
-  padding: .85rem 1rem;
-  border: 1px solid var(--borde);
-  border-radius: 2px;
-  background: var(--papel);
-  color: var(--tinta);
-  /* 16px o mas: por debajo, Safari en iPhone hace zoom al enfocar. */
-  font-family: var(--cuerpo);
-  font-size: 1.05rem;
-  line-height: 1.3;
-}
-.buscador input:focus { outline: 1px solid var(--acento); outline-offset: 2px; }
-
-.facetas { margin: 0 0 1.5rem; }
-.faceta { margin-bottom: 1.15rem; }
-.facetas h3 { margin: 0 0 .5rem; color: var(--apagado); }
-
-/* Las opciones se desbordan a lo ancho en el movil en vez de apilarse en
-   cinco lineas: se arrastra el dedo, que es el gesto natural. */
-.opciones {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: .4rem;
-  overflow-x: auto;
-  padding-bottom: .35rem;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-}
-
-.opcion {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  padding: .45rem .8rem;
-  border: 1px solid var(--borde);
-  background: transparent;
-  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
-  color: var(--apagado);
-  font-size: .74rem;
-  letter-spacing: .04em;
-  cursor: pointer;
-  white-space: nowrap;
-  min-height: 2.3rem;
-}
-
-/* El icono lleva el color de su tema y el nombre se queda en tinta: si se
-   colorearan los dos, la lista de filtros seria un arcoiris ilegible. */
-.opcion .icono { color: var(--tema, var(--apagado)); }
-.opcion-nombre { color: inherit; }
-
-.opcion:hover {
-  color: var(--tinta);
-  border-color: var(--enlace-suave);
-  box-shadow: 0 0 10px rgba(92, 225, 230, .18);
-}
-
-.opcion[aria-pressed="true"] {
-  border-color: var(--acento);
-  color: var(--fondo);
-  background: var(--acento);
-  box-shadow: 0 0 10px rgba(255, 180, 84, .35);
-}
-
-/* Pulsada, el fondo es laton: el icono tiene que dejar su color o desaparece. */
-.opcion[aria-pressed="true"] .icono { color: var(--fondo); }
-
-.cuenta-opcion { opacity: .6; margin-left: .1rem; font-variant-numeric: tabular-nums; }
-
-.limpiar {
-  margin: .25rem 0 0;
-  padding: .3rem 0;
-  border: 0;
-  background: none;
-  color: var(--acento);
-  font-size: .74rem;
-  letter-spacing: .04em;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-/* --- Listas de resultados, archivo y fichas -------------------------------- */
-
-.fichas, .archivo { list-style: none; margin: 1.5rem 0 0; padding: 0; }
-
-.fichas li, .archivo li { padding: 1.4rem 0; border-top: 1px solid var(--borde); }
-
-.fichas h2, .archivo-titulo {
-  display: block;
-  margin: 0 0 .3rem;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(1.15rem, 4.4vw, 1.35rem);
-  line-height: 1.28;
-  text-decoration: none;
-}
-.fichas h2 a { text-decoration: none; }
-.fichas h2 a:hover, .archivo-titulo:hover { text-decoration: underline; }
-
-.resumen { margin: .5rem 0 0; color: var(--apagado); font-size: .93em; }
-
-.ano h2 { margin: 3rem 0 .25rem; color: var(--apagado); }
-
-
-.cuenta {
-  flex: 0 0 auto;
-  min-width: 1.8rem;
-  text-align: right;
-  color: var(--acento-suave);
-  font-size: .78rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.vacio {
-  margin: 2rem 0;
-  padding: 1.75rem;
-  border: 1px solid var(--borde);
-  color: var(--apagado);
-}
-
-/* El icono del tema delante del titular de cada resultado, alineado con la
-   primera linea y no centrado: un icono centrado en un titular de tres lineas
-   se queda flotando en mitad de la nada. */
-#resultados h2 .icono {
-  display: inline-block;
-  vertical-align: baseline;
-  margin-right: .4rem;
-  color: var(--tema, var(--apagado));
-}
-
-/* Los temas de cada edicion en el archivo: iconos en fila, sin texto. El
-   nombre va en el title, que es lo que hace falta y no estorba. */
-.archivo-temas {
-  display: flex;
-  gap: .4rem;
-  margin: .5rem 0 0;
-}
-
-.archivo-tema {
-  display: grid;
-  place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border: 1px solid color-mix(in srgb, var(--tema, var(--apagado)) 30%, transparent);
-  border-radius: 50%;
-  color: var(--tema, var(--apagado));
-}
+.vacio { margin: 2rem 0; color: var(--apagado); }
 
 /* --- Temas y medios, al final de la edicion -------------------------------- */
 
-.explorar {
-  margin: 3rem calc(var(--gutter) * -1) 0;
-  padding: 2rem var(--gutter) 2.2rem;
-  background: var(--papel);
-  border-top: 1px solid var(--borde);
-  border-bottom: 1px solid var(--borde);
-}
+.explorar { margin: 2.5rem 0 0; padding: 2rem 0 0; border-top: 2px solid var(--tinta); }
 
 .explorar h2 {
-  margin: 0 0 1.6rem;
+  margin: 0 0 1.4rem;
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(1.35rem, 5.5vw, 1.7rem);
-  line-height: 1.2;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  line-height: 1.1;
 }
 
-.explorar-grupo {
-  margin: 1.8rem 0 .9rem;
-  font-family: var(--ui);
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--apagado);
-}
-
+.explorar-grupo { margin: 1.6rem 0 .8rem; }
 .explorar-grupo:first-of-type { margin-top: 0; }
 
-.nube {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+.nube { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0; padding: 0; list-style: none; }
 
 .nube a {
   display: inline-flex;
   align-items: center;
-  gap: .45rem;
-  padding: .45rem .75rem;
-  border: 1px solid var(--borde);
-  background: var(--realce);
+  gap: .4rem;
+  padding: .4rem .75rem;
+  border: 1px solid var(--filete-fuerte);
+  border-radius: 999px;
+  background: var(--tarjeta);
   color: var(--tinta);
   font-size: .74rem;
-  letter-spacing: .04em;
-  text-decoration: none;
-  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
-}
-
-.nube a:hover {
-  border-color: color-mix(in srgb, var(--tema, var(--enlace)) 55%, transparent);
   text-decoration: none;
 }
 
-.nube-temas a { color: var(--tema, var(--tinta)); }
-.nube-temas .nube-nombre { color: var(--tinta); }
-
-/* El numero, en laton y mas pequeno: es un dato, no el nombre. */
-.nube-cuenta {
-  color: var(--acento);
-  font-variant-numeric: tabular-nums;
-  font-size: .72rem;
-}
-
-.explorar-pie { margin: 1.1rem 0 0; max-width: 34rem; }
+.nube a:hover { border-color: var(--tinta); }
+.nube-cuenta { color: var(--suave); font-variant-numeric: tabular-nums; }
+.explorar-pie { margin: 1rem 0 0; max-width: var(--lectura); }
 
 /* --- Fichas de tema y de medio --------------------------------------------- */
 
-.ficha-titulo {
-  display: flex;
-  align-items: center;
-  gap: .8rem;
-}
+.ficha-titulo { display: flex; align-items: center; gap: .7rem; }
 
-/* El icono de la ficha, en grande y con el color de su tema. En la de medio no
-   hay tema, asi que se queda en el cian de la casa. */
 .ficha-icono {
   display: grid;
   place-items: center;
   flex: none;
-  width: 3rem;
-  height: 3rem;
-  border: 1px solid color-mix(in srgb, var(--tema, var(--enlace)) 45%, transparent);
-  background: color-mix(in srgb, var(--tema, var(--enlace)) 10%, transparent);
-  color: var(--tema, var(--enlace));
-  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--filete-fuerte);
+  border-radius: 50%;
+  color: var(--tinta);
 }
 
-.ficha-icono .icono { width: 1.5rem; height: 1.5rem; }
+.ficha-icono .icono { width: 1.2rem; height: 1.2rem; }
 
-.lista-fichas { list-style: none; margin: 2.5rem 0 0; padding: 0; }
-
-.lista-fichas li {
-  padding: 1.4rem 0;
-  border-top: 1px solid var(--borde-suave);
-}
+.lista-fichas { list-style: none; margin: 2rem 0 0; padding: 0; }
+.lista-fichas li { padding: 1.2rem 0; border-top: 1px solid var(--filete); }
 
 .lista-fichas h2 {
-  margin: 0 0 .4rem;
+  margin: 0 0 .35rem;
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(1.15rem, 4.4vw, 1.4rem);
-  line-height: 1.28;
+  font-size: clamp(1.15rem, 4vw, 1.45rem);
+  line-height: 1.16;
 }
-
 .lista-fichas h2 a { text-decoration: none; }
-.lista-fichas h2 a:hover { color: var(--enlace); }
-.lista-fichas .resumen { margin: .5rem 0 0; color: var(--apagado); font-size: .95rem; }
+.lista-fichas h2 a:hover { color: var(--acento); }
+.lista-fichas .resumen { margin: .4rem 0 0; color: var(--apagado); font-size: .95rem; }
 
-/* La rejilla de los indices: tarjetas iguales, que es lo que hace que un
-   indice se lea como un panel y no como una lista de la compra. */
 .rejilla-fichas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-  gap: .8rem;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1px;
   list-style: none;
-  margin: 2.5rem 0 0;
+  margin: 2rem 0 0;
   padding: 0;
+  background: var(--filete);
+  border: 1px solid var(--filete);
 }
 
 .rejilla-fichas a {
   display: flex;
   flex-direction: column;
-  gap: .7rem;
+  gap: .6rem;
   height: 100%;
   padding: 1.1rem;
-  border: 1px solid var(--borde);
-  background: var(--papel);
-  text-decoration: none;
-  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
-}
-
-.rejilla-fichas a:hover {
-  border-color: color-mix(in srgb, var(--tema, var(--enlace)) 60%, transparent);
-  background: var(--realce);
+  background: var(--tarjeta);
   text-decoration: none;
 }
 
-.rejilla-nombre {
+.rejilla-fichas a:hover { background: var(--realce); }
+.rejilla-nombre { font-family: var(--display); font-size: 1.15rem; line-height: 1.2; }
+.rejilla-cuenta { margin-top: auto; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--suave); }
+
+/* --- Archivo ---------------------------------------------------------------- */
+
+.ano { margin-top: 2.5rem; }
+.fichas, .archivo { list-style: none; margin: 1.2rem 0 0; padding: 0; }
+.archivo li, .fichas li { padding: 1.1rem 0; border-top: 1px solid var(--filete); }
+
+.archivo-titulo {
   font-family: var(--display);
-  font-size: 1.12rem;
-  line-height: 1.25;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  text-decoration: none;
+}
+.archivo-titulo:hover { color: var(--acento); }
+
+.archivo-temas { display: flex; gap: .5rem; margin: .5rem 0 0; }
+.archivo-tema { display: grid; place-items: center; width: 1.4rem; height: 1.4rem; color: var(--suave); }
+
+.fichas h2 { margin: 0 0 .3rem; font-family: var(--display); font-weight: 400; font-size: 1.25rem; line-height: 1.18; }
+
+/* --- Buscador --------------------------------------------------------------- */
+
+.buscador { margin: 2rem 0 0; }
+.buscador label { display: block; margin-bottom: .5rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--apagado); }
+
+.buscador input {
+  width: 100%;
+  padding: .8rem 1rem;
+  border: 1px solid var(--filete-fuerte);
+  background: var(--tarjeta);
   color: var(--tinta);
-}
-
-.rejilla-cuenta {
-  margin-top: auto;
-  font-family: var(--mono);
-  font-size: .68rem;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--apagado);
-}
-
-/* El enlace a la ficha del medio, al lado del enlace a la noticia. Discreto:
-   lo que quiere el lector es la noticia, no nuestra ficha. */
-.ficha-medio {
-  color: var(--apagado);
-  text-decoration: none;
-  border-bottom: 1px dotted var(--borde);
-}
-.ficha-medio:hover { color: var(--enlace); }
-
-/* --- Alta en el boletin ---------------------------------------------------- */
-
-.alta {
-  margin: 3.5rem calc(var(--gutter) * -1) 0;
-  padding: 2rem var(--gutter);
-  background: var(--papel);
-  border-top: 1px solid var(--borde);
-  border-bottom: 1px solid var(--borde);
-}
-
-.alta h2 {
-  margin: 0 0 .7rem;
   font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(1.3rem, 5vw, 1.6rem);
-  line-height: 1.25;
+  font-size: 1.15rem;
 }
+.buscador input:focus { outline: 2px solid var(--acento); outline-offset: -2px; }
 
-.alta p { margin: 0 0 1.1rem; }
+.facetas { margin: 1.6rem 0 0; }
+.faceta { margin-bottom: 1.2rem; }
+.opciones { display: flex; flex-wrap: wrap; gap: .45rem; }
 
-.alta-formulario label {
-  display: block;
-  margin-bottom: .45rem;
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .16em;
-  text-transform: uppercase;
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .4rem .75rem;
+  border: 1px solid var(--filete-fuerte);
+  border-radius: 999px;
+  background: var(--tarjeta);
   color: var(--apagado);
+  font-size: .74rem;
+  cursor: pointer;
 }
 
-.alta-fila { display: flex; flex-wrap: wrap; gap: .6rem; }
+.opcion:hover { color: var(--tinta); border-color: var(--tinta); }
+.opcion[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+.opcion[aria-pressed="true"] .icono { color: var(--papel); }
+.opcion .icono { color: var(--suave); }
+.cuenta-opcion { color: var(--suave); font-variant-numeric: tabular-nums; }
+.opcion[aria-pressed="true"] .cuenta-opcion { color: #b5ada4; }
+
+.limpiar {
+  margin-top: .4rem;
+  padding: .35rem 0;
+  border: 0;
+  background: none;
+  color: var(--acento);
+  font-size: .74rem;
+  cursor: pointer;
+}
+
+#resultados { list-style: none; margin: 1.5rem 0 0; padding: 0; }
+#resultados li { padding: 1.1rem 0; border-top: 1px solid var(--filete); }
+#resultados h2 { margin: 0 0 .3rem; font-family: var(--display); font-weight: 400; font-size: 1.25rem; line-height: 1.18; }
+#resultados h2 a { text-decoration: none; }
+#resultados h2 a:hover { color: var(--acento); }
+#resultados h2 .icono { display: inline-block; vertical-align: baseline; margin-right: .35rem; color: var(--suave); }
+#resultados .resumen { margin: .35rem 0 0; color: var(--apagado); font-size: .95rem; }
+
+/* --- Paginas de texto -------------------------------------------------------- */
+
+.pagina { margin-top: 2rem; max-width: var(--lectura); }
+.pagina h2 { margin: 2.2rem 0 .6rem; font-family: var(--display); font-weight: 400; font-size: 1.5rem; line-height: 1.2; }
+.pagina ul { margin: 0 0 1rem; padding-left: 1.1rem; }
+.pagina li { margin-bottom: .4rem; }
+.letra-pequena { font-size: .76rem; color: var(--apagado); }
+.alta-respuesta { max-width: var(--lectura); }
+
+/* --- Alta en el boletin ------------------------------------------------------ */
+
+.alta { margin: 3rem 0 0; padding: 2rem; background: var(--negro); color: #f2efe9; }
+.alta h2 { margin: 0 0 .7rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.5rem, 5vw, 2rem); }
+.alta p { margin: 0 0 1rem; color: #b5ada4; max-width: var(--lectura); }
+.alta a { color: #f2efe9; }
+.alta-formulario label { display: block; margin-bottom: .5rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: #b5ada4; }
+.alta-fila { display: flex; flex-wrap: wrap; gap: .6rem; max-width: 30rem; }
 
 .alta-fila input {
   flex: 1 1 14rem;
-  min-width: 0;
-  padding: .8rem .9rem;
-  border: 1px solid var(--borde);
-  border-radius: 2px;
-  background: var(--fondo);
-  color: var(--tinta);
+  padding: .75rem .9rem;
+  border: 1px solid #3a342e;
+  background: #1c1916;
+  color: #f2efe9;
   font-family: var(--cuerpo);
   font-size: 1rem;
-  line-height: 1.3;
 }
-.alta-fila input:focus { outline: 1px solid var(--acento); outline-offset: 2px; }
 
 .alta-fila button {
-  flex: 1 1 10rem;
-  min-height: 3rem;
-  padding: .8rem 1.4rem;
-  border: 1px solid var(--acento);
-  border-radius: 2px;
+  padding: .75rem 1.4rem;
+  border: 0;
   background: var(--acento);
-  color: var(--fondo);
+  color: #fff;
   font-family: var(--ui);
-  font-size: .78rem;
+  font-size: .8rem;
   font-weight: 600;
-  letter-spacing: .12em;
+  letter-spacing: .08em;
   text-transform: uppercase;
   cursor: pointer;
 }
-.alta-fila button:hover { background: transparent; color: var(--acento); }
+.alta-fila button:hover { background: #a92c21; }
+.alta .letra-pequena { color: #8f8881; }
 
-.alta .letra-pequena { margin-top: 1rem; }
+/* La trampa para robots: invisible para las personas, presente para el que
+   rellena formularios a ciegas. */
+.trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
-/* La trampa para robots: fuera de la vista pero sin display:none, que algunos
-   la detectan. */
-.trampa {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-.alta-respuesta { margin: 1.75rem 0; font-size: 1.05em; }
-
-/* --- Pie ------------------------------------------------------------------- */
+/* --- Pie ---------------------------------------------------------------------- */
 
 .pie {
   max-width: var(--ancho);
-  margin: 4rem auto 0;
-  padding: 2rem var(--gutter) 5rem;
-  border-top: 1px solid var(--borde);
-}
-
-.pie .menu { justify-content: flex-start; }
-
-.letra-pequena {
-  margin: 1.25rem 0 0;
-  max-width: 30rem;
+  margin: 0 auto;
+  padding: 2rem var(--gutter) 3rem;
+  border-top: 1px solid var(--filete);
   color: var(--apagado);
-  font-size: .78rem;
-  line-height: 1.6;
+  font-family: var(--ui);
+  font-size: .74rem;
 }
 
-/* --- Pantallas grandes ----------------------------------------------------- */
+.pie a { color: var(--apagado); margin-right: 1.1rem; }
+.pie p { margin: 0 0 .5rem; }
 
-@media (min-width: 34rem) {
-  /* La cabecera no cambia de forma con el ancho: el logotipo arriba y el menu
-     debajo, los dos alineados al mismo borde derecho que el texto. Se probo a
-     ponerlos en la misma linea y la columna de lectura, que son 38rem, no da
-     para un logotipo de cinco y seis enlaces: el menu acaba partido en una
-     columna de tres letras. Una cabecera que se comporta igual en el movil y
-     en el escritorio ademas se reconoce antes. */
+/* --- Tableta y escritorio ------------------------------------------------------
+   La rejilla de revista: la primera pieza grande y el resto en dos o tres
+   columnas. Sin indice lateral, el ancho entero es para lo que se lee. */
 
-  /* Con sitio, las opciones de filtrado se reparten en varias lineas en vez
-     de pedir que se arrastre el dedo. */
-  .opciones { flex-wrap: wrap; overflow-x: visible; }
+@media (min-width: 48rem) {
+  .bits { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2.5rem; }
+  .bit-lead { grid-column: 1 / -1; border-top: 0; }
+  .alta { padding: 2.5rem; }
 }
 
-/* --- Escritorio: se usa el ancho ------------------------------------------
-   La columna de lectura no crece -38rem es la medida a la que se lee sin
-   cansarse-, pero el espacio que sobra deja de estar vacio: el sumario se va
-   a un lateral fijo que acompana toda la edicion, y los filtros del explorador
-   hacen lo mismo. En el movil todo eso vuelve a apilarse. */
+@media (min-width: 72rem) {
+  .bits { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 3rem; }
 
-@media (min-width: 70rem) {
-  .cabecera, main, .pie { max-width: 78rem; }
+  /* Una grande y dos de apoyo en la misma fila, que es como se maqueta una
+     portada. */
+  .bit-lead { grid-column: 1 / 3; }
 
-  /* justify-content centra las dos columnas dentro del contenedor: sin eso, el
-     espacio que sobra se queda todo a la derecha y la pagina parece torcida. */
-  .edicion {
-    display: grid;
-    grid-template-columns: 18rem minmax(0, 46rem);
-    justify-content: center;
-    gap: 0 4.5rem;
-    align-items: start;
-  }
-
-  .edicion-cabecera { grid-column: 1 / -1; }
-
-  .sumario {
-    position: sticky;
-    top: 2.5rem;
-    margin: 3rem 0 0;
-    padding: 0 1.5rem 0 0;
-    background: transparent;
-    border: 0;
-    border-right: 1px solid var(--borde);
-    max-height: calc(100vh - 5rem);
-    overflow-y: auto;
-  }
-
-  .bits { min-width: 0; }
-  .bit:first-child { padding-top: 3rem; }
-
-  /* El bloque de alta no entra en la rejilla: ocupa el ancho de abajo. */
-  .alta { margin-left: 0; margin-right: 0; padding-left: 2rem; padding-right: 2rem; }
-  .explorador > .alta { grid-column: 1 / -1; }
-  .resultados-panel { min-width: 0; }
-
-  /* Explorador: filtros a la izquierda, resultados a la derecha. */
-  .explorador {
-    display: grid;
-    grid-template-columns: 20rem minmax(0, 46rem);
-    justify-content: center;
-    gap: 0 4.5rem;
-    align-items: start;
-  }
-
-  .explorador > .cabecera-explorador { grid-column: 1 / -1; }
-
-  .rail {
-    position: sticky;
-    top: 2.5rem;
-    padding-right: 1.5rem;
-    border-right: 1px solid var(--borde);
-    max-height: calc(100vh - 5rem);
-    overflow-y: auto;
-  }
-
-  .opciones { flex-direction: column; align-items: flex-start; }
-  .opcion { width: 100%; text-align: left; }
-
-  /* Listas largas a dos columnas: el archivo de un ano son cincuenta filas. */
-  .archivo {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 3rem;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  html { scroll-behavior: smooth; }
-}
-
-@media print {
-  :root {
-    --fondo: #fff; --papel: #fff; --realce: #f4f1ea; --tinta: #000;
-    --apagado: #444; --borde: #ccc; --acento: #000; --acento-suave: #666;
-  }
-  .menu, .saltar, .volver, .alta, .buscador, .facetas { display: none; }
-  body { font-size: 11pt; }
-  .bit { break-inside: avoid; }
+  .rejilla-fichas { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
 }
