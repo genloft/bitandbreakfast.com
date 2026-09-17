@@ -102,6 +102,8 @@ require_once __DIR__ . '/iconos.php';
       // dedos mas abajo. La primera pieza va destacada y el resto en columnas,
       // que es como se ojea una portada.
     ?>
+    <p class="rotulo">Las noticias de hoy</p>
+
     <div class="bits">
     <?php foreach ($bits as $indice => $bit): ?>
       <?php $tema = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general'; ?>

@@ -40,7 +40,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <main id="contenido">
   <header class="edicion-cabecera">
     <p class="sello">Qué es esto</p>
-    <h1>Un radar, no un agregador</h1>
+    <h1>Un agregador con criterio</h1>
     <p class="datos">Cinco minutos de lectura a la semana</p>
   </header>
 
@@ -51,11 +51,11 @@ $alta_abierta  = $alta_abierta ?? false;
     financiación. Agrupa las noticias que cuentan lo mismo, las puntúa y deja
     una cola de candidatos.</p>
 
-    <p>De esa cola salen cada semana entre quince y veinte <strong>bits</strong>.
+    <p>De esa cola salen cada edición entre quince y treinta <strong>bits</strong>.
     Los elige la puntuación, no una persona: entran los mejor puntuados que
     además hablan de tecnología hotelera según el diccionario del sistema.
-    Conviene que lo sepas, y por eso está escrito aquí y no en la letra
-    pequeña.</p>
+    Esto es un agregador, no una redacción, y conviene que lo sepas: por eso
+    está escrito aquí y no en la letra pequeña.</p>
 
     <p>Lo que <em>no</em> hace es inventar. El titular es el de la fuente, y el
     párrafo es el resumen que publica la propia fuente, sin reescribir y sin
