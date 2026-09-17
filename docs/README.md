@@ -1,9 +1,10 @@
 # Bit & Breakfast
 
 Radar de noticias de tecnología hotelera. Rastrea 59 fuentes, agrupa las que
-cuentan la misma noticia, las puntúa y presenta una cola de candidatos donde
-se seleccionan y editan entre 15 y 20 *bits* que se publican como edición HTML
-estática y se envían como newsletter semanal en español.
+cuentan la misma noticia, las puntúa y de esa cola salen entre 15 y 20 *bits*
+por edición, que se publican como HTML estático y se enviarán como newsletter
+semanal en español. Los elige la puntuación: el panel de curación sigue ahí
+para escribirlos a mano, pero ya no es el único camino.
 
 La promesa al lector: **cinco minutos de lectura a la semana y no te pierdes
 nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
