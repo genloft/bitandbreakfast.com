@@ -505,10 +505,21 @@ comprobar(
     str_contains((string) ($st->fetchColumn() ?: ''), 'espanol')
 );
 
-// El resto de la cadena se prueba con la puerta abierta: lo que se mira aqui
-// es que el engranaje gira, no la politica editorial.
-bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
+// Y apagar el ajuste no basta: sin traductor configurado, la puerta sigue
+// cerrada. El ajuste dice "publica tambien lo extranjero", y sin traductor eso
+// no significa publicarlo en espanol, significa llenar la portada de titulares
+// en ingles. Se cumple la intencion, no la letra.
 ajuste_guardar('auto_solo_espanol', '0');
+bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
+
+$sin_traductor = auto_publicar_lote(microtime(true) + 20);
+
+comprobar('sin traductor, apagar la puerta no la abre', 0, $sin_traductor['bits']);
+
+// El resto de la cadena se prueba con el racimo ya en espanol: lo que se mira
+// aqui es que el engranaje gira, no la politica editorial.
+bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
+bd()->prepare("UPDATE items SET idioma = 'es' WHERE id = ?")->execute([$item_c]);
 
 $auto = auto_publicar_lote(microtime(true) + 20);
 

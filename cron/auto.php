@@ -473,6 +473,15 @@ function auto_terminos(): array
  */
 function auto_solo_espanol(): bool
 {
+    // Sin traductor, la puerta se cierra aunque el ajuste diga lo contrario.
+    // El ajuste dice "publica tambien lo extranjero", y sin traductor eso no
+    // significa publicarlo en espanol: significa llenar la portada de
+    // titulares en ingles. Quien apaga la puerta lo hace contando con que hay
+    // traductor; si no lo hay, lo que se cumple es la intencion, no la letra.
+    if (!traducir_configurado()) {
+        return true;
+    }
+
     return (string) ajuste('auto_solo_espanol', '1') === '1';
 }
 
