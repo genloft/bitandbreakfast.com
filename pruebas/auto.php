@@ -341,6 +341,60 @@ comprobar(
     auto_es_promocional('Cloudbeds lanza su RMS con datos de mercado en tiempo real')
 );
 
+// --- Guias y columnas -------------------------------------------------------
+//
+// Media tecnologia hotelera publica su marketing en el mismo feed que sus
+// notas. Una guia no caduca: si entra una vez, entra siempre.
+
+comprobar(
+    'un tutorial no es una noticia',
+    true,
+    auto_es_didactico('How to get your hotel featured in Google AI Mode results')
+);
+
+comprobar(
+    'ni un explicativo',
+    true,
+    auto_es_didactico('Agentic AI for hotels: What it is, how it works, and what it means')
+);
+
+comprobar(
+    'ni una guia practica',
+    true,
+    auto_es_didactico('Hotel business intelligence: A practical guide for hotel owners')
+);
+
+comprobar(
+    'ni una columna que empieza preguntandose por que',
+    true,
+    auto_es_didactico('Why Business Insurance Matters in Hospitality')
+);
+
+comprobar(
+    'ni la que lo pregunta despues de los dos puntos',
+    true,
+    auto_es_didactico('The Hotel Loyalty Upgrade: Why Guests Chase Recognition, Not Just Rewards')
+);
+
+// Y las noticias de verdad se quedan, aunque hablen de lo mismo.
+comprobar(
+    'una sentencia si es una noticia',
+    false,
+    auto_es_didactico('EU court upholds veto of Booking’s 1.63bn ETraveli deal')
+);
+
+comprobar(
+    'y una brecha de datos tambien',
+    false,
+    auto_es_didactico('Spain’s data agency gets first report of AI-powered data breach')
+);
+
+comprobar(
+    'y una integracion entre dos proveedores',
+    false,
+    auto_es_didactico('Apaleo and IDeaS Announce Expanded Integration With Advanced Revenue Controls')
+);
+
 // --- Categoria segun el diccionario -----------------------------------------
 
 $diccionario = [

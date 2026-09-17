@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 7;
+const AUTO_CRITERIOS = 8;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.
@@ -328,6 +328,60 @@ function auto_es_recopilatorio(string $titular): bool
     }
 
     return $frases >= 3;
+}
+
+/**
+ * ¿Es esto una guia o un articulo de opinion, y no una noticia?
+ *
+ * Media tecnologia hotelera publica su marketing en el mismo feed que sus
+ * notas: "How to get your hotel featured in...", "Agentic AI: what it is, how
+ * it works", "Why business insurance matters in hospitality". El diccionario
+ * les da la razon -hablan de tecnologia hotelera con el vocabulario exacto- y
+ * la puntuacion tambien, porque salen en medios con peso.
+ *
+ * Pero un radar promete lo que ha pasado esta semana, no un curso. Una guia no
+ * caduca, no tiene fecha y no cambia nada: si entra, entra siempre, y desplaza
+ * a la noticia que si importaba.
+ *
+ * Se mira solo el titular, que es donde el formato se declara. El cuerpo no:
+ * una noticia puede mencionar de pasada que alguien publico una guia.
+ */
+function auto_es_didactico(string $titular): bool
+{
+    $aguja = ' ' . texto_normalizar($titular) . ' ';
+
+    // Formulas que solo aparecen en titulares de guia, de tutorial o de
+    // columna. Las genericas -"guia", "por que"- no valen sueltas: hay
+    // noticias que las llevan dentro.
+    $formulas = [
+        ' how to ', ' what it is how it works ', ' what does it mean for ',
+        ' everything you need to know ', ' a practical guide ', ' practical guide for ',
+        ' the ultimate guide ', ' step by step ', ' best practices ', ' a checklist ',
+        ' what i learned ', ' taught me ', ' lessons from ',
+        ' guia practica ', ' paso a paso ', ' mejores practicas ',
+        ' todo lo que necesitas saber ', ' claves para ', ' consejos para ',
+    ];
+
+    foreach ($formulas as $formula) {
+        if (str_contains($aguja, $formula)) {
+            return true;
+        }
+    }
+
+    // Y las que solo cuentan al principio del titular o justo tras los dos
+    // puntos, que es donde marcan el genero del texto entero. Se parte por los
+    // dos puntos ANTES de normalizar: normalizar los borra.
+    foreach (explode(':', $titular) as $trozo) {
+        $trozo = ' ' . texto_normalizar($trozo) . ' ';
+
+        foreach ([' why ', ' what ', ' how ', ' por que ', ' como '] as $arranque) {
+            if (str_starts_with($trozo, $arranque)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 /**

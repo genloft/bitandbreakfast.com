@@ -142,10 +142,13 @@ function auto_revisar_publicados(float $limite): int
 
     while (microtime(true) < $limite) {
         $st = bd()->prepare(
-            "SELECT id, racimo_id, edicion_id, estado FROM bits
-              WHERE redactado_por = 'ia' AND revisado = 0 AND racimo_id IS NOT NULL
-                AND id > ?
-              ORDER BY id
+            "SELECT b.id, b.racimo_id, b.edicion_id, b.estado,
+                    (e.fecha_envio IS NULL) AS sin_enviar
+               FROM bits b
+               LEFT JOIN ediciones e ON e.id = b.edicion_id
+              WHERE b.redactado_por = 'ia' AND b.revisado = 0 AND b.racimo_id IS NOT NULL
+                AND b.id > ?
+              ORDER BY b.id
               LIMIT 25"
         );
         $st->execute([$desde]);
@@ -245,14 +248,20 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
     $cuerpo  = auto_sin_titular($cuerpo, $titular);
     $senal   = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
-    // Los dos filtros de forma -recopilatorio y promocional- no entran aqui a
-    // proposito. Son heuristicas: aciertan lo bastante como para descartar un
-    // candidato, que no cuesta nada, y no lo bastante como para retirar algo
-    // que ya esta publicado. Una noticia buena que mencione de pasada un
-    // seminario desapareceria de una edicion que alguien ya ha leido.
+    // Los filtros de forma -recopilatorio, promocional, guia- son heuristicas:
+    // aciertan lo justo para descartar un candidato, que no cuesta nada, y no
+    // lo bastante para retirar algo que ya ha salido por correo. Una edicion
+    // enviada es un hecho consumado y no se toca; una que todavia no se ha
+    // mandado a nadie si se puede corregir, y mas vale corregirla.
+    $forma = (bool) ($bit['sin_enviar'] ?? false)
+        && (auto_es_recopilatorio($titular)
+            || auto_es_promocional($titular . ' ' . $cuerpo)
+            || auto_es_didactico($titular));
+
     if ($racimo === null
         || $senal['puntos'] < $minimo
         || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN
+        || $forma
     ) {
         datos_borrar_bit((int) $bit['id']);
 
@@ -315,6 +324,9 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     //   4. Tiene que ser una noticia y no un libro blanco, un seminario o una
     //      guia descargable. El diccionario no los distingue porque hablan de
     //      lo mismo; para el lector, detras hay un formulario, no una noticia.
+    //   5. Ni un tutorial ni una columna. Media tecnologia hotelera publica su
+    //      marketing en el mismo feed que sus notas, y una guia no caduca: si
+    //      entra una vez entra siempre, desplazando a lo que si ha pasado.
     $senal = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
     $motivo = match (true) {
@@ -322,6 +334,7 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN  => 'automatico: sin resumen utilizable',
         auto_es_recopilatorio($titular)                   => 'automatico: recopilatorio, no una noticia',
         auto_es_promocional($titular . ' ' . $cuerpo)     => 'automatico: material promocional',
+        auto_es_didactico($titular)                       => 'automatico: guia, no noticia',
         default                                           => '',
     };
 
