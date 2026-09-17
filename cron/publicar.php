@@ -63,6 +63,11 @@ function publicar_pendiente(float $limite): array
     // sitio.
     $alta = correo_configurado();
 
+    // Los temas y los medios que tienen algo publicado. Se piden una vez para
+    // todas las ediciones: son los mismos en todas y son dos consultas.
+    $temas  = publicar_temas();
+    $medios = publicar_medios();
+
     // La hoja de estilo, el guion y robots.txt no dependen de las ediciones,
     // pero se escriben aqui: son parte de la salida y no tienen otro sitio
     // donde vivir. Van los primeros porque de su contenido sale la version que
@@ -80,6 +85,8 @@ function publicar_pendiente(float $limite): array
         'version'      => web_version($publico . '/estilo.css'),
         'version_js'   => web_version($publico . '/buscar.js'),
         'alta_abierta' => $alta,
+        'temas'        => $temas,
+        'medios'       => $medios,
     ];
 
     foreach ($ediciones as $indice => $edicion) {
@@ -249,6 +256,75 @@ function publicar_barrer(string $carpeta, array $vivos): int
 }
 
 /**
+ * Los temas que tienen algo publicado, con cuantos bits cada uno.
+ *
+ * Solo los que tienen algo: una lista de once temas de los que ocho estan
+ * vacios no invita a explorar, informa de lo que falta.
+ *
+ * @return array Filas con 'slug', 'nombre' y 'bits'.
+ */
+function publicar_temas(): array
+{
+    $sql = "SELECT b.categoria, COUNT(*) AS bits
+              FROM bits b
+              JOIN ediciones e ON e.id = b.edicion_id
+             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
+             GROUP BY b.categoria";
+
+    $catalogo = bits_categorias();
+    $cuenta   = [];
+
+    foreach (bd()->query($sql) ?: [] as $fila) {
+        // Los bits viejos llevan el nombre viejo de su categoria: se suman al
+        // que corresponde en vez de aparecer como un tema aparte sin nombre.
+        $slug = bits_categoria_canonica((string) $fila['categoria']);
+
+        if ($slug === '') {
+            continue;
+        }
+
+        $cuenta[$slug] = ($cuenta[$slug] ?? 0) + (int) $fila['bits'];
+    }
+
+    arsort($cuenta);
+
+    $temas = [];
+
+    foreach ($cuenta as $slug => $bits) {
+        $temas[] = ['slug' => $slug, 'nombre' => $catalogo[$slug] ?? $slug, 'bits' => $bits];
+    }
+
+    return $temas;
+}
+
+/**
+ * Los medios de los que ha salido algo publicado, con cuantos bits cada uno.
+ *
+ * Se cuenta el medio de la fuente principal de cada bit, que es el que lleva
+ * el enlace: contar todos los del racimo daria numeros mas altos y menos
+ * ciertos, porque el lector no ha leido a los demas.
+ *
+ * @return array Filas con 'nombre' y 'bits'.
+ */
+function publicar_medios(): array
+{
+    $sql = "SELECT f.nombre, COUNT(DISTINCT b.id) AS bits
+              FROM bits b
+              JOIN ediciones e ON e.id = b.edicion_id
+              JOIN items i     ON i.id = (
+                    SELECT i2.id FROM items i2
+                     WHERE i2.racimo_id = b.racimo_id AND i2.estado <> 'descartado'
+                     ORDER BY (i2.idioma = 'es') DESC, i2.puntuacion DESC, i2.id ASC
+                     LIMIT 1)
+              JOIN fuentes f   ON f.id = i.fuente_id
+             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
+             GROUP BY f.id, f.nombre
+             ORDER BY bits DESC, f.nombre ASC";
+
+    return bd()->query($sql)->fetchAll();
+}
+
+/**
  * Las ediciones publicables, de la mas reciente a la mas antigua.
  */
 function publicar_ediciones(): array
@@ -270,13 +346,17 @@ function publicar_ediciones(): array
 function publicar_bits(int $edicion_id): array
 {
     $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo,
+                   -- El enlace y el medio, con el mismo orden con el que se
+                   -- eligio el titular: primero el que lo cuenta en espanol.
+                   -- Con otro orden, el bit llevaria titular de un sitio y
+                   -- enlace a otro, que es la peor forma de citar una fuente.
                    (SELECT i.url FROM items i
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
-                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS url,
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS url,
                    (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
-                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
                    -- El idioma del titular, con el mismo orden con el que
                    -- cron/procesar.php elige el titular representativo: si no
                    -- coincidiera, la etiqueta diria una cosa y el titular otra.
@@ -348,7 +428,7 @@ function publicar_indice(): array
                    (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
-                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
                    -- El ambito mas concreto del racimo: si alguna fuente es
                    -- espanola, cuenta como espanola; si no, europea.
                    (SELECT f.region FROM items i
@@ -357,7 +437,7 @@ function publicar_indice(): array
                      ORDER BY (f.region = 'es') DESC, (f.region = 'eu') DESC LIMIT 1) AS ambito,
                    (SELECT i.idioma FROM items i
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
-                     ORDER BY i.puntuacion DESC, i.id ASC LIMIT 1) AS idioma,
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS idioma,
                    (SELECT GROUP_CONCAT(DISTINCT CONCAT(p.slug, '|', p.nombre) SEPARATOR ';;')
                       FROM items i
                       JOIN item_proveedor ip ON ip.item_id = i.id

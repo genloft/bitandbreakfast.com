@@ -403,6 +403,41 @@ comprobar(
     auto_es_didactico('Apaleo and IDeaS Announce Expanded Integration With Advanced Revenue Controls')
 );
 
+// --- Idioma -----------------------------------------------------------------
+//
+// El radar se lee en Espana. Traducir no es una opcion -el bit dice lo que
+// dijo la fuente-, asi que entra lo que alguien cuente en espanol.
+
+$mezcla = [
+    ['idioma' => 'en', 'fuente' => 'Skift',     'resumen_origen' => 'ingles'],
+    ['idioma' => 'es', 'fuente' => 'Hosteltur', 'resumen_origen' => 'espanol'],
+];
+
+comprobar('si alguien lo cuenta en espanol, entra', true, auto_hay_espanol($mezcla));
+comprobar(
+    'y si no lo cuenta nadie, no',
+    false,
+    auto_hay_espanol([['idioma' => 'en', 'fuente' => 'Skift']])
+);
+
+// El titular, el cuerpo y el enlace salen del mismo sitio: del primero de la
+// lista. Por eso el espanol va delante, y no cada uno por su cuenta.
+comprobar(
+    'el espanol se pone el primero',
+    'Hosteltur',
+    auto_espanol_primero($mezcla)[0]['fuente']
+);
+
+comprobar(
+    'y el orden dentro de cada idioma no se toca',
+    ['Hosteltur', 'Skift', 'PhocusWire'],
+    array_column(auto_espanol_primero([
+        ['idioma' => 'en', 'fuente' => 'Skift'],
+        ['idioma' => 'en', 'fuente' => 'PhocusWire'],
+        ['idioma' => 'es', 'fuente' => 'Hosteltur'],
+    ]), 'fuente')
+);
+
 // --- De que va la noticia ---------------------------------------------------
 //
 // El diccionario puntua palabras, no contextos: "malware" vale lo mismo en

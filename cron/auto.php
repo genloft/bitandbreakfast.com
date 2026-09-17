@@ -239,7 +239,7 @@ function auto_fechar_ediciones(): void
 function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
 {
     $racimo = datos_racimo((int) $bit['racimo_id']);
-    $items  = auto_items((int) $bit['racimo_id']);
+    $items  = auto_espanol_primero(auto_items((int) $bit['racimo_id']));
     $cuerpo = auto_cuerpo($items);
 
     $titular = $racimo !== null
@@ -254,7 +254,8 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
     // enviada es un hecho consumado y no se toca; una que todavia no se ha
     // mandado a nadie si se puede corregir, y mas vale corregirla.
     $forma = (bool) ($bit['sin_enviar'] ?? false)
-        && (auto_es_recopilatorio($titular)
+        && ((auto_solo_espanol() && !auto_hay_espanol($items))
+            || auto_es_recopilatorio($titular)
             || auto_es_promocional($titular . ' ' . $cuerpo)
             || auto_es_didactico($titular)
             || auto_es_entrevista($titular)
@@ -307,8 +308,9 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         return false;
     }
 
-    $items   = auto_items($racimo_id);
+    $items   = auto_espanol_primero(auto_items($racimo_id));
     $cuerpo  = auto_cuerpo($items);
+    $solo_es = auto_solo_espanol();
     $titular = auto_titular((string) $racimo['titulo_representativo'], auto_medios($items));
     $cuerpo  = auto_sin_titular($cuerpo, $titular);
     $texto   = $titular . ' ' . $cuerpo;
@@ -334,9 +336,12 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     //   7. Y tiene que hablar de hoteles. El diccionario puntua palabras, no
     //      contextos: una vulnerabilidad de Chrome puntua igual en una noticia
     //      sobre un PMS que en una sobre Outlook.
+    //   8. Y alguien tiene que contarla en espanol. El radar se lee en Espana;
+    //      traducir seria dejar de decir lo que dijo la fuente.
     $senal = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
     $motivo = match (true) {
+        $solo_es && !auto_hay_espanol($items)             => 'automatico: no lo cuenta nadie en espanol',
         $senal['puntos'] < $minimo                        => 'automatico: sin senal tematica',
         texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN  => 'automatico: sin resumen utilizable',
         auto_es_recopilatorio($titular)                   => 'automatico: recopilatorio, no una noticia',
@@ -407,13 +412,28 @@ function auto_terminos(): array
 }
 
 /**
+ * ¿Solo se publica lo que alguien cuente en espanol?
+ *
+ * Encendido por defecto, que es lo que se pidio. Se apaga con el ajuste
+ * auto_solo_espanol a 0, y entonces vuelven a entrar los titulares en ingles
+ * con su etiqueta.
+ */
+function auto_solo_espanol(): bool
+{
+    return (string) ajuste('auto_solo_espanol', '1') === '1';
+}
+
+/**
  * Los items del racimo con lo que necesita el modo automatico: el nombre de
  * la fuente, su tipo y su categoria por defecto.
  */
 function auto_items(int $racimo_id): array
 {
+    // El idioma del item y no el de la fuente: hay medios que publican en dos, y
+    // lo que decide si el lector puede leer el bit es el idioma de la noticia.
     $sql = "SELECT i.id, i.titulo, i.url, i.publicado, i.puntuacion, i.resumen_origen,
-                   f.nombre AS fuente, f.tipo, f.categoria_defecto, f.region, f.idioma
+                   f.nombre AS fuente, f.tipo, f.categoria_defecto, f.region,
+                   COALESCE(NULLIF(i.idioma, ''), f.idioma) AS idioma
               FROM items i
               JOIN fuentes f ON f.id = i.fuente_id
              WHERE i.racimo_id = ? AND i.estado <> 'descartado'

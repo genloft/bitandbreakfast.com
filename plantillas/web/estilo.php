@@ -35,15 +35,39 @@ declare(strict_types=1);
 :root {
   color-scheme: dark;
 
-  /* Casi negro calido, no gris azulado: el negro frio parece consola. */
-  --fondo:   #12100d;
-  --papel:   #1a1713;
-  --realce:  #201c16;
-  --tinta:   #ece6d9;
-  --apagado: #a1968a;
-  --borde:   #2e2921;
+  /* Azul de medianoche, no negro. El negro puro es una pantalla apagada; este
+     azul tiene hora del dia -la del turno de noche en recepcion- y ademas
+     hace que el laton parezca laton y no amarillo. */
+  --fondo:   #070b16;
+  --papel:   #0d1426;
+  --realce:  #131c33;
+  --borde:   #1e2a47;
+  --borde-suave: #172340;
+  --tinta:   #e7edfb;
+  --apagado: #93a3c6;
+
+  /* Dos acentos y no uno, con trabajos distintos: el laton es la marca -el
+     ampersand, los numeros, los filetes- y el azul electrico es lo que se
+     puede pulsar. Mezclarlos seria perder los dos. */
   --acento:  #c9a66b;
   --acento-suave: #8a7346;
+  --enlace:  #74c4ff;
+  --enlace-suave: #2f5d85;
+
+  /* Un color por tematica. No son once colores elegidos por bonitos: son un
+     azul de base con desvios cortos, para que juntos parezcan una familia y
+     no una caja de rotuladores. Solo pintan el icono y su marco. */
+  --t-tecnologia-general:          #9fb2d6;
+  --t-pms-crs:                     #74c4ff;
+  --t-distribucion-otas:           #6fd3c1;
+  --t-revenue-rms:                 #e9b15e;
+  --t-pagos-fraude:                #f0a184;
+  --t-ciberseguridad-cumplimiento: #ef8496;
+  --t-operaciones-iot:             #a8b6dd;
+  --t-experiencia-huesped:         #cfa9e8;
+  --t-ia-aplicada:                 #9ad681;
+  --t-sostenibilidad-energia:      #7fd3a3;
+  --t-inversion-mercado:           #e0c87a;
 
   --display: "Hoefler Text", "Iowan Old Style", "Palatino Linotype", Palatino,
              "Book Antiqua", Georgia, "Times New Roman", serif;
@@ -61,8 +85,16 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background: var(--fondo);
   color: var(--tinta);
+
+  /* Dos luces muy tenues, una fria arriba a la derecha -detras del logotipo- y
+     otra calida abajo a la izquierda. No se ven; lo que se nota es que el
+     fondo deja de ser una plancha de color plano. */
+  background:
+    radial-gradient(120% 70% at 85% -10%, rgba(116, 196, 255, .10), transparent 60%),
+    radial-gradient(90% 60% at 0% 110%, rgba(201, 166, 107, .07), transparent 60%),
+    var(--fondo);
+  background-attachment: fixed;
   font-family: var(--cuerpo);
   font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
   line-height: 1.75;
@@ -73,14 +105,14 @@ body {
 
 a {
   color: var(--tinta);
-  text-decoration-color: var(--acento-suave);
+  text-decoration-color: var(--enlace-suave);
   text-decoration-thickness: 1px;
   text-underline-offset: .2em;
 }
-a:hover { text-decoration-color: var(--acento); }
-a:focus-visible { outline: 1px solid var(--acento); outline-offset: 4px; }
+a:hover { text-decoration-color: var(--enlace); }
+a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
 
-::selection { background: var(--acento); color: var(--fondo); }
+::selection { background: var(--enlace); color: var(--fondo); }
 
 /* Etiqueta diminuta en versalitas: la voz de la casa para todo lo que no es
    texto corrido. */
@@ -123,18 +155,52 @@ a:focus-visible { outline: 1px solid var(--acento); outline-offset: 4px; }
 }
 
 .logo {
-  display: block;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(.5rem, 2.2vw, .9rem);
   text-decoration: none;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(2.7rem, 14.5vw, 5rem);
-  line-height: .92;
-  letter-spacing: -.022em;
   color: var(--tinta);
 }
 
 .logo:hover { text-decoration: none; color: var(--tinta); }
+
+/* La marca crece con el nombre, no con la pantalla: si el nombre se encoge en
+   un movil, la taza se encoge con el o se separan. */
+.marca {
+  flex: none;
+  width: clamp(2.6rem, 12vw, 4.2rem);
+  height: auto;
+  color: var(--acento);
+  overflow: visible;
+}
+
+/* El vapor un poco mas fino que la taza y un punto mas claro: asi se lee como
+   vapor y no como tres asas. */
+.marca-onda { opacity: .85; stroke-width: 1.4; }
+.marca-taza { color: var(--tinta); stroke: var(--tinta); }
+
+/* Al pasar por encima, el vapor sube. Es el unico movimiento del sitio. */
+.logo:hover .marca-onda { opacity: 1; }
+.logo .marca-onda { transition: opacity .25s ease, transform .25s ease; }
+.logo:hover .marca-onda:nth-of-type(1) { transform: translateY(-.5px); }
+.logo:hover .marca-onda:nth-of-type(2) { transform: translateY(-1px); }
+.logo:hover .marca-onda:nth-of-type(3) { transform: translateY(-1.5px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .logo .marca-onda { transition: none; }
+  .logo:hover .marca-onda { transform: none; }
+}
+
+.logo-texto {
+  display: block;
+  text-align: right;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 11.5vw, 4.3rem);
+  line-height: .92;
+  letter-spacing: -.024em;
+}
 
 /* El ampersand en cursiva y en laton: el unico adorno de toda la marca. */
 .logo-amp {
@@ -144,14 +210,17 @@ a:focus-visible { outline: 1px solid var(--acento); outline-offset: 4px; }
 }
 
 .promesa {
-  margin: 1rem 0 0 auto;
-  max-width: 24rem;
+  margin: 1.1rem 0 0 auto;
+  max-width: 26rem;
   text-align: right;
   color: var(--apagado);
   font-family: var(--ui);
-  font-size: .8rem;
+  font-size: .78rem;
+  letter-spacing: .04em;
   line-height: 1.5;
 }
+
+.promesa-punto { color: var(--acento-suave); padding: 0 .15rem; }
 
 .menu {
   display: flex;
@@ -171,6 +240,15 @@ a:focus-visible { outline: 1px solid var(--acento); outline-offset: 4px; }
 }
 .menu a:hover { color: var(--tinta); }
 .menu a[aria-current="page"] { color: var(--acento); }
+
+/* Un filete de laton que cierra la cabecera y separa el sitio de su contenido. */
+.cabecera::after {
+  content: "";
+  display: block;
+  height: 1px;
+  margin-top: 1.6rem;
+  background: linear-gradient(90deg, transparent, var(--acento-suave) 35%, var(--enlace-suave));
+}
 
 /* --- Estructura ---------------------------------------------------------- */
 
@@ -256,9 +334,11 @@ h1 {
 .sumario a:hover { text-decoration: underline; }
 
 .sumario-etiqueta {
-  display: block;
-  margin-top: .15rem;
-  color: var(--apagado);
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  margin-top: .2rem;
+  color: var(--tema, var(--apagado));
   font-size: .7rem;
   letter-spacing: .04em;
 }
@@ -276,16 +356,56 @@ h1 {
 .bit:first-child { padding-top: 3rem; }
 .bit:last-child { border-bottom: 0; }
 
-.numero {
+/* El carril de la izquierda: el numero y el icono del tema, uno debajo del
+   otro. Es lo que convierte una lista de parrafos en una edicion con
+   estructura, y lo que deja ver de que va cada bit antes de leerlo. */
+.bit-carril {
   flex: 0 0 auto;
-  width: 1.8rem;
-  margin: .1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .7rem;
+  width: 2.4rem;
+}
+
+.numero {
+  margin: 0;
   font-family: var(--display);
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   line-height: 1;
   color: var(--acento-suave);
   font-variant-numeric: tabular-nums;
 }
+
+/* El icono, con el color de su tema, dentro de un circulo tenue del mismo
+   color. El color vive en --tema y lo pone el atributo data-tema. */
+.bit-icono {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid color-mix(in srgb, var(--tema, var(--apagado)) 35%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tema, var(--apagado)) 9%, transparent);
+  color: var(--tema, var(--apagado));
+}
+
+.icono { width: 1.15rem; height: 1.15rem; display: block; }
+.icono-mini { width: .85rem; height: .85rem; }
+
+/* Un color por tema. Si el navegador no entiende color-mix, el circulo se
+   queda sin fondo y sin borde y el icono sigue viendose: degrada solo. */
+[data-tema="tecnologia-general"]          { --tema: var(--t-tecnologia-general); }
+[data-tema="pms-crs"]                     { --tema: var(--t-pms-crs); }
+[data-tema="distribucion-otas"]           { --tema: var(--t-distribucion-otas); }
+[data-tema="revenue-rms"]                 { --tema: var(--t-revenue-rms); }
+[data-tema="pagos-fraude"]                { --tema: var(--t-pagos-fraude); }
+[data-tema="ciberseguridad-cumplimiento"] { --tema: var(--t-ciberseguridad-cumplimiento); }
+[data-tema="operaciones-iot"]             { --tema: var(--t-operaciones-iot); }
+[data-tema="experiencia-huesped"]         { --tema: var(--t-experiencia-huesped); }
+[data-tema="ia-aplicada"]                 { --tema: var(--t-ia-aplicada); }
+[data-tema="sostenibilidad-energia"]      { --tema: var(--t-sostenibilidad-energia); }
+[data-tema="inversion-mercado"]           { --tema: var(--t-inversion-mercado); }
 
 .bit-cuerpo { min-width: 0; flex: 1; }
 
@@ -312,7 +432,17 @@ h1 {
   white-space: nowrap;
 }
 
-.etiqueta-categoria { border-color: var(--acento-suave); color: var(--acento); }
+/* La etiqueta del tema lleva su color y ademas lleva a algun sitio: filtra el
+   explorador por ese tema. */
+.etiqueta-categoria {
+  border-color: color-mix(in srgb, var(--tema, var(--acento)) 45%, transparent);
+  color: var(--tema, var(--acento));
+  text-decoration: none;
+}
+.etiqueta-categoria:hover {
+  background: color-mix(in srgb, var(--tema, var(--acento)) 12%, transparent);
+  text-decoration: none;
+}
 
 /* El idioma es un aviso, no una categoria: se queda en el borde discontinuo
    para que se lea sin competir con la etiqueta que de verdad clasifica. */
@@ -500,6 +630,77 @@ h1 {
   border: 1px solid var(--borde);
   color: var(--apagado);
 }
+
+/* --- Temas y medios, al final de la edicion -------------------------------- */
+
+.explorar {
+  margin: 3rem calc(var(--gutter) * -1) 0;
+  padding: 2rem var(--gutter) 2.2rem;
+  background: var(--papel);
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
+}
+
+.explorar h2 {
+  margin: 0 0 1.6rem;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+  line-height: 1.2;
+}
+
+.explorar-grupo {
+  margin: 1.8rem 0 .9rem;
+  font-family: var(--ui);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+
+.explorar-grupo:first-of-type { margin-top: 0; }
+
+.nube {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nube a {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .42rem .7rem;
+  border: 1px solid var(--borde);
+  border-radius: 2px;
+  background: var(--realce);
+  color: var(--tinta);
+  font-family: var(--ui);
+  font-size: .78rem;
+  letter-spacing: .02em;
+  text-decoration: none;
+}
+
+.nube a:hover {
+  border-color: color-mix(in srgb, var(--tema, var(--enlace)) 55%, transparent);
+  text-decoration: none;
+}
+
+.nube-temas a { color: var(--tema, var(--tinta)); }
+.nube-temas .nube-nombre { color: var(--tinta); }
+
+/* El numero, en laton y mas pequeno: es un dato, no el nombre. */
+.nube-cuenta {
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+  font-size: .72rem;
+}
+
+.explorar-pie { margin: 1.1rem 0 0; max-width: 34rem; }
 
 /* --- Alta en el boletin ---------------------------------------------------- */
 

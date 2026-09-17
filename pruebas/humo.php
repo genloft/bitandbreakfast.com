@@ -454,6 +454,29 @@ ajuste_guardar('auto_umbral', '10');
 // se comprueba es que la cadena entera funciona.
 ajuste_guardar('auto_min_diccionario', '0');
 
+// Con la puerta del idioma puesta, este racimo -que solo lo cuenta un medio en
+// ingles- no puede entrar. Se comprueba antes de apagarla, porque es la regla
+// que decide que se publica en un radar que se lee en espanol.
+ajuste_guardar('auto_solo_espanol', '1');
+
+$soloes = auto_publicar_lote(microtime(true) + 20);
+
+comprobar('lo que no cuenta nadie en espanol no se publica', 0, $soloes['bits']);
+
+$st = bd()->prepare('SELECT r.motivo_descarte FROM racimos r JOIN items i ON i.racimo_id = r.id WHERE i.id = ?');
+$st->execute([$item_c]);
+
+comprobar(
+    'y queda dicho por que',
+    true,
+    str_contains((string) ($st->fetchColumn() ?: ''), 'espanol')
+);
+
+// El resto de la cadena se prueba con la puerta abierta: lo que se mira aqui
+// es que el engranaje gira, no la politica editorial.
+bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
+ajuste_guardar('auto_solo_espanol', '0');
+
 $auto = auto_publicar_lote(microtime(true) + 20);
 
 comprobar('el modo automatico escribe el bit que quedaba', 1, $auto['bits']);

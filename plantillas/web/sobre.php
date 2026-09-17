@@ -59,9 +59,12 @@ $alta_abierta  = $alta_abierta ?? false;
 
     <p>Lo que <em>no</em> hace es inventar. El titular es el de la fuente, y el
     párrafo es el resumen que publica la propia fuente, sin reescribir y sin
-    adornos. Todo lo que lees aquí se puede comprobar pulsando el enlace. Si un
-    titular está en inglés, lo verás en inglés y con su etiqueta: traducirlo
-    sería reescribir lo que dijo quien lo dijo.</p>
+    adornos. Todo lo que lees aquí se puede comprobar pulsando el enlace.</p>
+
+    <p><strong>Todo en español.</strong> No porque se traduzca —traducir sería
+    dejar de decir lo que dijo la fuente—, sino porque entra solo lo que alguien
+    cuenta en español. Se pierde alguna primicia internacional y se sabe; a
+    cambio no hay una sola línea aquí que no puedas leer.</p>
 
     <h2>Qué es un bit</h2>
 

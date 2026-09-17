@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 10;
+const AUTO_CRITERIOS = 11;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.
@@ -79,6 +79,54 @@ function auto_tipo(array $items): string
     }
 
     return 'producto';
+}
+
+/**
+ * ¿Cuenta alguien esta noticia en espanol?
+ *
+ * El radar se lee en Espana y se escribe en espanol, y traducir no es una
+ * opcion: el bit dice lo que dijo la fuente, y una traduccion automatica ya no
+ * es lo que dijo la fuente. Asi que la regla es la unica honrada que queda:
+ * entra lo que alguien haya contado en espanol.
+ *
+ * Se pierde alguna primicia internacional, y se sabe. A cambio, no hay una
+ * sola linea en la edicion que el lector no pueda leer.
+ */
+function auto_hay_espanol(array $items): bool
+{
+    foreach ($items as $item) {
+        if ((string) ($item['idioma'] ?? '') === 'es') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Los items del racimo con los espanoles delante.
+ *
+ * Importa para tres cosas a la vez, y por eso se ordena una sola vez aqui: el
+ * titular sale del primero, el cuerpo sale del primero con resumen y el enlace
+ * lleva al primero. Si cada uno eligiera por su cuenta, el bit acabaria con
+ * titular espanol, cuerpo ingles y enlace a un tercero.
+ *
+ * Estable dentro de cada idioma: no toca el orden por puntuacion que traia.
+ */
+function auto_espanol_primero(array $items): array
+{
+    $espanoles = [];
+    $resto     = [];
+
+    foreach ($items as $item) {
+        if ((string) ($item['idioma'] ?? '') === 'es') {
+            $espanoles[] = $item;
+        } else {
+            $resto[] = $item;
+        }
+    }
+
+    return array_merge($espanoles, $resto);
 }
 
 /**

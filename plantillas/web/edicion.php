@@ -43,6 +43,10 @@ $secreto       = $secreto ?? '';
 $fuentes       = $fuentes ?? [];
 $ambitos       = web_ambitos();
 $idiomas       = web_idiomas();
+$medios        = $medios ?? [];
+$temas         = $temas ?? [];
+
+require_once __DIR__ . '/iconos.php';
 
 ?><!doctype html>
 <html lang="es">
@@ -93,9 +97,13 @@ $idiomas       = web_idiomas();
         <h2 id="sumario-titulo">En esta edición</h2>
         <ol>
         <?php foreach ($bits as $bit): ?>
-          <li>
+          <?php $tema = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general'; ?>
+          <li data-tema="<?= web_e($tema) ?>">
             <a href="#bit-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></a>
-            <span class="sumario-etiqueta"><?= web_e($categorias[bits_categoria_canonica((string) $bit['categoria'])] ?? $bit['categoria']) ?></span>
+            <span class="sumario-etiqueta">
+              <?= web_icono($tema, 'icono icono-mini') ?>
+              <?= web_e($categorias[$tema] ?? $bit['categoria']) ?>
+            </span>
           </li>
         <?php endforeach; ?>
         </ol>
@@ -104,14 +112,19 @@ $idiomas       = web_idiomas();
 
     <div class="bits">
     <?php foreach ($bits as $indice => $bit): ?>
-      <section class="bit" id="bit-<?= (int) $bit['id'] ?>" aria-labelledby="titular-<?= (int) $bit['id'] ?>">
-        <p class="numero" aria-hidden="true"><?= $indice + 1 ?></p>
+      <?php $tema = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general'; ?>
+      <section class="bit" id="bit-<?= (int) $bit['id'] ?>" data-tema="<?= web_e($tema) ?>"
+               aria-labelledby="titular-<?= (int) $bit['id'] ?>">
+        <div class="bit-carril" aria-hidden="true">
+          <p class="numero"><?= $indice + 1 ?></p>
+          <span class="bit-icono"><?= web_icono($tema) ?></span>
+        </div>
 
         <div class="bit-cuerpo">
           <h2 id="titular-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></h2>
 
           <p class="etiquetas">
-            <span class="etiqueta etiqueta-categoria"><?= web_e($categorias[bits_categoria_canonica((string) $bit['categoria'])] ?? $bit['categoria']) ?></span>
+            <a class="etiqueta etiqueta-categoria" href="<?= web_e($base) ?>/buscar.html?c=<?= web_e(rawurlencode($tema)) ?>"><?= web_e($categorias[$tema] ?? $bit['categoria']) ?></a>
             <span class="etiqueta"><?= web_e($tipos[$bit['tipo']] ?? $bit['tipo']) ?></span>
             <span class="etiqueta"><?= web_e($madureces[$bit['madurez']] ?? $bit['madurez']) ?></span>
             <?php if (($bit['idioma'] ?? 'es') !== 'es'): ?>
@@ -199,6 +212,50 @@ $idiomas       = web_idiomas();
     <?php endif; ?>
 
   </article>
+
+  <?php if ($temas || $medios): ?>
+    <?php // Al final y no arriba: quien ha llegado hasta aqui ya ha leido la
+          // edicion y lo siguiente que quiere es tirar del hilo. Arriba seria
+          // un menu que estorba; aqui es una puerta. ?>
+    <section class="explorar" aria-labelledby="explorar-titulo">
+      <h2 id="explorar-titulo">Seguir tirando del hilo</h2>
+
+      <?php if ($temas): ?>
+        <h3 class="explorar-grupo">Por tema</h3>
+        <ul class="nube nube-temas">
+        <?php foreach ($temas as $tema): ?>
+          <li data-tema="<?= web_e($tema['slug']) ?>">
+            <a href="<?= web_e($base) ?>/buscar.html?c=<?= web_e(rawurlencode((string) $tema['slug'])) ?>">
+              <?= web_icono((string) $tema['slug'], 'icono icono-mini') ?>
+              <span class="nube-nombre"><?= web_e($tema['nombre']) ?></span>
+              <span class="nube-cuenta"><?= (int) $tema['bits'] ?></span>
+            </a>
+          </li>
+        <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+
+      <?php if ($medios): ?>
+        <h3 class="explorar-grupo">Medios que hemos leído</h3>
+        <ul class="nube nube-medios">
+        <?php foreach ($medios as $medio): ?>
+          <li>
+            <a href="<?= web_e($base) ?>/buscar.html?fu=<?= web_e(rawurlencode((string) $medio['nombre'])) ?>">
+              <span class="nube-nombre"><?= web_e($medio['nombre']) ?></span>
+              <span class="nube-cuenta"><?= (int) $medio['bits'] ?></span>
+            </a>
+          </li>
+        <?php endforeach; ?>
+        </ul>
+
+        <p class="letra-pequena explorar-pie">
+          Son los medios de los que ha salido algo publicado. El radar rastrea
+          bastantes más: los que no aparecen aquí es que esta temporada no han
+          contado nada que pasara el filtro.
+        </p>
+      <?php endif; ?>
+    </section>
+  <?php endif; ?>
 
   <?php require __DIR__ . '/suscribir.php'; ?>
 </main>
