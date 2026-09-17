@@ -650,4 +650,70 @@ comprobar(
     auto_toca_cerrar(0, 20, '2026-12-31', '2026-09-16', false, 6)
 );
 
+// --- Frescura ---------------------------------------------------------------
+//
+// Una fuente nueva entra con su archivo entero y el radar lo descubre hoy. Es
+// verdad, pero a nadie le sirve una portada que abre con julio.
+
+$ahora = strtotime('2026-09-17 12:00:00 UTC');
+
+comprobar(
+    'lo de esta manana es fresco',
+    false,
+    auto_es_viejo([['publicado' => '2026-09-17 08:00:00']], 30, $ahora)
+);
+
+comprobar(
+    'lo del mes pasado tambien, por poco',
+    false,
+    auto_es_viejo([['publicado' => '2026-08-20 08:00:00']], 30, $ahora)
+);
+
+comprobar(
+    'lo de julio no',
+    true,
+    auto_es_viejo([['publicado' => '2026-07-16 08:00:00']], 30, $ahora)
+);
+
+// Manda el item mas reciente del racimo: si alguien lo ha contado hoy, la
+// noticia es de hoy aunque otro la contara en julio.
+comprobar(
+    'si una fuente lo cuenta hoy, el racimo es de hoy',
+    false,
+    auto_es_viejo(
+        [['publicado' => '2026-07-16 08:00:00'], ['publicado' => '2026-09-17 09:00:00']],
+        30,
+        $ahora
+    )
+);
+
+// Sin fecha se deja pasar: descartar por no saber es tirar lo que no se ha
+// podido mirar, y hay changelogs enteros sin una sola fecha.
+comprobar('sin fecha, pasa', false, auto_es_viejo([['publicado' => '']], 30, $ahora));
+comprobar('y sin items, tambien', false, auto_es_viejo([], 30, $ahora));
+
+// --- Autobombo de fabricante ------------------------------------------------
+//
+// Los blogs de producto son buena fuente -ahi se cuenta primero que un PMS ha
+// cambiado- y a la vez son quien mas nota de prensa publica. La primera
+// persona del plural los delata: una noticia no dice "seguimos ampliando".
+
+comprobar(
+    'seguimos ampliando es un anuncio, no una noticia',
+    true,
+    auto_es_promocional('Seguimos ampliando el ecosistema de distribucion con nuevas conexiones')
+);
+
+comprobar(
+    'y nos complace anunciar, tambien',
+    true,
+    auto_es_promocional('Nos complace anunciar la nueva version de nuestro motor')
+);
+
+comprobar(
+    'pero una caida de un PMS no lo es',
+    false,
+    auto_es_promocional('El PMS de Oracle se cae durante cuatro horas en toda Europa')
+);
+
 resumen_pruebas('Pruebas de la publicacion automatica');

@@ -312,7 +312,15 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         return false;
     }
 
+    $frescura   = max(1, (int) ajuste('auto_dias_frescura', '30'));
+    $tope_medio = max(1, (int) ajuste('auto_max_por_medio', '4'));
+
     $items   = auto_espanol_primero(auto_items($racimo_id));
+
+    // Cuantas lleva hoy el medio que firma esta. Tres noticias seguidas del
+    // mismo blog de fabricante no son un radar, son su boletin: aunque cada
+    // una pase todas las puertas por separado, juntas dicen otra cosa.
+    $del_medio = auto_bits_del_medio(auto_medio_principal($items));
     $cuerpo  = auto_cuerpo($items);
     $solo_es = auto_solo_espanol();
     $titular = auto_titular((string) $racimo['titulo_representativo'], auto_medios($items));
@@ -359,6 +367,8 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         auto_es_promocional($titular . ' ' . $cuerpo)     => 'automatico: material promocional',
         auto_es_didactico($titular)                       => 'automatico: guia, no noticia',
         auto_es_entrevista($titular)                      => 'automatico: entrevista',
+        auto_es_viejo($items, $frescura)                  => 'automatico: demasiado viejo',
+        $del_medio >= $tope_medio                         => 'automatico: ya hay bastante de ese medio hoy',
         !auto_es_del_sector($texto)                       => 'automatico: no habla de hoteles',
         default                                           => '',
     };
@@ -464,6 +474,49 @@ function auto_terminos(): array
 function auto_solo_espanol(): bool
 {
     return (string) ajuste('auto_solo_espanol', '1') === '1';
+}
+
+/**
+ * El medio que firma el racimo: el del item que manda, que es el del enlace.
+ */
+function auto_medio_principal(array $items): string
+{
+    foreach ($items as $item) {
+        $fuente = trim((string) ($item['fuente'] ?? ''));
+
+        if ($fuente !== '') {
+            return $fuente;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Cuantos bits lleva hoy ese medio.
+ *
+ * Se cuenta sobre lo ya escrito hoy y no sobre la edicion, porque lo que se
+ * quiere repartir es la portada, y la portada es el dia.
+ */
+function auto_bits_del_medio(string $medio): int
+{
+    if ($medio === '') {
+        return 0;
+    }
+
+    $sql = "SELECT COUNT(*)
+              FROM bits b
+             WHERE b.dia = UTC_DATE()
+               AND (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC
+                     LIMIT 1) = ?";
+
+    $st = bd()->prepare($sql);
+    $st->execute([$medio]);
+
+    return (int) $st->fetchColumn();
 }
 
 /**

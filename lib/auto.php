@@ -287,6 +287,13 @@ function auto_es_promocional(string $texto): bool
         'webinar', 'seminario web', 'contenido patrocinado', 'sponsored content',
         'download the', 'descarga la guia', 'descarga el informe',
         'register now', 'inscribete', 'reserva tu plaza',
+        // El autobombo de fabricante, que es lo que llena los blogs de
+        // producto. Se reconoce por la primera persona del plural: una
+        // noticia no dice "seguimos ampliando", lo dice quien vende.
+        'seguimos ampliando', 'seguimos reforzando', 'seguimos creciendo',
+        'nos complace anunciar', 'estamos encantados de', 'nos enorgullece',
+        'we are excited to', 'we are thrilled', 'we are pleased to announce',
+        'en esta ocasion incorporamos', 'damos la bienvenida a',
     ];
 
     foreach ($marcas as $marca) {
@@ -296,6 +303,44 @@ function auto_es_promocional(string $texto): bool
     }
 
     return false;
+}
+
+/**
+ * ¿Es esto demasiado viejo para publicarlo hoy?
+ *
+ * Nace de una fuente nueva: al anadirla, su archivo entero entra de golpe y
+ * el radar lo descubre hoy, asi que la portada se llena de julio. Tecnicamente
+ * es verdad -este sitio se entero hoy- pero a nadie le sirve un agregador que
+ * abre con una nota de prensa de hace dos meses.
+ *
+ * El margen es ancho a proposito: hay medios que publican con fecha rara y
+ * changelogs que no ponen fecha ninguna. Sin fecha se deja pasar, porque
+ * descartar por no saber seria tirar lo que no se ha podido mirar.
+ */
+function auto_es_viejo(array $items, int $dias, ?int $ahora = null): bool
+{
+    $ahora = $ahora ?? time();
+    $mejor = 0;
+
+    foreach ($items as $item) {
+        $publicado = trim((string) ($item['publicado'] ?? ''));
+
+        if ($publicado === '') {
+            continue;
+        }
+
+        $tiempo = strtotime($publicado . ' UTC');
+
+        if ($tiempo !== false && $tiempo > $mejor) {
+            $mejor = $tiempo;
+        }
+    }
+
+    if ($mejor === 0) {
+        return false;
+    }
+
+    return $mejor < $ahora - $dias * 86400;
 }
 
 /**
