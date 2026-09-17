@@ -350,6 +350,10 @@ h1 {
 .fuente { color: var(--acento); text-decoration: none; }
 .fuente:hover { text-decoration: underline; }
 
+/* Los datos de la fuente unica van en el mismo pie, en minusculas: ahi no son
+   una etiqueta, son una frase corta. */
+.pie-bit .datos { font-size: .72rem; text-transform: none; letter-spacing: .04em; }
+
 .volver { margin-left: auto; color: var(--apagado); text-decoration: none; }
 .volver:hover { color: var(--tinta); }
 

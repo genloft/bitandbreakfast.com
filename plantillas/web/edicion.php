@@ -136,21 +136,38 @@ $idiomas       = web_idiomas();
             </p>
           <?php endif; ?>
 
+          <?php
+            // Todas las fuentes que cuentan la noticia, no solo la mejor. Que
+            // cuatro medios independientes la cuenten es la mitad de la
+            // informacion, y esconderla detras de un solo enlace la tiraba.
+            $suyas = $fuentes[(int) ($bit['racimo_id'] ?? 0)] ?? [];
+            $unica = count($suyas) === 1 ? $suyas[0] : null;
+          ?>
+
           <p class="pie-bit">
             <?php if (!empty($bit['url'])): ?>
               <a class="fuente" href="<?= web_e(web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])) ?>" rel="nofollow noopener">
                 <?= web_e($bit['fuente'] ?? 'Leer la fuente') ?> →
               </a>
             <?php endif; ?>
+
+            <?php if ($unica !== null): ?>
+              <?php // Con una sola fuente no hay desplegable que abrir, asi que
+                    // sus datos van aqui: de donde es, en que idioma publica y
+                    // cuando lo conto. Es la mitad de lo que hace falta para
+                    // saber cuanto fiarse de una noticia. ?>
+              <span class="datos">
+                <?= web_e($ambitos[$unica['region']] ?? $unica['region']) ?>
+                <span class="punto">·</span>
+                <?= web_e($idiomas[$unica['idioma']] ?? $unica['idioma']) ?>
+                <span class="punto">·</span>
+                <time datetime="<?= web_e(substr((string) $unica['publicado'], 0, 10)) ?>"><?= web_e(web_fecha_larga(substr((string) $unica['publicado'], 0, 10))) ?></time>
+              </span>
+            <?php endif; ?>
+
             <a class="volver" href="#sumario-titulo">Sumario ↑</a>
           </p>
 
-          <?php
-            // Todas las fuentes que cuentan la noticia, no solo la mejor. Que
-            // cuatro medios independientes la cuenten es la mitad de la
-            // informacion, y esconderla detras de un solo enlace la tiraba.
-            $suyas = $fuentes[(int) ($bit['racimo_id'] ?? 0)] ?? [];
-          ?>
           <?php if (count($suyas) > 1): ?>
             <details class="fuentes-bit">
               <summary><?= count($suyas) ?> fuentes lo cuentan</summary>
