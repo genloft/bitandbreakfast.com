@@ -77,6 +77,11 @@ require_once __DIR__ . '/iconos.php';
   <article class="edicion">
 
     <header class="edicion-cabecera">
+      <?php // El numero en grande, en laton y aparte del titulo: una edicion
+            // numerada se reconoce por el numero, y ademas da a la cabecera
+            // algo que mirar que no sea otra linea de texto. ?>
+      <p class="edicion-numero" aria-hidden="true"><?= (int) $edicion['numero'] ?></p>
+
       <p class="sello">Edición <?= (int) $edicion['numero'] ?></p>
       <h1><?= web_e($titulo) ?></h1>
       <p class="datos">

@@ -19,9 +19,16 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/iconos.php';
+
 ?>
 (function () {
   'use strict';
+
+  // Los dibujos de cada tematica, escritos aqui por PHP desde la misma lista
+  // que usa la web. Si se copiaran a mano, el dia que cambie un icono habria
+  // dos versiones y solo se notaria en esta pagina.
+  var ICONOS = <?= json_encode(web_iconos(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 
   var campo = document.getElementById('q');
   var lista = document.getElementById('resultados');
@@ -177,8 +184,22 @@ declare(strict_types=1);
         var activa = seleccion[grupo].indexOf(valor) !== -1;
 
         html += '<button type="button" class="opcion" aria-pressed="' + activa + '"';
+
+        // El color y el icono solo en las tematicas: en fuente, ambito e
+        // idioma no significarian nada y serian ruido de colores.
+        if (grupo === 'c') {
+          html += ' data-tema="' + escapar(valor) + '"';
+        }
+
         html += ' data-grupo="' + escapar(grupo) + '" data-valor="' + escapar(valor) + '">';
-        html += escapar(etiqueta(grupo, valor));
+
+        if (grupo === 'c' && ICONOS[valor]) {
+          html += '<svg class="icono icono-mini" viewBox="0 0 24 24" fill="none" '
+                + 'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" '
+                + 'stroke-linejoin="round" aria-hidden="true">' + ICONOS[valor] + '</svg>';
+        }
+
+        html += '<span class="opcion-nombre">' + escapar(etiqueta(grupo, valor)) + '</span>';
         html += '<span class="cuenta-opcion">' + cuentas[valor] + '</span>';
         html += '</button>';
       });

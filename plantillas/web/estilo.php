@@ -259,8 +259,27 @@ main {
 }
 
 .edicion-cabecera {
+  position: relative;
   padding: 2rem 0 0;
   border-top: 1px solid var(--acento-suave);
+}
+
+/* El numero de la edicion, enorme y casi transparente, detras de la cabecera.
+   No se lee: se ve. Es lo que hace que la portada parezca una portada y no la
+   primera pagina de un documento. */
+.edicion-numero {
+  position: absolute;
+  top: .2rem;
+  right: 0;
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(5rem, 22vw, 9rem);
+  line-height: .8;
+  letter-spacing: -.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--borde);
+  pointer-events: none;
+  user-select: none;
 }
 
 .sello { margin: 0 0 .9rem; color: var(--acento); }
@@ -548,6 +567,9 @@ h1 {
 
 .opcion {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
   padding: .45rem .8rem;
   border: 1px solid var(--borde);
   border-radius: 2px;
@@ -560,6 +582,11 @@ h1 {
   min-height: 2.3rem;
 }
 
+/* El icono lleva el color de su tema y el nombre se queda en tinta: si se
+   colorearan los dos, la lista de filtros seria un arcoiris ilegible. */
+.opcion .icono { color: var(--tema, var(--apagado)); }
+.opcion-nombre { color: inherit; }
+
 .opcion:hover { color: var(--tinta); border-color: var(--acento-suave); }
 
 .opcion[aria-pressed="true"] {
@@ -568,7 +595,10 @@ h1 {
   background: var(--acento);
 }
 
-.cuenta-opcion { opacity: .6; margin-left: .4rem; }
+/* Pulsada, el fondo es laton: el icono tiene que dejar su color o desaparece. */
+.opcion[aria-pressed="true"] .icono { color: var(--fondo); }
+
+.cuenta-opcion { opacity: .6; margin-left: .1rem; font-variant-numeric: tabular-nums; }
 
 .limpiar {
   margin: .25rem 0 0;
