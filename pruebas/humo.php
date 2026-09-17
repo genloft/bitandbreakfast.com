@@ -553,9 +553,20 @@ $auto = auto_publicar_lote(microtime(true) + 20);
 
 comprobar('pasado el dia, el cajon se cierra solo', (int) $abierta['numero'], $auto['cerrada']);
 
-$resumen_web = publicar_pendiente(microtime(true) + 30);
+publicar_pendiente(microtime(true) + 30);
 
-comprobar('y el generador escribe los dos dias', 2, $resumen_web['dias']);
+// Las dos noticias son del mismo dia -se han escrito hoy-, asi que lo que se
+// comprueba es que el dia de hoy las lleva las dos. Contar paginas no diria
+// nada: la de hoy ya estaba escrita de la pasada anterior.
+$hoy_html = (string) file_get_contents($publico . '/' . web_ruta_dia(gmdate('Y-m-d')));
+
+comprobar('el dia de hoy lleva las dos noticias', 2, substr_count($hoy_html, 'id="bit-'));
+
+comprobar(
+    'y la portada tambien',
+    2,
+    substr_count((string) file_get_contents($publico . '/index.html'), 'id="bit-')
+);
 
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 
