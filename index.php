@@ -81,6 +81,8 @@ if (arranque_toca_intentar($raiz, $solo ? ARRANQUE_ESPERA_SOLO : ARRANQUE_ESPERA
         $trabajo = 'cadena';
     } elseif (arranque_hay_que_generar($raiz, $huella)) {
         $trabajo = 'publicar';
+    } elseif (arranque_criterios_pendientes($raiz)) {
+        $trabajo = 'revisar';
     }
 }
 
@@ -169,7 +171,33 @@ function arranque_trabajar(string $raiz, string $trabajo, bool $holgado = false)
         return;
     }
 
+    if ($trabajo === 'revisar') {
+        @set_time_limit($holgado ? 120 : 60);
+        arranque_tarea($raiz, 'auto', 'auto_publicar_lote', $holgado ? 20 : 8);
+    }
+
     arranque_tarea($raiz, 'publicar', 'publicar_pendiente', $holgado ? 25 : 15);
+}
+
+/**
+ * ¿Hay una revision pendiente de los criterios nuevos?
+ *
+ * Cuando un despliegue sube los criterios, lo ya publicado sigue escrito con
+ * los viejos hasta que el cron se despierta. Con un cron horario eso es hasta
+ * una hora sirviendo lo que ya se sabe que esta mal, y el despliegue es
+ * justamente el momento en que alguien esta mirando. Una consulta cada cinco
+ * minutos como mucho, que es cuando se llega hasta aqui.
+ */
+function arranque_criterios_pendientes(string $raiz): bool
+{
+    try {
+        require_once $raiz . '/lib/db.php';
+        require_once $raiz . '/lib/auto.php';
+
+        return (int) ajuste('auto_criterios', '0') < AUTO_CRITERIOS;
+    } catch (Throwable $e) {
+        return false;
+    }
 }
 
 /**
