@@ -40,9 +40,27 @@ function migrar_pendientes(string $raiz): array
 
     foreach (migrar_ficheros($raiz, $ultima) as $ruta) {
         $nombre = basename($ruta);
-        $sql    = (string) @file_get_contents($ruta);
+        $sql    = @file_get_contents($ruta);
 
+        // No poder leer el fichero no es lo mismo que el fichero este vacio, y
+        // el codigo los trataba igual: se saltaba la migracion sin aplicarla y
+        // sin anotarla, asi que el puntero no avanzaba y las siguientes se
+        // quedaban detras para siempre, en silencio. Un silencio es la peor
+        // forma de fallar que tiene un sistema que nadie mira.
+        if ($sql === false) {
+            $resultado['error'] = $nombre . ': no se puede leer el fichero';
+            error_log('Bit & Breakfast, migracion ' . $nombre . ': no se puede leer');
+            migrar_anotar_error(migrar_error_corto($resultado['error']));
+
+            return $resultado;
+        }
+
+        // Vacio si es legitimo: se da por aplicada y se sigue. Si no, esa
+        // migracion se reintentaria en cada pasada para no hacer nada.
         if (trim($sql) === '') {
+            ajuste_guardar(MIGRAR_AJUSTE, $nombre);
+            $resultado['aplicadas'][] = $nombre;
+
             continue;
         }
 
@@ -123,6 +141,22 @@ function migrar_ficheros(string $raiz, string $ultima): array
 
     sort($todas, SORT_STRING);
 
+    return migrar_posteriores($todas, $ultima);
+}
+
+/**
+ * De una lista de ficheros, los posteriores al ultimo aplicado.
+ *
+ * Aparte del glob para poder probarlo sin tocar el disco: esta comparacion es
+ * la que decide si una migracion se aplica o se salta, y saltarse una en
+ * silencio deja el esquema a medias sin que nadie se entere.
+ *
+ * @param string[] $todas Rutas, ya ordenadas.
+ *
+ * @return string[]
+ */
+function migrar_posteriores(array $todas, string $ultima): array
+{
     if ($ultima === '') {
         return $todas;
     }

@@ -450,4 +450,42 @@ $malo = traducir_guardar(['clave' => 'esto-no-es-una-clave', 'limite_mes' => 500
 
 comprobar('una clave con mala pinta no se guarda', false, $malo['ok']);
 
+// --- El corredor de migraciones ---------------------------------------------
+//
+// Lo que se comprueba aqui no es que el SQL sea valido -eso lo hace la prueba
+// de humo contra una base de verdad- sino como se comporta cuando algo va mal,
+// que es justo cuando nadie esta mirando.
+
+comprobar(
+    'el error se recorta a una linea',
+    'CREATE TABLE: no se puede, dice la base',
+    migrar_error_corto("CREATE TABLE:
+   no se puede,
+   dice la base")
+);
+
+comprobar(
+    'y sin rutas del servidor: /salud.php es publica',
+    false,
+    str_contains(migrar_error_corto('fallo en /home/u123456/domains/ejemplo.com/sql/x.sql'), 'home')
+);
+
+// El orden de los ficheros decide el orden de aplicacion, asi que el orden
+// alfabetico y el cronologico tienen que ser el mismo. Por eso los numeros
+// llevan ceros delante: sin ellos, la 10 iria antes que la 2.
+comprobar(
+    'solo se aplican las posteriores a la ultima',
+    ['011-b.sql', '012-c.sql'],
+    array_map('basename', migrar_posteriores(
+        ['009-x.sql', '010-a.sql', '011-b.sql', '012-c.sql'],
+        '010-a.sql'
+    ))
+);
+
+comprobar(
+    'y sin ninguna aplicada, todas',
+    ['009-x.sql', '010-a.sql'],
+    array_map('basename', migrar_posteriores(['009-x.sql', '010-a.sql'], ''))
+);
+
 resumen_pruebas('Pruebas de la fase 5: alta con doble confirmacion');
