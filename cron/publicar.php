@@ -337,7 +337,10 @@ function publicar_indice(): array
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado') AS proveedores
               FROM bits b
               JOIN ediciones e ON e.id = b.edicion_id
-             WHERE b.estado = 'publicado'
+             -- La edicion tiene que estar cerrada, no solo el bit publicado:
+             -- un bit de la edicion abierta enlazaria a una pagina que todavia
+             -- no existe, y el buscador la ofreceria como resultado.
+             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
              ORDER BY e.numero DESC, b.orden ASC";
 
     $filas = [];
@@ -372,7 +375,11 @@ function publicar_proveedores(): array
               JOIN item_proveedor ip ON ip.proveedor_id = p.id
               JOIN items i           ON i.id = ip.item_id
               JOIN bits b            ON b.racimo_id = i.racimo_id
-             WHERE b.estado = 'publicado'
+              JOIN ediciones e        ON e.id = b.edicion_id
+             -- Con la edicion cerrada, como en la ficha: si no, un proveedor
+             -- podria tener ficha por un bit que todavia no ha salido, y la
+             -- ficha saldria vacia.
+             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
              GROUP BY p.id, p.nombre, p.slug, p.categoria
              ORDER BY p.nombre";
 
@@ -393,6 +400,7 @@ function publicar_bits_proveedor(int $proveedor_id): array
               JOIN item_proveedor ip ON ip.item_id = i.id
              WHERE ip.proveedor_id = ?
                AND b.estado = 'publicado'
+               AND e.estado <> 'abierta'
              ORDER BY e.numero DESC, b.orden ASC";
 
     $st = bd()->prepare($sql);

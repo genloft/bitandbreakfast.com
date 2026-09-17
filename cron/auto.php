@@ -126,7 +126,7 @@ function auto_revisar_publicados(): int
     $minimo   = (int) ajuste('auto_min_diccionario', '8');
 
     $bits = bd()->query(
-        "SELECT id, racimo_id, edicion_id FROM bits
+        "SELECT id, racimo_id, edicion_id, estado FROM bits
           WHERE redactado_por = 'ia' AND revisado = 0 AND racimo_id IS NOT NULL"
     )->fetchAll();
 
@@ -207,7 +207,10 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
         'categoria' => $categoria !== '' ? $categoria : auto_categoria($items),
         'madurez'   => 'anuncio',
         'tipo'      => auto_tipo($items),
-        'estado'    => 'publicado',
+        // Se revisa el contenido, no el calendario: un bit que espera en la
+        // edicion abierta sigue esperando. Ponerlos todos en 'publicado' los
+        // daba por salidos sin que su edicion se hubiera cerrado.
+        'estado'    => (string) ($bit['estado'] ?? 'aprobado'),
     ]);
 
     return true;
