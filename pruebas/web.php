@@ -78,19 +78,23 @@ comprobar(
     web_slug_seguro('2026-w39-038')
 );
 
-// --- Fichas de proveedor ----------------------------------------------------
+// --- Fichas de tema y de medio ----------------------------------------------
 
 comprobar(
-    'cada proveedor tiene su carpeta con un index dentro',
-    'p/mews/index.html',
-    web_ruta_proveedor('mews')
+    'cada tema tiene su carpeta con un index dentro',
+    't/pms-crs/index.html',
+    web_ruta_tema('pms-crs')
 );
 
 comprobar(
-    'y su direccion sin extension',
-    'https://bitandbreakfast.com/p/oracle-hospitality/',
-    web_url_proveedor('https://bitandbreakfast.com', 'oracle-hospitality')
+    'y cada medio su direccion sin extension',
+    'https://bitandbreakfast.com/m/hosteltur/',
+    web_url_medio('https://bitandbreakfast.com', 'hosteltur')
 );
+
+// El slug de un medio sale de su nombre: no hay columna donde guardarlo.
+comprobar('el nombre de un medio da un slug legible', 'smart-travel-news', web_slug_medio('Smart Travel News'));
+comprobar('y los acentos no dejan agujeros', 'nexotur', web_slug_medio('Nexotur'));
 
 // La lista viene empaquetada en una sola columna para no hacer una consulta
 // por bit.

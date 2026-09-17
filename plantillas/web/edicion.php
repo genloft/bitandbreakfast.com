@@ -19,9 +19,13 @@ declare(strict_types=1);
 $version    = $version ?? '0';
 $version_js = $version_js ?? '0';
 
+// La edicion se llama por su fecha, no por su numero. El numero sigue estando
+// -en el sello, en el archivo y en la URL-, pero lo que le dice algo al lector
+// es "17 de septiembre": el numero solo le dice cuantas van.
+$fecha  = web_fecha_larga((string) $edicion['fecha_prevista']);
 $titulo = trim((string) $edicion['titulo']) !== ''
     ? (string) $edicion['titulo']
-    : 'Edición ' . (int) $edicion['numero'];
+    : $fecha;
 
 $palabras = 0;
 foreach ($bits as $bit) {
@@ -83,10 +87,10 @@ require_once __DIR__ . '/iconos.php';
       <p class="edicion-numero" aria-hidden="true"><?= (int) $edicion['numero'] ?></p>
 
       <p class="sello">Edición <?= (int) $edicion['numero'] ?></p>
-      <h1><?= web_e($titulo) ?></h1>
+      <h1>
+        <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e($titulo) ?></time>
+      </h1>
       <p class="datos">
-        <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e(web_fecha_larga((string) $edicion['fecha_prevista'])) ?></time>
-        <span class="punto">·</span>
         <?= count($bits) ?> bit<?= count($bits) === 1 ? '' : 's' ?>
         <span class="punto">·</span>
         <?= web_minutos($palabras) ?> min de lectura
@@ -149,8 +153,11 @@ require_once __DIR__ . '/iconos.php';
 
           <?php $menciona = web_proveedores($bit['proveedores'] ?? null); ?>
           <?php if ($menciona): ?>
+            <?php // Los proveedores ya no tienen ficha propia -este radar habla de
+                  // temas, no de marcas-, pero seguir nombrandolos si sirve: el
+                  // enlace lleva al explorador buscando ese nombre. ?>
             <p class="menciona">Menciona:
-              <?php foreach ($menciona as $indice_p => $proveedor): ?><?= $indice_p > 0 ? ', ' : '' ?><a href="<?= web_e(web_url_proveedor($base, $proveedor['slug'])) ?>"><?= web_e($proveedor['nombre']) ?></a><?php endforeach; ?>
+              <?php foreach ($menciona as $indice_p => $proveedor): ?><?= $indice_p > 0 ? ', ' : '' ?><a href="<?= web_e($base) ?>/buscar.html?q=<?= web_e(rawurlencode((string) $proveedor['nombre'])) ?>"><?= web_e($proveedor['nombre']) ?></a><?php endforeach; ?>
             </p>
           <?php endif; ?>
 
@@ -167,6 +174,9 @@ require_once __DIR__ . '/iconos.php';
               <a class="fuente" href="<?= web_e(web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])) ?>" rel="nofollow noopener">
                 <?= web_e($bit['fuente'] ?? 'Leer la fuente') ?> →
               </a>
+              <?php if (!empty($bit['fuente'])): ?>
+                <a class="ficha-medio" href="<?= web_e(web_url_medio($base, web_slug_medio((string) $bit['fuente']))) ?>">ficha</a>
+              <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($unica !== null): ?>
@@ -230,7 +240,7 @@ require_once __DIR__ . '/iconos.php';
         <ul class="nube nube-temas">
         <?php foreach ($temas as $tema): ?>
           <li data-tema="<?= web_e($tema['slug']) ?>">
-            <a href="<?= web_e($base) ?>/buscar.html?c=<?= web_e(rawurlencode((string) $tema['slug'])) ?>">
+            <a href="<?= web_e(web_url_tema($base, (string) $tema['slug'])) ?>">
               <?= web_icono((string) $tema['slug'], 'icono icono-mini') ?>
               <span class="nube-nombre"><?= web_e($tema['nombre']) ?></span>
               <span class="nube-cuenta"><?= (int) $tema['bits'] ?></span>
@@ -245,7 +255,7 @@ require_once __DIR__ . '/iconos.php';
         <ul class="nube nube-medios">
         <?php foreach ($medios as $medio): ?>
           <li>
-            <a href="<?= web_e($base) ?>/buscar.html?fu=<?= web_e(rawurlencode((string) $medio['nombre'])) ?>">
+            <a href="<?= web_e(web_url_medio($base, (string) $medio['slug'])) ?>">
               <span class="nube-nombre"><?= web_e($medio['nombre']) ?></span>
               <span class="nube-cuenta"><?= (int) $medio['bits'] ?></span>
             </a>

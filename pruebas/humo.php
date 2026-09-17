@@ -340,7 +340,8 @@ comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe la edicion en su carpeta', true, is_file($publico . '/' . web_ruta_edicion($slug)));
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
-comprobar('escribe el indice de proveedores', true, is_file($publico . '/proveedores.html'));
+comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
+comprobar('y el de medios', true, is_file($publico . '/medios.html'));
 comprobar('escribe el buscador', true, is_file($publico . '/buscar.html'));
 comprobar('escribe el guion del buscador', true, is_file($publico . '/buscar.js'));
 comprobar('escribe el indice de busqueda', true, is_file($publico . '/indice.json'));
@@ -368,18 +369,19 @@ comprobar(
     isset($indice['etiquetas']['c']['pms-crs'], $indice['etiquetas']['a']['es'], $indice['etiquetas']['l']['en'])
 );
 
-// El bit habla de Oracle OPERA, asi que su ficha tiene que existir y llevarlo.
+// El bit es de PMS y CRS, asi que la ficha de ese tema tiene que existir y
+// llevarlo dentro.
 comprobar(
-    'escribe la ficha del proveedor mencionado',
+    'escribe la ficha del tema',
     true,
-    is_file($publico . '/' . web_ruta_proveedor('oracle-hospitality'))
+    is_file($publico . '/' . web_ruta_tema('pms-crs'))
 );
 
 comprobar(
-    'la ficha del proveedor lleva el bit',
+    'y la ficha lleva el bit',
     true,
     str_contains(
-        (string) file_get_contents($publico . '/' . web_ruta_proveedor('oracle-hospitality')),
+        (string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs')),
         'Oracle OPERA Cloud se cae durante cuatro horas'
     )
 );

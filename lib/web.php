@@ -229,21 +229,43 @@ function web_proveedores(?string $empaquetados): array
     return $lista;
 }
 
+
 /**
- * Ruta y direccion de la ficha de un proveedor.
+ * Rutas y direcciones de las fichas de tema y de medio.
  *
- * Misma forma que las ediciones, /p/<slug>/, por la misma razon: una URL sin
- * extension no delata con que se genero y no hay que cambiarla el dia que
- * deje de ser un fichero.
+ * Una letra por tipo -t de tema, m de medio- y el slug. Cortas a proposito:
+ * son direcciones que se comparten y que se escriben a mano en una charla.
  */
-function web_ruta_proveedor(string $slug): string
+function web_ruta_tema(string $slug): string
 {
-    return 'p/' . web_slug_seguro($slug) . '/index.html';
+    return 't/' . web_slug_seguro($slug) . '/index.html';
 }
 
-function web_url_proveedor(string $base, string $slug): string
+function web_url_tema(string $base, string $slug): string
 {
-    return rtrim($base, '/') . '/p/' . web_slug_seguro($slug) . '/';
+    return rtrim($base, '/') . '/t/' . web_slug_seguro($slug) . '/';
+}
+
+function web_ruta_medio(string $slug): string
+{
+    return 'm/' . web_slug_seguro($slug) . '/index.html';
+}
+
+function web_url_medio(string $base, string $slug): string
+{
+    return rtrim($base, '/') . '/m/' . web_slug_seguro($slug) . '/';
+}
+
+/**
+ * El slug de un medio a partir de su nombre.
+ *
+ * Los medios no tienen slug en la base -son un nombre en la tabla fuentes-,
+ * asi que se calcula. Con texto_normalizar primero, para que "Smart Travel
+ * News" y "Hostelur" den algo legible y no una fila de guiones.
+ */
+function web_slug_medio(string $nombre): string
+{
+    return web_slug_seguro(texto_normalizar($nombre));
 }
 
 /**

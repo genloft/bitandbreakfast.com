@@ -30,7 +30,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Explorar · Bit &amp; Breakfast</title>
-<meta name="description" content="Busca y filtra en todo lo publicado por Bit &amp; Breakfast: por temática, ámbito, idioma, fuente y proveedor.">
+<meta name="description" content="Busca y filtra en todo lo publicado por Bit &amp; Breakfast: por tema, ámbito, idioma y medio.">
 <link rel="canonical" href="<?= web_e($base) ?>/buscar.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
@@ -95,8 +95,9 @@ $alta_abierta  = $alta_abierta ?? false;
   <noscript>
     <p class="vacio">El explorador necesita JavaScript. Sin él, el
     <a href="<?= web_e($base) ?>/archivo.html">archivo</a> lleva a todas las
-    ediciones y las <a href="<?= web_e($base) ?>/proveedores.html">fichas de
-    proveedor</a> agrupan lo publicado sobre cada uno.</p>
+    ediciones, las <a href="<?= web_e($base) ?>/temas.html">fichas de tema</a>
+    y las de <a href="<?= web_e($base) ?>/medios.html">medio</a> agrupan lo
+    publicado en cada uno.</p>
   </noscript>
 
   </div>

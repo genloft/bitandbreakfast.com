@@ -136,22 +136,45 @@ function publicar_pendiente(float $limite): array
         publicar_plantilla('archivo', $comunes + ['ediciones' => $ediciones])
     ) ? 1 : 0;
 
-    // Fichas de proveedor: solo las de los que tienen algo publicado.
-    $proveedores = publicar_proveedores();
-
-    foreach ($proveedores as $proveedor) {
+    // Fichas de tema. Sustituyen a las de proveedor, y el cambio no es
+    // cosmetico: una ficha de proveedor contesta "que se ha dicho de Mews",
+    // que es la pregunta de Mews; una de tema contesta "que esta pasando con
+    // los pagos", que es la de un hotel.
+    foreach ($temas as $tema) {
         if (microtime(true) >= $limite) {
             // Como con las ediciones: sin firma guardada, la proxima pasada
-            // vuelve a empezar y no queda ninguna ficha a medias. Con doscientos
-            // proveedores esta cola es lo que de verdad manda en la duracion.
+            // vuelve a empezar y no queda ninguna ficha a medias.
             return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
         }
 
         $ficheros += publicar_escribir(
-            $publico . '/' . web_ruta_proveedor((string) $proveedor['slug']),
-            publicar_plantilla('proveedor', $comunes + [
-                'proveedor' => $proveedor,
-                'bits'      => publicar_bits_proveedor((int) $proveedor['id']),
+            $publico . '/' . web_ruta_tema((string) $tema['slug']),
+            publicar_plantilla('tema', $comunes + [
+                'tema'  => $tema,
+                'bits'  => publicar_bits_tema((string) $tema['slug']),
+                'otros' => array_values(array_filter(
+                    $temas,
+                    static fn (array $otro): bool => $otro['slug'] !== $tema['slug']
+                )),
+            ])
+        ) ? 1 : 0;
+    }
+
+    // Fichas de medio: a quien estamos leyendo de verdad.
+    foreach ($medios as $medio) {
+        if (microtime(true) >= $limite) {
+            return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
+        }
+
+        $ficheros += publicar_escribir(
+            $publico . '/' . web_ruta_medio((string) $medio['slug']),
+            publicar_plantilla('medio', $comunes + [
+                'medio' => $medio,
+                'bits'  => publicar_bits_medio((string) $medio['nombre']),
+                'otros' => array_values(array_filter(
+                    $medios,
+                    static fn (array $otro): bool => $otro['slug'] !== $medio['slug']
+                )),
             ])
         ) ? 1 : 0;
     }
@@ -170,8 +193,13 @@ function publicar_pendiente(float $limite): array
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
-        $publico . '/proveedores.html',
-        publicar_plantilla('proveedores', $comunes + ['proveedores' => $proveedores])
+        $publico . '/temas.html',
+        publicar_plantilla('temas', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/medios.html',
+        publicar_plantilla('medios', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
@@ -191,7 +219,13 @@ function publicar_pendiente(float $limite): array
     // Y se barre lo que ya no le corresponde a nada: una edicion retirada no
     // puede seguir servida en su direccion de siempre.
     $barridos  = publicar_barrer($publico . '/e', array_column($ediciones, 'slug'));
-    $barridos += publicar_barrer($publico . '/p', array_column($proveedores, 'slug'));
+    $barridos += publicar_barrer($publico . '/t', array_column($temas, 'slug'));
+    $barridos += publicar_barrer($publico . '/m', array_column($medios, 'slug'));
+
+    // Las fichas de proveedor ya no se escriben: se barren enteras. Aqui si se
+    // permite vaciar la carpeta, porque el vacio es la intencion y no el
+    // sintoma de que algo ha ido mal.
+    $barridos += publicar_barrer($publico . '/p', [], true);
 
     ajuste_guardar('publicar_firma', $firma);
 
@@ -213,7 +247,7 @@ function publicar_pendiente(float $limite): array
  *
  * @return int Cuantas carpetas se han borrado.
  */
-function publicar_barrer(string $carpeta, array $vivos): int
+function publicar_barrer(string $carpeta, array $vivos, bool $vaciar = false): int
 {
     if (!is_dir($carpeta)) {
         return 0;
@@ -230,7 +264,7 @@ function publicar_barrer(string $carpeta, array $vivos): int
     // alguien reabre las ediciones a mano, o si una revision las deja vacias, y
     // el precio seria borrar el archivo entero de una web que no esta en el
     // repositorio y solo vuelve con una regeneracion completa.
-    if (!$vivos && $hijas) {
+    if (!$vivos && $hijas && !$vaciar) {
         error_log('Bit & Breakfast, barrido abortado en ' . $carpeta . ': no queda ningun slug vivo');
 
         return 0;
@@ -347,6 +381,68 @@ function publicar_resumen_ediciones(): array
 }
 
 /**
+ * Los bits publicados de un tema, del mas reciente al mas antiguo.
+ */
+function publicar_bits_tema(string $tema): array
+{
+    // Se comparan las dos formas del slug -la de ahora y la vieja- porque los
+    // bits guardan la categoria con la que se escribieron.
+    $viejas = array_keys(array_filter(
+        ['pms-gestion' => 'pms-crs', 'distribucion-revenue' => 'distribucion-otas', 'operaciones-personal' => 'operaciones-iot'],
+        static fn (string $nueva): bool => $nueva === $tema
+    ));
+
+    $formas = array_merge([$tema], $viejas);
+    $marcas = implode(',', array_fill(0, count($formas), '?'));
+
+    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria,
+                   e.numero, e.slug, e.fecha_prevista,
+                   (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente
+              FROM bits b
+              JOIN ediciones e ON e.id = b.edicion_id
+             WHERE b.categoria IN ($marcas)
+               AND b.estado = 'publicado'
+               AND e.estado <> 'abierta'
+             ORDER BY e.numero DESC, b.orden ASC";
+
+    $st = bd()->prepare($sql);
+    $st->execute($formas);
+
+    return $st->fetchAll();
+}
+
+/**
+ * Los bits publicados que salieron de un medio, del mas reciente al mas
+ * antiguo.
+ *
+ * "Salieron de un medio" quiere decir que es el medio al que apunta el enlace
+ * del bit, no cualquiera de los que contaban la noticia: es el que el lector
+ * ha leido.
+ */
+function publicar_bits_medio(string $nombre): array
+{
+    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria,
+                   e.numero, e.slug, e.fecha_prevista
+              FROM bits b
+              JOIN ediciones e ON e.id = b.edicion_id
+             WHERE b.estado = 'publicado'
+               AND e.estado <> 'abierta'
+               AND (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) = ?
+             ORDER BY e.numero DESC, b.orden ASC";
+
+    $st = bd()->prepare($sql);
+    $st->execute([$nombre]);
+
+    return $st->fetchAll();
+}
+
+/**
  * Los medios de los que ha salido algo publicado, con cuantos bits cada uno.
  *
  * Se cuenta el medio de la fuente principal de cada bit, que es el que lleva
@@ -357,7 +453,7 @@ function publicar_resumen_ediciones(): array
  */
 function publicar_medios(): array
 {
-    $sql = "SELECT f.nombre, COUNT(DISTINCT b.id) AS bits
+    $sql = "SELECT f.nombre, f.url_sitio, COUNT(DISTINCT b.id) AS bits
               FROM bits b
               JOIN ediciones e ON e.id = b.edicion_id
               JOIN items i     ON i.id = (
@@ -367,10 +463,19 @@ function publicar_medios(): array
                      LIMIT 1)
               JOIN fuentes f   ON f.id = i.fuente_id
              WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
-             GROUP BY f.id, f.nombre
+             GROUP BY f.id, f.nombre, f.url_sitio
              ORDER BY bits DESC, f.nombre ASC";
 
-    return bd()->query($sql)->fetchAll();
+    $medios = bd()->query($sql)->fetchAll();
+
+    // El slug se calcula aqui y no en la plantilla: lo usan la ficha, el
+    // enlace y el barrido de carpetas, y tienen que coincidir los tres.
+    foreach ($medios as $indice => $medio) {
+        $medios[$indice]['slug'] = web_slug_medio((string) $medio['nombre']);
+        $medios[$indice]['url']  = (string) ($medio['url_sitio'] ?? '');
+    }
+
+    return $medios;
 }
 
 /**
@@ -516,54 +621,6 @@ function publicar_indice(): array
         ],
         'bits' => $filas,
     ];
-}
-
-/**
- * Proveedores con al menos un bit publicado, con su recuento.
- *
- * La relacion no es directa: un bit cuelga de un racimo, y los proveedores se
- * detectan en los items de ese racimo. Por eso el salto de tres tablas.
- */
-function publicar_proveedores(): array
-{
-    $sql = "SELECT p.id, p.nombre, p.slug, p.categoria,
-                   COUNT(DISTINCT b.id) AS bits
-              FROM proveedores p
-              JOIN item_proveedor ip ON ip.proveedor_id = p.id
-              JOIN items i           ON i.id = ip.item_id
-              JOIN bits b            ON b.racimo_id = i.racimo_id
-              JOIN ediciones e        ON e.id = b.edicion_id
-             -- Con la edicion cerrada, como en la ficha: si no, un proveedor
-             -- podria tener ficha por un bit que todavia no ha salido, y la
-             -- ficha saldria vacia.
-             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
-             GROUP BY p.id, p.nombre, p.slug, p.categoria
-             ORDER BY p.nombre";
-
-    return bd()->query($sql)->fetchAll();
-}
-
-/**
- * Los bits publicados que mencionan a un proveedor, del mas reciente al mas
- * antiguo, con la edicion en la que salieron.
- */
-function publicar_bits_proveedor(int $proveedor_id): array
-{
-    $sql = "SELECT DISTINCT b.id, b.titular, b.por_que,
-                   e.numero, e.slug, e.fecha_prevista
-              FROM bits b
-              JOIN ediciones e       ON e.id = b.edicion_id
-              JOIN items i           ON i.racimo_id = b.racimo_id
-              JOIN item_proveedor ip ON ip.item_id = i.id
-             WHERE ip.proveedor_id = ?
-               AND b.estado = 'publicado'
-               AND e.estado <> 'abierta'
-             ORDER BY e.numero DESC, b.orden ASC";
-
-    $st = bd()->prepare($sql);
-    $st->execute([$proveedor_id]);
-
-    return $st->fetchAll();
 }
 
 /**

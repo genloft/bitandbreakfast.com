@@ -69,15 +69,15 @@ $alta_abierta  = $alta_abierta ?? false;
       <?php foreach ($del_ano as $edicion): ?>
         <?php $suyo = $resumen[(int) $edicion['id']] ?? ['bits' => 0, 'temas' => []]; ?>
         <li>
+          <?php // La fecha manda tambien aqui: el archivo se recorre buscando
+                // "la semana del incidente de Oracle", no la edicion numero 7. ?>
           <a class="archivo-titulo" href="<?= web_e(web_url_edicion($base, (string) $edicion['slug'])) ?>">
             <?= web_e(trim((string) $edicion['titulo']) !== ''
                 ? (string) $edicion['titulo']
-                : 'Edición ' . (int) $edicion['numero']) ?>
+                : web_fecha_larga((string) $edicion['fecha_prevista'])) ?>
           </a>
           <p class="datos">
-            nº <?= (int) $edicion['numero'] ?>
-            <span class="punto">·</span>
-            <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e(web_fecha_larga((string) $edicion['fecha_prevista'])) ?></time>
+            <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>">nº <?= (int) $edicion['numero'] ?></time>
             <?php if ($suyo['bits'] > 0): ?>
               <span class="punto">·</span>
               <?= (int) $suyo['bits'] ?> bit<?= (int) $suyo['bits'] === 1 ? '' : 's' ?>

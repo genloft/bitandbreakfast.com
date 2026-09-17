@@ -35,48 +35,61 @@ declare(strict_types=1);
 :root {
   color-scheme: dark;
 
-  /* Azul de medianoche, no negro. El negro puro es una pantalla apagada; este
-     azul tiene hora del dia -la del turno de noche en recepcion- y ademas
-     hace que el laton parezca laton y no amarillo. */
-  --fondo:   #070b16;
-  --papel:   #0d1426;
-  --realce:  #131c33;
-  --borde:   #1e2a47;
-  --borde-suave: #172340;
-  --tinta:   #e7edfb;
-  --apagado: #93a3c6;
+  /* Retrofuturismo, que no es neon por todas partes: es el azul de una sala de
+     control de 1979 con una pantalla ambar encendida. Dos acentos, el ambar de
+     los fosforos viejos y el cian de los tubos, y nada mas. El tercero, el
+     magenta, aparece cinco veces en toda la web y por eso se ve. */
+  --fondo:   #060a18;
+  --papel:   #0b1026;
+  --realce:  #111838;
+  --borde:   #232f63;
+  --borde-suave: #18204a;
+  --tinta:   #e8ecff;
+  --apagado: #97a2d8;
 
-  /* Dos acentos y no uno, con trabajos distintos: el laton es la marca -el
-     ampersand, los numeros, los filetes- y el azul electrico es lo que se
-     puede pulsar. Mezclarlos seria perder los dos. */
-  --acento:  #c9a66b;
-  --acento-suave: #8a7346;
-  --enlace:  #74c4ff;
-  --enlace-suave: #2f5d85;
+  --acento:  #ffb454;   /* ambar de fosforo */
+  --acento-suave: #8a6a34;
+  --enlace:  #5ce1e6;   /* cian de tubo */
+  --enlace-suave: #2b6f85;
+  --magenta: #ff6ec7;
 
-  /* Un color por tematica. No son once colores elegidos por bonitos: son un
-     azul de base con desvios cortos, para que juntos parezcan una familia y
-     no una caja de rotuladores. Solo pintan el icono y su marco. */
+  /* Un color por tematica, dentro de la misma paleta: cian, ambar y magenta
+     con desvios cortos. Juntos tienen que parecer los pilotos de un mismo
+     panel, no once rotuladores. */
   --t-tecnologia-general:          #9fb2d6;
-  --t-pms-crs:                     #74c4ff;
-  --t-distribucion-otas:           #6fd3c1;
-  --t-revenue-rms:                 #e9b15e;
-  --t-pagos-fraude:                #f0a184;
-  --t-ciberseguridad-cumplimiento: #ef8496;
-  --t-operaciones-iot:             #a8b6dd;
-  --t-experiencia-huesped:         #cfa9e8;
-  --t-ia-aplicada:                 #9ad681;
-  --t-sostenibilidad-energia:      #7fd3a3;
-  --t-inversion-mercado:           #e0c87a;
+  --t-pms-crs:                     #5ce1e6;
+  --t-distribucion-otas:           #56d7b0;
+  --t-revenue-rms:                 #ffb454;
+  --t-pagos-fraude:                #ff9c6e;
+  --t-ciberseguridad-cumplimiento: #ff6ec7;
+  --t-operaciones-iot:             #9aa6e8;
+  --t-experiencia-huesped:         #c78cf5;
+  --t-ia-aplicada:                 #8de06a;
+  --t-sostenibilidad-energia:      #62d79a;
+  --t-inversion-mercado:           #ffd166;
 
+  /* Futura y Century Gothic son las geometricas que ya estan en Mac y en
+     Windows, y son LA letra del futuro de hace cincuenta anos: la de 2001 y la
+     de los manuales de la NASA. Sin descargar nada, que la politica del sitio
+     no deja cargar de fuera. */
+  --marca:   Futura, "Century Gothic", "Avenir Next", Avenir, "Trebuchet MS",
+             ui-sans-serif, sans-serif;
   --display: "Hoefler Text", "Iowan Old Style", "Palatino Linotype", Palatino,
              "Book Antiqua", Georgia, "Times New Roman", serif;
   --cuerpo:  Georgia, "Iowan Old Style", "Times New Roman", serif;
   --ui:      ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
              system-ui, sans-serif;
+  /* El monoespaciado es el que pone el "futurista" en todo lo que no es texto
+     corrido: fechas, numeros, etiquetas, filtros. Voz de terminal. */
+  --mono:    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+             "Liberation Mono", monospace;
 
-  --ancho:  38rem;
+  --ancho:  44rem;
   --gutter: clamp(1.25rem, 5vw, 3rem);
+
+  /* El chaflan de las esquinas, que es lo que hace que una caja parezca de un
+     panel y no de un formulario. */
+  --chaflan: 7px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -87,12 +100,15 @@ body {
   margin: 0;
   color: var(--tinta);
 
-  /* Dos luces muy tenues, una fria arriba a la derecha -detras del logotipo- y
-     otra calida abajo a la izquierda. No se ven; lo que se nota es que el
-     fondo deja de ser una plancha de color plano. */
+  /* Tres capas que no se ven por separado y juntas son la sala de control: una
+     rejilla de milimetrado muy tenue, una luz cian detras del logotipo y otra
+     ambar abajo. Nada se mueve: una web que parpadea es un juguete, y esto se
+     lee cinco minutos a la semana. */
   background:
-    radial-gradient(120% 70% at 85% -10%, rgba(116, 196, 255, .10), transparent 60%),
-    radial-gradient(90% 60% at 0% 110%, rgba(201, 166, 107, .07), transparent 60%),
+    linear-gradient(rgba(92, 225, 230, .035) 1px, transparent 1px) 0 0 / 100% 3rem,
+    linear-gradient(90deg, rgba(92, 225, 230, .035) 1px, transparent 1px) 0 0 / 3rem 100%,
+    radial-gradient(120% 70% at 85% -10%, rgba(92, 225, 230, .13), transparent 62%),
+    radial-gradient(90% 60% at 0% 110%, rgba(255, 180, 84, .08), transparent 60%),
     var(--fondo);
   background-attachment: fixed;
   font-family: var(--cuerpo);
@@ -114,19 +130,29 @@ a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
 
 ::selection { background: var(--enlace); color: var(--fondo); }
 
-/* Etiqueta diminuta en versalitas: la voz de la casa para todo lo que no es
-   texto corrido. */
+/* Monoespaciada en todo lo que no es texto corrido: fechas, numeros,
+   etiquetas, filtros, pies. Es la voz de la casa y es donde vive el
+   "futurista" -una terminal-, mientras el texto que se lee de verdad sigue en
+   serif, que es donde vive el "retro". */
 .sello, .menu, .datos, .etiqueta, .letra-pequena, .sumario h2, .ano h2,
 .cuenta, .menciona, .pie-bit, .buscador label, .alta-formulario label,
-.facetas h3, .opcion, .limpiar, .sumario-etiqueta, .numero-lista {
-  font-family: var(--ui);
+.facetas h3, .opcion, .limpiar, .sumario-etiqueta, .numero-lista,
+.nube a, .explorar-grupo, .cuenta-opcion, .numero {
+  font-family: var(--mono);
 }
 
-.sello, .sumario h2, .ano h2, .facetas h3 {
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .16em;
+.sello, .sumario h2, .ano h2, .facetas h3, .explorar-grupo {
+  font-size: .66rem;
+  font-weight: 500;
+  letter-spacing: .22em;
   text-transform: uppercase;
+}
+
+/* Los rotulos de seccion llevan delante dos barras, como un comentario de
+   codigo. Es el guino mas barato que existe y coloca el tono en una linea. */
+.sumario h2::before, .facetas h3::before, .explorar-grupo::before {
+  content: "// ";
+  color: var(--enlace-suave);
 }
 
 .saltar {
@@ -155,69 +181,65 @@ a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: clamp(.5rem, 2.2vw, .9rem);
+  display: block;
   text-decoration: none;
   color: var(--tinta);
 }
 
 .logo:hover { text-decoration: none; color: var(--tinta); }
 
-/* La marca crece con el nombre, no con la pantalla: si el nombre se encoge en
-   un movil, la taza se encoge con el o se separan. */
-.marca {
-  flex: none;
-  width: clamp(2.6rem, 12vw, 4.2rem);
-  height: auto;
-  color: var(--acento);
-  overflow: visible;
-}
-
-/* El vapor un poco mas fino que la taza y un punto mas claro: asi se lee como
-   vapor y no como tres asas. */
-.marca-onda { opacity: .85; stroke-width: 1.4; }
-.marca-taza { color: var(--tinta); stroke: var(--tinta); }
-
-/* Al pasar por encima, el vapor sube. Es el unico movimiento del sitio. */
-.logo:hover .marca-onda { opacity: 1; }
-.logo .marca-onda { transition: opacity .25s ease, transform .25s ease; }
-.logo:hover .marca-onda:nth-of-type(1) { transform: translateY(-.5px); }
-.logo:hover .marca-onda:nth-of-type(2) { transform: translateY(-1px); }
-.logo:hover .marca-onda:nth-of-type(3) { transform: translateY(-1.5px); }
-
-@media (prefers-reduced-motion: reduce) {
-  .logo .marca-onda { transition: none; }
-  .logo:hover .marca-onda { transform: none; }
-}
-
-.logo-texto {
+/* El bloque: dos lineas que miden lo mismo. La de arriba se completa con un
+   filete hasta la anchura de la de abajo, asi que el conjunto es un rectangulo
+   sin haber forzado el interletrado de nadie. */
+.logo-bloque {
   display: block;
-  text-align: right;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(2.2rem, 11.5vw, 4.3rem);
-  line-height: .92;
-  letter-spacing: -.024em;
+  width: min(100%, 26rem);
+  margin-left: auto;
 }
 
-/* El ampersand en cursiva y en laton: el unico adorno de toda la marca. */
-.logo-amp {
-  font-style: italic;
-  color: var(--acento);
-  padding: 0 .04em;
+.logo-linea {
+  display: flex;
+  align-items: center;
+  gap: .18em;
+  font-family: var(--marca);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 8.2vw, 3.1rem);
+  line-height: 1.05;
+  letter-spacing: .14em;
+  text-transform: uppercase;
 }
+
+/* La segunda linea lleva el peso: es la palabra larga y la que fija la
+   anchura del bloque. Se separa un pelo de la primera para que se lean como
+   dos renglones de un rotulo y no como una palabra partida. */
+.logo-linea-baja { justify-content: flex-end; margin-top: .06em; }
+
+.logo-palabra { white-space: nowrap; }
+
+/* El ampersand, en ambar: el unico color del logotipo. */
+.logo-amp { color: var(--acento); font-weight: 400; }
+
+/* El filete que cierra el rectangulo. Cian, porque el ambar ya esta usado en
+   el ampersand y dos acentos en cuatro centimetros son uno de mas. */
+.logo-filete {
+  flex: 1;
+  height: 2px;
+  min-width: 1.5rem;
+  background: linear-gradient(90deg, var(--enlace-suave), var(--enlace));
+}
+
+/* Al pasar por encima, el filete se enciende. Es el unico efecto de la casa. */
+.logo:hover .logo-filete { box-shadow: 0 0 8px var(--enlace); }
 
 .promesa {
   margin: 1.1rem 0 0 auto;
-  max-width: 26rem;
+  max-width: 30rem;
   text-align: right;
   color: var(--apagado);
-  font-family: var(--ui);
-  font-size: .78rem;
-  letter-spacing: .04em;
-  line-height: 1.5;
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .06em;
+  line-height: 1.6;
 }
 
 .promesa-punto { color: var(--acento-suave); padding: 0 .15rem; }
@@ -227,8 +249,8 @@ a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: .3rem 1.15rem;
-  font-size: .74rem;
-  letter-spacing: .1em;
+  font-size: .7rem;
+  letter-spacing: .14em;
   text-transform: uppercase;
 }
 
@@ -241,13 +263,15 @@ a:focus-visible { outline: 1px solid var(--enlace); outline-offset: 4px; }
 .menu a:hover { color: var(--tinta); }
 .menu a[aria-current="page"] { color: var(--acento); }
 
-/* Un filete de laton que cierra la cabecera y separa el sitio de su contenido. */
+/* La linea que cierra la cabecera: doble, como el borde de un panel. */
 .cabecera::after {
   content: "";
   display: block;
-  height: 1px;
+  height: 3px;
   margin-top: 1.6rem;
-  background: linear-gradient(90deg, transparent, var(--acento-suave) 35%, var(--enlace-suave));
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde-suave);
+  background: linear-gradient(90deg, transparent, rgba(92, 225, 230, .25) 60%, rgba(255, 180, 84, .35));
 }
 
 /* --- Estructura ---------------------------------------------------------- */
@@ -389,24 +413,28 @@ h1 {
 
 .numero {
   margin: 0;
-  font-family: var(--display);
-  font-size: 1.45rem;
+  font-size: .95rem;
   line-height: 1;
-  color: var(--acento-suave);
+  letter-spacing: .06em;
+  color: var(--acento);
   font-variant-numeric: tabular-nums;
 }
+
+/* Con cero delante, como un contador: 01, 02, 03. */
+.numero::before { content: "0"; opacity: .45; }
+.bit:nth-child(n+10) .numero::before { content: ""; }
 
 /* El icono, con el color de su tema, dentro de un circulo tenue del mismo
    color. El color vive en --tema y lo pone el atributo data-tema. */
 .bit-icono {
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border: 1px solid color-mix(in srgb, var(--tema, var(--apagado)) 35%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tema, var(--apagado)) 9%, transparent);
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid color-mix(in srgb, var(--tema, var(--apagado)) 40%, transparent);
+  background: color-mix(in srgb, var(--tema, var(--apagado)) 10%, transparent);
   color: var(--tema, var(--apagado));
+  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
 }
 
 .icono { width: 1.15rem; height: 1.15rem; display: block; }
@@ -441,14 +469,16 @@ h1 {
 
 .etiqueta {
   display: inline-block;
-  padding: .22rem .6rem;
+  padding: .24rem .65rem;
   border: 1px solid var(--borde);
-  border-radius: 2px;
   color: var(--apagado);
-  font-size: .64rem;
-  letter-spacing: .09em;
+  font-size: .62rem;
+  letter-spacing: .14em;
   text-transform: uppercase;
   white-space: nowrap;
+  /* La esquina cortada: es lo que hace que una caja parezca de un panel y no
+     de un formulario. Un pixel de diferencia y toda la diferencia. */
+  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
 }
 
 /* La etiqueta del tema lleva su color y ademas lleva a algun sitio: filtra el
@@ -572,8 +602,8 @@ h1 {
   gap: .4rem;
   padding: .45rem .8rem;
   border: 1px solid var(--borde);
-  border-radius: 2px;
   background: transparent;
+  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
   color: var(--apagado);
   font-size: .74rem;
   letter-spacing: .04em;
@@ -587,12 +617,17 @@ h1 {
 .opcion .icono { color: var(--tema, var(--apagado)); }
 .opcion-nombre { color: inherit; }
 
-.opcion:hover { color: var(--tinta); border-color: var(--acento-suave); }
+.opcion:hover {
+  color: var(--tinta);
+  border-color: var(--enlace-suave);
+  box-shadow: 0 0 10px rgba(92, 225, 230, .18);
+}
 
 .opcion[aria-pressed="true"] {
   border-color: var(--acento);
   color: var(--fondo);
   background: var(--acento);
+  box-shadow: 0 0 10px rgba(255, 180, 84, .35);
 }
 
 /* Pulsada, el fondo es laton: el icono tiene que dejar su color o desaparece. */
@@ -614,7 +649,7 @@ h1 {
 
 /* --- Listas de resultados, archivo y fichas -------------------------------- */
 
-.fichas, .archivo, .proveedores { list-style: none; margin: 1.5rem 0 0; padding: 0; }
+.fichas, .archivo { list-style: none; margin: 1.5rem 0 0; padding: 0; }
 
 .fichas li, .archivo li { padding: 1.4rem 0; border-top: 1px solid var(--borde); }
 
@@ -634,16 +669,6 @@ h1 {
 
 .ano h2 { margin: 3rem 0 .25rem; color: var(--apagado); }
 
-.proveedores li {
-  display: flex;
-  align-items: baseline;
-  gap: .9rem;
-  padding: .7rem 0;
-  border-top: 1px solid var(--borde);
-}
-
-.proveedores a { flex: 1; text-decoration: none; }
-.proveedores a:hover { text-decoration: underline; }
 
 .cuenta {
   flex: 0 0 auto;
@@ -732,15 +757,14 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: .45rem;
-  padding: .42rem .7rem;
+  padding: .45rem .75rem;
   border: 1px solid var(--borde);
-  border-radius: 2px;
   background: var(--realce);
   color: var(--tinta);
-  font-family: var(--ui);
-  font-size: .78rem;
-  letter-spacing: .02em;
+  font-size: .74rem;
+  letter-spacing: .04em;
   text-decoration: none;
+  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
 }
 
 .nube a:hover {
@@ -759,6 +783,103 @@ h1 {
 }
 
 .explorar-pie { margin: 1.1rem 0 0; max-width: 34rem; }
+
+/* --- Fichas de tema y de medio --------------------------------------------- */
+
+.ficha-titulo {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+
+/* El icono de la ficha, en grande y con el color de su tema. En la de medio no
+   hay tema, asi que se queda en el cian de la casa. */
+.ficha-icono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid color-mix(in srgb, var(--tema, var(--enlace)) 45%, transparent);
+  background: color-mix(in srgb, var(--tema, var(--enlace)) 10%, transparent);
+  color: var(--tema, var(--enlace));
+  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
+}
+
+.ficha-icono .icono { width: 1.5rem; height: 1.5rem; }
+
+.lista-fichas { list-style: none; margin: 2.5rem 0 0; padding: 0; }
+
+.lista-fichas li {
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--borde-suave);
+}
+
+.lista-fichas h2 {
+  margin: 0 0 .4rem;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(1.15rem, 4.4vw, 1.4rem);
+  line-height: 1.28;
+}
+
+.lista-fichas h2 a { text-decoration: none; }
+.lista-fichas h2 a:hover { color: var(--enlace); }
+.lista-fichas .resumen { margin: .5rem 0 0; color: var(--apagado); font-size: .95rem; }
+
+/* La rejilla de los indices: tarjetas iguales, que es lo que hace que un
+   indice se lea como un panel y no como una lista de la compra. */
+.rejilla-fichas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: .8rem;
+  list-style: none;
+  margin: 2.5rem 0 0;
+  padding: 0;
+}
+
+.rejilla-fichas a {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  height: 100%;
+  padding: 1.1rem;
+  border: 1px solid var(--borde);
+  background: var(--papel);
+  text-decoration: none;
+  clip-path: polygon(var(--chaflan) 0, 100% 0, 100% calc(100% - var(--chaflan)), calc(100% - var(--chaflan)) 100%, 0 100%, 0 var(--chaflan));
+}
+
+.rejilla-fichas a:hover {
+  border-color: color-mix(in srgb, var(--tema, var(--enlace)) 60%, transparent);
+  background: var(--realce);
+  text-decoration: none;
+}
+
+.rejilla-nombre {
+  font-family: var(--display);
+  font-size: 1.12rem;
+  line-height: 1.25;
+  color: var(--tinta);
+}
+
+.rejilla-cuenta {
+  margin-top: auto;
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+
+/* El enlace a la ficha del medio, al lado del enlace a la noticia. Discreto:
+   lo que quiere el lector es la noticia, no nuestra ficha. */
+.ficha-medio {
+  color: var(--apagado);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--borde);
+}
+.ficha-medio:hover { color: var(--enlace); }
 
 /* --- Alta en el boletin ---------------------------------------------------- */
 
@@ -878,15 +999,15 @@ h1 {
    hacen lo mismo. En el movil todo eso vuelve a apilarse. */
 
 @media (min-width: 70rem) {
-  .cabecera, main, .pie { max-width: 66rem; }
+  .cabecera, main, .pie { max-width: 78rem; }
 
   /* justify-content centra las dos columnas dentro del contenedor: sin eso, el
      espacio que sobra se queda todo a la derecha y la pagina parece torcida. */
   .edicion {
     display: grid;
-    grid-template-columns: 16rem minmax(0, 40rem);
+    grid-template-columns: 18rem minmax(0, 46rem);
     justify-content: center;
-    gap: 0 3.5rem;
+    gap: 0 4.5rem;
     align-items: start;
   }
 
@@ -915,9 +1036,9 @@ h1 {
   /* Explorador: filtros a la izquierda, resultados a la derecha. */
   .explorador {
     display: grid;
-    grid-template-columns: 18rem minmax(0, 40rem);
+    grid-template-columns: 20rem minmax(0, 46rem);
     justify-content: center;
-    gap: 0 3.5rem;
+    gap: 0 4.5rem;
     align-items: start;
   }
 
@@ -936,7 +1057,7 @@ h1 {
   .opcion { width: 100%; text-align: left; }
 
   /* Listas largas a dos columnas: el archivo de un ano son cincuenta filas. */
-  .archivo, .proveedores {
+  .archivo {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 3rem;
