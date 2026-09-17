@@ -273,7 +273,16 @@ function datos_cerrar_edicion(int $edicion_id): void
     bd()->beginTransaction();
 
     try {
-        bd()->prepare("UPDATE ediciones SET estado = 'cerrada' WHERE id = ?")->execute([$edicion_id]);
+        // La fecha de la edicion es el dia que sale, no el que estaba previsto.
+        // Una edicion que se cierra antes de tiempo -porque se ha llenado, o
+        // porque el sitio no tenia nada publicado- se quedaba con la fecha del
+        // martes siguiente, asi que la portada llevaba una fecha futura. Eso no
+        // parece una primicia: parece un reloj mal puesto.
+        $sql = "UPDATE ediciones
+                   SET estado = 'cerrada',
+                       fecha_prevista = LEAST(fecha_prevista, UTC_DATE())
+                 WHERE id = ?";
+        bd()->prepare($sql)->execute([$edicion_id]);
         bd()->prepare("UPDATE bits SET estado = 'publicado' WHERE edicion_id = ?")->execute([$edicion_id]);
 
         $sql = "UPDATE racimos SET estado = 'publicado'

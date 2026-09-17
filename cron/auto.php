@@ -156,6 +156,8 @@ function auto_revisar_publicados(): int
         }
     }
 
+    auto_fechar_ediciones();
+
     ajuste_guardar('auto_criterios', (string) AUTO_CRITERIOS);
 
     // La web se regenera entera: los bits que sobreviven han cambiado de
@@ -163,6 +165,28 @@ function auto_revisar_publicados(): int
     ajuste_guardar('publicar_firma', '');
 
     return $tocados;
+}
+
+/**
+ * Pone a las ediciones ya cerradas la fecha del dia en que salieron.
+ *
+ * Una edicion que se cerro antes de tiempo se quedo con la fecha del martes
+ * que tenia prevista, asi que la portada lleva una fecha futura. No parece una
+ * primicia: parece un reloj mal puesto. Como el dia exacto del cierre no se
+ * guarda, se usa el del ultimo bit que entro, que es el mismo dia salvo que
+ * alguien lo cerrara a mano dias despues.
+ */
+function auto_fechar_ediciones(): void
+{
+    $sql = "UPDATE ediciones e
+               SET e.fecha_prevista = COALESCE(
+                       (SELECT DATE(MAX(b.creado)) FROM bits b WHERE b.edicion_id = e.id),
+                       e.fecha_prevista
+                   )
+             WHERE e.estado <> 'abierta'
+               AND e.fecha_prevista > UTC_DATE()";
+
+    bd()->exec($sql);
 }
 
 /**
