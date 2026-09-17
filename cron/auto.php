@@ -422,16 +422,26 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         ]);
 
         // El dia en que este sitio se entero. Es lo que ordena la web entera.
+        bd()->prepare(
+            "UPDATE bits SET redactado_por = 'ia', revisado = 0, dia = UTC_DATE() WHERE id = ?"
+        )->execute([$bit_id]);
+
         // Y de que idioma viene, si viene de otro: la web lo dice en la cara
         // del bit, porque esas palabras no son las que escribio el periodista.
-        bd()->prepare(
-            "UPDATE bits
-                SET redactado_por = 'ia',
-                    revisado = 0,
-                    dia = UTC_DATE(),
-                    traducido_de = ?
-              WHERE id = ?"
-        )->execute([$traducido['ok'] ? $origen : null, $bit_id]);
+        //
+        // Aparte y con su try por una razon que costo horas: si la columna no
+        // existe todavia -el despliegue trae el codigo antes de que el cron
+        // aplique la migracion- meterla en la consulta de arriba tumbaba la
+        // escritura entera, y el sitio dejaba de publicar por no poder anotar
+        // una etiqueta. Lo accesorio no puede arrastrar a lo principal.
+        if ($traducido['ok']) {
+            try {
+                bd()->prepare('UPDATE bits SET traducido_de = ? WHERE id = ?')
+                    ->execute([$origen, $bit_id]);
+            } catch (Throwable $e) {
+                error_log('Bit & Breakfast, no se pudo anotar la traduccion: ' . $e->getMessage());
+            }
+        }
 
         // Y el racimo deja de estar en la cola: ya tiene quien lo cuente.
         bd()->prepare("UPDATE racimos SET estado = 'publicado' WHERE id = ?")

@@ -109,6 +109,47 @@ function bd(): PDO
  *
  * @param array|null $reemplazo Si se pasa, sustituye la cache entera.
  */
+/**
+ * ¿Existe esa columna?
+ *
+ * Nace de una tarde entera perdida. El despliegue trae el codigo nuevo y el
+ * cron aplica la migracion despues, asi que hay una ventana -minutos, o dias
+ * si la migracion falla- en la que el codigo pide una columna que todavia no
+ * esta. Una consulta con una columna que no existe no devuelve nada: revienta.
+ * Y si esa consulta es la que genera la web, el sitio deja de actualizarse
+ * entero por una etiqueta de idioma.
+ *
+ * Con esto, lo accesorio se puede pedir solo si esta. Una consulta a
+ * information_schema por ejecucion, cacheada, y a cambio el sitio sobrevive a
+ * sus propios despliegues.
+ */
+function bd_columna(string $tabla, string $columna): bool
+{
+    static $vistas = [];
+
+    $llave = $tabla . '.' . $columna;
+
+    if (isset($vistas[$llave])) {
+        return $vistas[$llave];
+    }
+
+    try {
+        $st = bd()->prepare(
+            'SELECT COUNT(*) FROM information_schema.columns
+              WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+        );
+        $st->execute([$tabla, $columna]);
+
+        $vistas[$llave] = (int) $st->fetchColumn() > 0;
+    } catch (Throwable $e) {
+        // Ante la duda, que no esta: lo accesorio se queda fuera y la consulta
+        // principal sigue funcionando, que es de lo que se trata.
+        $vistas[$llave] = false;
+    }
+
+    return $vistas[$llave];
+}
+
 function ajustes_cache(?array $reemplazo = null): array
 {
     static $cache = null;
