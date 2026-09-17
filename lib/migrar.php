@@ -62,7 +62,7 @@ function migrar_pendientes(string $raiz): array
             // que no existia y desde fuera lo unico que se veia era que el
             // sitio habia dejado de publicar. El error estaba en el registro
             // del cron, al que no se llega sin SSH.
-            @ajuste_guardar('migracion_error', texto_error_corto($resultado['error']));
+            @ajuste_guardar('migracion_error', migrar_error_corto($resultado['error']));
 
             return $resultado;
         }
@@ -82,7 +82,7 @@ function migrar_pendientes(string $raiz): array
  * Va a /salud.php, que es publica: el mensaje de una excepcion de PDO puede
  * llevar dentro la consulta entera y, con ella, nombres de tablas y rutas.
  */
-function texto_error_corto(string $mensaje): string
+function migrar_error_corto(string $mensaje): string
 {
     $limpio = (string) preg_replace('~(?<![:\w/])/(?:[\w.-]+/)+[\w.-]*~u', '…', $mensaje);
     $limpio = trim((string) preg_replace('/\s+/', ' ', $limpio));
