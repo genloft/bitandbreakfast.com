@@ -179,6 +179,13 @@ $informe = [
             ''
         ) ?: 'ninguna',
         'escritas'   => count(glob(__DIR__ . '/sql/migraciones/*.sql') ?: []),
+        // Vacio es lo normal. Con algo dentro, ahi esta el problema: esa
+        // migracion y todas las de detras no se han aplicado, y el codigo
+        // nuevo esta esperando algo que no existe.
+        'error'      => (string) salud_valor(
+            "SELECT valor FROM ajustes WHERE clave = 'migracion_error'",
+            ''
+        ),
     ],
     'criterios' => [
         'codigo'    => AUTO_CRITERIOS,

@@ -56,14 +56,38 @@ function migrar_pendientes(string $raiz): array
             $resultado['error'] = $nombre . ': ' . $e->getMessage();
             error_log('Bit & Breakfast, migracion ' . $nombre . ': ' . $e->getMessage());
 
+            // Y queda escrito donde se pueda leer sin entrar al servidor. Esto
+            // se aprendio por las malas: una migracion fallaba, la cola entera
+            // se quedaba parada detras, el codigo nuevo esperaba una columna
+            // que no existia y desde fuera lo unico que se veia era que el
+            // sitio habia dejado de publicar. El error estaba en el registro
+            // del cron, al que no se llega sin SSH.
+            @ajuste_guardar('migracion_error', texto_error_corto($resultado['error']));
+
             return $resultado;
         }
+
+        ajuste_guardar('migracion_error', '');
 
         ajuste_guardar(MIGRAR_AJUSTE, $nombre);
         $resultado['aplicadas'][] = $nombre;
     }
 
     return $resultado;
+}
+
+/**
+ * El error, en una linea y sin rutas del servidor.
+ *
+ * Va a /salud.php, que es publica: el mensaje de una excepcion de PDO puede
+ * llevar dentro la consulta entera y, con ella, nombres de tablas y rutas.
+ */
+function texto_error_corto(string $mensaje): string
+{
+    $limpio = (string) preg_replace('~(?<![:\w/])/(?:[\w.-]+/)+[\w.-]*~u', '…', $mensaje);
+    $limpio = trim((string) preg_replace('/\s+/', ' ', $limpio));
+
+    return mb_substr($limpio, 0, 200);
 }
 
 /**
