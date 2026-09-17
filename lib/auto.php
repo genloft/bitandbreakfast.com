@@ -145,7 +145,17 @@ function auto_limpiar(string $bruto): string
 
     // Ademas de espacios, se quitan los guiones y barras con los que muchos
     // feeds separan el resumen de la firma del medio.
-    return trim($texto, " \t\n\r\0\x0B-–—·|");
+    $texto = trim($texto, " \t\n\r\0\x0B-–—·|");
+
+    // Casi todos los feeds cortan el resumen a mitad de frase: unos dejan un
+    // "[...]" -que se acaba de quitar- y otros ni eso. Un parrafo que termina
+    // en coma parece un error de quien lo publica; los puntos suspensivos
+    // dicen lo que de verdad pasa: la noticia sigue, pero en la fuente.
+    if (preg_match('/[,;:]$/u', $texto)) {
+        $texto = rtrim($texto, ' ,;:') . '…';
+    }
+
+    return $texto;
 }
 
 /**

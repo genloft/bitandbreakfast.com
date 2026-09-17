@@ -234,6 +234,23 @@ comprobar(
     )
 );
 
+// --- Resumenes cortados a mitad de frase -------------------------------------
+//
+// Casi todos los feeds cortan el resumen donde les viene bien. Un parrafo que
+// acaba en coma parece un error de quien lo publica.
+
+comprobar(
+    'un resumen cortado acaba en puntos suspensivos',
+    'Reservas, ritmo de reserva, ocupacion, antelacion…',
+    auto_limpiar('Reservas, ritmo de reserva, ocupacion, antelacion, [&hellip;]')
+);
+
+comprobar(
+    'y si acaba en punto, se deja como esta',
+    'La AEPD multa a una cadena.',
+    auto_limpiar('La AEPD multa a una cadena.')
+);
+
 // --- Entidades dobles y sellos del gestor -----------------------------------
 //
 // Hay feeds que escapan el HTML que ya venia escapado. Una sola pasada deja
