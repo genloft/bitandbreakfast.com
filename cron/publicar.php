@@ -67,6 +67,7 @@ function publicar_pendiente(float $limite): array
     // todas las ediciones: son los mismos en todas y son dos consultas.
     $temas  = publicar_temas();
     $medios = publicar_medios();
+    $resumen_ediciones = publicar_resumen_ediciones();
 
     // La hoja de estilo, el guion y robots.txt no dependen de las ediciones,
     // pero se escriben aqui: son parte de la salida y no tienen otro sitio
@@ -87,6 +88,7 @@ function publicar_pendiente(float $limite): array
         'alta_abierta' => $alta,
         'temas'        => $temas,
         'medios'       => $medios,
+        'resumen'      => $resumen_ediciones,
     ];
 
     foreach ($ediciones as $indice => $edicion) {
@@ -295,6 +297,53 @@ function publicar_temas(): array
     }
 
     return $temas;
+}
+
+/**
+ * Cuantos bits y de que temas lleva cada edicion.
+ *
+ * Es lo que convierte el archivo en algo que se puede ojear: una lista de
+ * titulos con fechas no dice nada, y con esto se ve de un vistazo que semana
+ * fue la de ciberseguridad y cual la de distribucion.
+ *
+ * @return array [edicion_id => ['bits' => int, 'temas' => string[]]]
+ */
+function publicar_resumen_ediciones(): array
+{
+    $sql = "SELECT b.edicion_id, b.categoria, COUNT(*) AS bits
+              FROM bits b
+              JOIN ediciones e ON e.id = b.edicion_id
+             WHERE b.estado = 'publicado' AND e.estado <> 'abierta'
+             GROUP BY b.edicion_id, b.categoria";
+
+    $crudo = [];
+
+    foreach (bd()->query($sql) ?: [] as $fila) {
+        $id   = (int) $fila['edicion_id'];
+        $tema = bits_categoria_canonica((string) $fila['categoria']);
+
+        $crudo[$id]['bits'] = ($crudo[$id]['bits'] ?? 0) + (int) $fila['bits'];
+
+        if ($tema !== '') {
+            $crudo[$id]['temas'][$tema] = ($crudo[$id]['temas'][$tema] ?? 0) + (int) $fila['bits'];
+        }
+    }
+
+    $resumen = [];
+
+    foreach ($crudo as $id => $datos) {
+        $temas = $datos['temas'] ?? [];
+        arsort($temas);
+
+        $resumen[$id] = [
+            'bits' => (int) ($datos['bits'] ?? 0),
+            // Cinco como mucho: a partir de ahi es una fila de iconos y deja
+            // de decir de que iba la edicion.
+            'temas' => array_slice(array_keys($temas), 0, 5),
+        ];
+    }
+
+    return $resumen;
 }
 
 /**

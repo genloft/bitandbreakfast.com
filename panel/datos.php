@@ -313,3 +313,48 @@ function datos_conf_edicion(): array
         'edicion_cuota_es_eu' => (int) ajuste('edicion_cuota_es_eu', '30'),
     ];
 }
+
+/**
+ * Como va el envio de la edicion que toca.
+ *
+ * Tres numeros, que son los que hacen falta para saber si hay que preocuparse:
+ * cual va en camino, cuantos han salido y cuantos quedan.
+ *
+ * @return array ['edicion' => int, 'enviados' => int, 'pendientes' => int]
+ */
+function panel_estado_envio(): array
+{
+    $vacio = ['edicion' => 0, 'enviados' => 0, 'pendientes' => 0];
+
+    try {
+        $edicion = bd()->query(
+            "SELECT id, numero FROM ediciones
+              WHERE estado = 'cerrada' AND fecha_envio IS NULL
+              ORDER BY numero ASC LIMIT 1"
+        )->fetch();
+
+        if ($edicion === false) {
+            return $vacio;
+        }
+
+        $st = bd()->prepare('SELECT COUNT(*) FROM envios WHERE edicion_id = ?');
+        $st->execute([(int) $edicion['id']]);
+        $enviados = (int) $st->fetchColumn();
+
+        $st = bd()->prepare(
+            "SELECT COUNT(*) FROM suscriptores s
+              LEFT JOIN envios en ON en.suscriptor_id = s.id AND en.edicion_id = ?
+              WHERE s.estado = 'confirmado' AND s.rebotes < 3 AND en.suscriptor_id IS NULL"
+        );
+        $st->execute([(int) $edicion['id']]);
+
+        return [
+            'edicion'    => (int) $edicion['numero'],
+            'enviados'   => $enviados,
+            'pendientes' => (int) $st->fetchColumn(),
+        ];
+    } catch (Throwable $e) {
+        // Sin las tablas del boletin todavia, no hay envio del que informar.
+        return $vacio;
+    }
+}

@@ -19,6 +19,10 @@ foreach ($ediciones as $edicion) {
 }
 
 $enlace_activo = 'archivo';
+$resumen       = $resumen ?? [];
+$categorias    = bits_categorias();
+
+require_once __DIR__ . '/iconos.php';
 $alta_abierta  = $alta_abierta ?? false;
 
 ?><!doctype html>
@@ -63,6 +67,7 @@ $alta_abierta  = $alta_abierta ?? false;
 
       <ul class="archivo">
       <?php foreach ($del_ano as $edicion): ?>
+        <?php $suyo = $resumen[(int) $edicion['id']] ?? ['bits' => 0, 'temas' => []]; ?>
         <li>
           <a class="archivo-titulo" href="<?= web_e(web_url_edicion($base, (string) $edicion['slug'])) ?>">
             <?= web_e(trim((string) $edicion['titulo']) !== ''
@@ -73,7 +78,24 @@ $alta_abierta  = $alta_abierta ?? false;
             nº <?= (int) $edicion['numero'] ?>
             <span class="punto">·</span>
             <time datetime="<?= web_e((string) $edicion['fecha_prevista']) ?>"><?= web_e(web_fecha_larga((string) $edicion['fecha_prevista'])) ?></time>
+            <?php if ($suyo['bits'] > 0): ?>
+              <span class="punto">·</span>
+              <?= (int) $suyo['bits'] ?> bit<?= (int) $suyo['bits'] === 1 ? '' : 's' ?>
+            <?php endif; ?>
           </p>
+
+          <?php if ($suyo['temas']): ?>
+            <?php // De que fue aquella semana, en iconos. Una lista de titulos
+                  // con fechas no se puede ojear; esto si. ?>
+            <p class="archivo-temas">
+            <?php foreach ($suyo['temas'] as $tema): ?>
+              <span class="archivo-tema" data-tema="<?= web_e($tema) ?>"
+                    title="<?= web_e($categorias[$tema] ?? $tema) ?>">
+                <?= web_icono($tema, 'icono icono-mini') ?>
+              </span>
+            <?php endforeach; ?>
+            </p>
+          <?php endif; ?>
         </li>
       <?php endforeach; ?>
       </ul>

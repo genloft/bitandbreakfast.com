@@ -231,6 +231,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             panel_ir('correo');
             // no continua
 
+        case 'enviar_tanda':
+            require_once dirname(__DIR__) . '/cron/enviar.php';
+
+            $tanda = enviar_lote(microtime(true) + 45);
+
+            panel_avisar(sprintf(
+                'Edición %d: %d enviados, %d fallos (%s).',
+                $tanda['edicion'],
+                $tanda['enviados'],
+                $tanda['fallos'],
+                $tanda['estado']
+            ), $tanda['fallos'] > 0 ? 'aviso' : 'bien');
+
+            panel_ir('correo');
+            // no continua
+
         case 'probar_correo':
             $prueba = correo_probar(trim((string) ($_POST['destino'] ?? '')));
 
@@ -284,6 +300,7 @@ switch ($pagina) {
 
         $configurado = correo_configurado();
         $cuentas     = lista_cuentas();
+        $envio       = panel_estado_envio();
         $vista       = 'correo';
         break;
 

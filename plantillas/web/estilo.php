@@ -671,6 +671,24 @@ h1 {
   color: var(--tema, var(--apagado));
 }
 
+/* Los temas de cada edicion en el archivo: iconos en fila, sin texto. El
+   nombre va en el title, que es lo que hace falta y no estorba. */
+.archivo-temas {
+  display: flex;
+  gap: .4rem;
+  margin: .5rem 0 0;
+}
+
+.archivo-tema {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid color-mix(in srgb, var(--tema, var(--apagado)) 30%, transparent);
+  border-radius: 50%;
+  color: var(--tema, var(--apagado));
+}
+
 /* --- Temas y medios, al final de la edicion -------------------------------- */
 
 .explorar {

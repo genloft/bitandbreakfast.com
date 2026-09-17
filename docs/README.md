@@ -30,7 +30,7 @@ lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
               puntuación, reglas del bit, sesión del panel, instalador,
               migraciones, cliente SMTP y lista de suscriptores
 cron/         tareas programadas; tareas.php es el despachador único
-              (ingesta, procesar, auto, publicar, mantenimiento)
+              (ingesta, procesar, auto, publicar, enviar, mantenimiento)
 api/          endpoints públicos: alta, confirmación, baja y redirección contada
 panel/        zona privada de curación: cola, edición del bit y cierre
 plantillas/   plantillas: web/ publicada, panel/ e instalador
@@ -86,7 +86,7 @@ un MariaDB 10.6 para la de humo.
 | 2 | Agrupación, puntuación, `cron/procesar.php` | completada |
 | 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | completada |
-| 5 | Correo: buzón propio, alta con doble confirmación y baja | alta y baja hechas; envío de la edición pendiente |
+| 5 | Correo: buzón propio, alta con doble confirmación, baja y envío | completada |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador y clics hechos |
 
 ## Decisiones que conviene no olvidar
@@ -194,6 +194,18 @@ un MariaDB 10.6 para la de humo.
   tres días. Y la baja es un clic sin preguntas y sin sesión: cualquier
   fricción ahí solo consigue que marquen el correo como spam, que para un
   boletín es mucho peor que perder un lector.
+- **El boletín se manda por tandas, y la tabla `envios` es la que lo permite.**
+  Un buzón de alojamiento compartido tiene un límite de correos por hora, y
+  pasárselo no devuelve un error amable: bloquea el buzón. Se manda un puñado
+  por pasada del cron y se retoma donde se quedó, y por eso hace falta saber a
+  quién se le ha mandado ya. Se anota también el fallo: si no, una dirección
+  muerta se reintentaría eternamente y esa edición no terminaría de enviarse
+  nunca.
+- **Cada envío lleva su enlace de baja y la cabecera `List-Unsubscribe`.** Con
+  esa cabecera, el cliente de correo enseña su propio botón de baja encima del
+  mensaje; quien se quiere ir lo usa en vez de marcar el correo como spam, que
+  es lo que hunde la reputación de un dominio. Y no hay píxel de seguimiento
+  ni enlaces contados por persona: no hace falta para escribir un radar.
 - **La contraseña del buzón se teclea en el panel, y solo ahí.** Se guarda en
   `config/correo.php`, que no está en el repositorio, lo escribe el propio
   panel con permisos 0600 y Apache no lo sirve. No está en la base de datos a

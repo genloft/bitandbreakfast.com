@@ -19,6 +19,7 @@ require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/migrar.php';
+require_once dirname(__DIR__) . '/lib/envio.php';
 
 // --- Normalizacion ----------------------------------------------------------
 
@@ -284,5 +285,69 @@ CREATE TABLE a (id INT);
 comprobar('un fichero vacio no da ninguna', 0, count(migrar_sentencias("-- nada
 
 ")));
+
+// --- El correo de la edicion ------------------------------------------------
+//
+// Se manda la edicion entera, no un resumen con un "sigue leyendo": quien se
+// suscribe a un boletin de cinco minutos quiere leerlo en el correo.
+
+$edicion_correo = [
+    'id'             => 7,
+    'numero'         => 12,
+    'slug'           => '2026-w39-012',
+    'titulo'         => '',
+    'intro'          => '',
+    'fecha_prevista' => '2026-09-22',
+];
+
+$bits_correo = [
+    [
+        'id'        => 1,
+        'titular'   => 'Airbnb pone precio a la reserva directa',
+        'cuerpo'    => 'La compania empieza a cobrar menos cuando el anfitrion trae al cliente.',
+        'por_que'   => 'Cambia la cuenta de la distribucion directa.',
+        'categoria' => 'distribucion-otas',
+        'url'       => 'https://ejemplo.com/noticia',
+        'fuente'    => 'Smart Travel News',
+    ],
+];
+
+$baja_url = 'https://ejemplo.com/api/baja.php?s=3&t=abc';
+$texto_ed = envio_texto($edicion_correo, $bits_correo, 'https://ejemplo.com', $baja_url);
+$html_ed  = envio_html($edicion_correo, $bits_correo, 'https://ejemplo.com', $baja_url);
+
+// Sin titulo escrito a mano manda el primer titular: es lo que trae la
+// edicion y es lo que hace que se abra.
+comprobar(
+    'el asunto es el primer titular cuando no hay titulo',
+    'Airbnb pone precio a la reserva directa',
+    envio_asunto($edicion_correo, $bits_correo)
+);
+
+comprobar(
+    'y el titulo cuando lo hay',
+    'La semana del ransomware',
+    envio_asunto(['numero' => 12, 'titulo' => 'La semana del ransomware'], $bits_correo)
+);
+
+comprobar('el texto lleva el titular', true, str_contains($texto_ed, 'Airbnb pone precio'));
+comprobar('y el cuerpo', true, str_contains($texto_ed, 'anfitrion trae al cliente'));
+comprobar('y el enlace a la fuente', true, str_contains($texto_ed, 'https://ejemplo.com/noticia'));
+
+// Lo que no puede faltar en ningun envio, ni por error ni por prisa.
+comprobar('el texto lleva la baja', true, str_contains($texto_ed, $baja_url));
+comprobar('y el html tambien', true, str_contains($html_ed, $baja_url));
+
+comprobar('el html escapa lo que pinta', true, str_contains(
+    envio_html($edicion_correo, [[
+        'id' => 1, 'titular' => 'Mews & Atomize', 'cuerpo' => 'x', 'por_que' => '',
+        'categoria' => 'pms-crs', 'url' => '', 'fuente' => '',
+    ]], 'https://ejemplo.com', $baja_url),
+    'Mews &amp; Atomize'
+));
+
+// El correo no carga nada de fuera: ni imagenes, ni tipografias, ni pixeles.
+comprobar('el html no trae imagenes', false, str_contains($html_ed, '<img'));
+comprobar('ni hojas de estilo externas', false, str_contains($html_ed, '<link'));
 
 resumen_pruebas('Pruebas de la fase 5: alta con doble confirmacion');

@@ -223,9 +223,13 @@ $informe = [
     // El boletin: si el buzon esta configurado y cuanta gente hay. Son cuentas,
     // nunca direcciones.
     'boletin'   => [
-        'buzon'       => correo_configurado() ? 'configurado' : 'sin configurar',
-        'confirmados' => $lista['confirmado'],
-        'pendientes'  => $lista['pendiente'],
+        'buzon'          => correo_configurado() ? 'configurado' : 'sin configurar',
+        'confirmados'    => $lista['confirmado'],
+        'pendientes'     => $lista['pendiente'],
+        'sin_enviar'     => (int) salud_valor(
+            "SELECT COUNT(*) FROM ediciones WHERE estado = 'cerrada' AND fecha_envio IS NULL",
+            0
+        ),
     ],
     'ediciones' => [
         'publicadas' => (int) salud_valor("SELECT COUNT(*) FROM ediciones WHERE estado <> 'abierta'", 0),

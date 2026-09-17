@@ -6,7 +6,8 @@
  * alojamiento puede no permitir mas. Este fichero mira el reloj y decide que
  * toca en cada ejecucion.
  *
- *   Cada ejecucion : ingesta, procesado, publicacion automatica y generador
+ *   Cada ejecucion : ingesta, procesado, publicacion automatica, generador
+ *                    y envio del boletin
  *   A las 05:00 UTC: mantenimiento
  *
  * Uso normal (desde cron, cada hora):
@@ -78,6 +79,9 @@ function tareas_toca(string $tarea, string $forzada): bool
 
     return match ($tarea) {
         'ingesta', 'procesar', 'auto' => true,
+        // El envio va por tandas cortas por el limite del buzon, asi que le
+        // toca en cada pasada: sale enseguida cuando no hay nada que mandar.
+        'enviar'              => true,
         'mantenimiento'       => $hora === 5,
         // Mira si hay algo que publicar y sale enseguida si no lo hay: la
         // comprobacion es una firma, no una regeneracion.
@@ -91,6 +95,7 @@ $tareas = [
     'procesar'      => dirname(__DIR__) . '/cron/procesar.php',
     'auto'          => dirname(__DIR__) . '/cron/auto.php',
     'publicar'      => dirname(__DIR__) . '/cron/publicar.php',
+    'enviar'        => dirname(__DIR__) . '/cron/enviar.php',
     'mantenimiento' => dirname(__DIR__) . '/cron/mantenimiento.php',
 ];
 
@@ -120,11 +125,15 @@ foreach ($tareas as $nombre => $fichero) {
         continue;
     }
 
-    // El generador no entra en el reparto: es lo unico que el lector llega a
-    // ver, y una pasada que rastrea, agrupa y publica pero no genera la web no
-    // ha servido de nada. Ademas sale enseguida cuando no hay nada que
-    // escribir, porque lo primero que hace es comparar una firma.
-    if ($nombre !== 'publicar' && microtime(true) - $arranque >= $techo) {
+    // El generador y el envio no entran en el reparto: son lo unico que el
+    // lector llega a ver, y una pasada que rastrea, agrupa y publica pero no
+    // genera la web ni manda el correo no ha servido de nada. Los dos salen
+    // enseguida cuando no hay nada que hacer -uno compara una firma y el otro
+    // busca una edicion sin enviar-, asi que saltarse el techo les cuesta
+    // milisegundos en el caso normal.
+    $imprescindible = in_array($nombre, ['publicar', 'enviar'], true);
+
+    if (!$imprescindible && microtime(true) - $arranque >= $techo) {
         tareas_log("sin presupuesto para $nombre, queda para la proxima pasada");
         continue;
     }
@@ -137,6 +146,7 @@ foreach ($tareas as $nombre => $fichero) {
             'procesar'      => 'procesar_lote',
             'auto'          => 'auto_publicar_lote',
             'publicar'      => 'publicar_pendiente',
+            'enviar'        => 'enviar_lote',
             'mantenimiento' => 'mantenimiento_diario',
         };
 
@@ -146,9 +156,9 @@ foreach ($tareas as $nombre => $fichero) {
         }
 
         // Cada tarea empieza a contar su presupuesto cuando le toca, sin
-        // pasarse nunca del techo de la ejecucion entera. El generador es la
-        // excepcion, por lo dicho arriba: su presupuesto es suyo.
-        $limite = $nombre === 'publicar'
+        // pasarse nunca del techo de la ejecucion entera. El generador y el
+        // envio son la excepcion, por lo dicho arriba: su presupuesto es suyo.
+        $limite = $imprescindible
             ? microtime(true) + $presupuesto
             : min($arranque + $techo, microtime(true) + $presupuesto);
         $resumen = $funcion($limite);

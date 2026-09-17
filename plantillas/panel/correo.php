@@ -87,6 +87,29 @@ declare(strict_types=1);
   </p>
 </form>
 
+<h2>El envío</h2>
+
+<p class="explicacion">
+  La edición cerrada sale sola, por tandas, porque el buzón tiene un límite de
+  correos por hora. Aquí se ve cuál está en camino y cuánto le queda.
+</p>
+
+<?php if ($envio['edicion'] === 0): ?>
+  <p class="estado-correo">No hay ninguna edición pendiente de enviar.</p>
+<?php else: ?>
+  <p class="estado-correo">
+    <strong>Edición <?= (int) $envio['edicion'] ?></strong>:
+    <?= (int) $envio['enviados'] ?> enviados,
+    <?= (int) $envio['pendientes'] ?> pendientes.
+  </p>
+
+  <form method="post" action="index.php?p=correo">
+    <input type="hidden" name="csrf" value="<?= panel_e(panel_csrf()) ?>">
+    <input type="hidden" name="accion" value="enviar_tanda">
+    <p class="acciones"><button type="submit">Mandar una tanda ahora</button></p>
+  </form>
+<?php endif; ?>
+
 <h2>Probar</h2>
 
 <p class="explicacion">
