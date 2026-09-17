@@ -578,6 +578,19 @@ h1 {
 #resultados h2 .icono { display: inline-block; vertical-align: baseline; margin-right: .35rem; color: var(--suave); }
 #resultados .resumen { margin: .3rem 0 0; color: var(--apagado); font-size: .92rem; }
 
+/* El explorador: los filtros en una caja y los resultados al lado. En el movil
+   se apilan, que es lo unico que cabe. */
+
+.explorador .rail {
+  margin: 1.5rem 0 0;
+  padding: 1.1rem;
+  border: 1px solid var(--filete);
+  background: var(--tarjeta);
+}
+
+.explorador .buscador { margin: 0; }
+.resultados-panel { min-width: 0; }
+
 /* --- Paginas de texto ---------------------------------------------------------------- */
 
 .pagina { margin-top: 1.5rem; max-width: var(--lectura); }
@@ -656,6 +669,20 @@ h1 {
 @media (min-width: 46rem) {
   .bits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bit-lead { grid-column: 1 / -1; }
+}
+
+@media (min-width: 46rem) {
+  .explorador {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: 0 2rem;
+    align-items: start;
+  }
+
+  .explorador > .edicion-cabecera { grid-column: 1 / -1; }
+  .explorador > .alta { grid-column: 1 / -1; }
+
+  .explorador .rail { position: sticky; top: 1rem; }
 }
 
 @media (min-width: 68rem) {

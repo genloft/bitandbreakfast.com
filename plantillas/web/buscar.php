@@ -87,8 +87,8 @@ $alta_abierta  = $alta_abierta ?? false;
 
   <div class="resultados-panel">
   <p id="estado" class="datos">Escribe o toca un filtro. Se busca en el titular,
-  en el «por qué importa», en el cuerpo, en la fuente y en los proveedores
-  mencionados.</p>
+  en el «por qué importa», en el cuerpo, en el medio y en las empresas
+  mencionadas.</p>
 
   <ul id="resultados" class="fichas"></ul>
 
