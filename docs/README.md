@@ -37,12 +37,13 @@ plantillas/   plantillas: web/ publicada, panel/ e instalador
 publico/      salida estática generada por cron/publicar.php (no se versiona)
 pruebas/      scripts de prueba sin framework
 sql/          esquema, semillas y migraciones/ (cambios que se aplican solos)
-docs/         esta documentación e INSTALACION.md
+docs/         esta documentación, INSTALACION.md y CRON.md
 ```
 
 ## Puesta en marcha
 
-Ver [INSTALACION.md](INSTALACION.md). Resumen: crear una base de datos vacía en
+Ver [INSTALACION.md](INSTALACION.md), y [CRON.md](CRON.md) para entender qué hace
+el cron y qué esperar cada día. Resumen: crear una base de datos vacía en
 hPanel, clonar el repositorio en `public_html` desde hPanel → GIT, abrir el
 dominio —mientras no exista `config/config.php` todo redirige al instalador,
 que pide los datos, importa el esquema y las semillas, escribe la configuración
