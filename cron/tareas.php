@@ -253,7 +253,17 @@ tareas_log('--- arranca el despachador' . ($forzada !== '' ? " (forzado: $forzad
 // Antes que nada, el esquema. Un despliegue puede traer una tabla nueva, y el
 // codigo que la usa ya esta ahi: si no se aplica ahora, la primera tarea que
 // la toque revienta.
-$migracion = migrar_pendientes(dirname(__DIR__));
+//
+// Con su try, y no por gusto: esto corre antes que las tareas, asi que
+// cualquier cosa que lance aqui se lleva la pasada entera -sin ingesta, sin
+// publicar, sin nada- y desde fuera parece que el cron ha dejado de correr.
+// Una migracion rota tiene que poder convivir con un sitio que sigue vivo.
+try {
+    $migracion = migrar_pendientes(dirname(__DIR__));
+} catch (Throwable $e) {
+    $migracion = ['aplicadas' => [], 'error' => 'excepcion: ' . $e->getMessage()];
+    $GLOBALS['tareas_errores']++;
+}
 
 foreach ($migracion['aplicadas'] as $aplicada) {
     tareas_log('migracion aplicada: ' . $aplicada);

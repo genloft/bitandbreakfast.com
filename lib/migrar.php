@@ -62,18 +62,37 @@ function migrar_pendientes(string $raiz): array
             // que no existia y desde fuera lo unico que se veia era que el
             // sitio habia dejado de publicar. El error estaba en el registro
             // del cron, al que no se llega sin SSH.
-            @ajuste_guardar('migracion_error', migrar_error_corto($resultado['error']));
+            migrar_anotar_error(migrar_error_corto($resultado['error']));
 
             return $resultado;
         }
 
-        ajuste_guardar('migracion_error', '');
+        migrar_anotar_error('');
 
         ajuste_guardar(MIGRAR_AJUSTE, $nombre);
         $resultado['aplicadas'][] = $nombre;
     }
 
     return $resultado;
+}
+
+/**
+ * Deja escrito el ultimo error de migracion, o lo borra.
+ *
+ * Con su propio try: esto se llama desde el manejador de errores de las
+ * migraciones, y las migraciones corren antes que nada en la pasada del cron.
+ * Si escribir el aviso lanzara a su vez -la conexion puede estar tocada,
+ * justamente porque algo acaba de fallar-, se llevaria por delante la pasada
+ * entera, y el sitio dejaria de actualizarse por intentar contar que algo no
+ * se habia podido actualizar.
+ */
+function migrar_anotar_error(string $mensaje): void
+{
+    try {
+        ajuste_guardar('migracion_error', $mensaje);
+    } catch (Throwable $e) {
+        error_log('Bit & Breakfast, no se pudo anotar el error de migracion: ' . $e->getMessage());
+    }
 }
 
 /**
