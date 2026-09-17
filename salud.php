@@ -48,17 +48,61 @@ function salud_valor(string $sql, $defecto = null)
 }
 
 /**
- * Una consulta de una sola columna, en lista.
+ * El motivo de un fallo de ingesta, reducido a una palabra.
+ *
+ * El mensaje entero no sale de aqui: lo escribe una excepcion, y una excepcion
+ * puede llevar dentro rutas del servidor o trozos de consulta. Lo que hace
+ * falta para arreglar un feed cabe en una palabra -si contesta 403, si tarda
+ * demasiado o si lo que devuelve no es XML-, y eso no delata nada.
  */
-function salud_lista(string $sql): array
+function salud_motivo(string $mensaje): string
 {
-    try {
-        $sentencia = bd()->query($sql);
+    $m = mb_strtolower($mensaje);
 
-        return $sentencia === false ? [] : array_map('strval', $sentencia->fetchAll(PDO::FETCH_COLUMN));
+    if (preg_match('/\b([45]\d{2})\b/', $m, $coincide)) {
+        return 'http ' . $coincide[1];
+    }
+
+    return match (true) {
+        str_contains($m, 'timed out'), str_contains($m, 'timeout')  => 'tarda demasiado',
+        str_contains($m, 'ssl'), str_contains($m, 'certificate')    => 'certificado',
+        str_contains($m, 'resolve'), str_contains($m, 'dns')        => 'no resuelve el dominio',
+        str_contains($m, 'xml'), str_contains($m, 'entradas')       => 'no devuelve un feed',
+        str_contains($m, 'vac')                                     => 'contesta vacio',
+        default                                                     => 'otro',
+    };
+}
+
+/**
+ * Las fuentes que han fallado hoy, con el motivo en una palabra.
+ */
+function salud_fallando(): array
+{
+    $sql = "SELECT f.nombre,
+                   (SELECT l2.mensaje FROM log_ingesta l2
+                     WHERE l2.fuente_id = f.id AND l2.resultado = 'error'
+                     ORDER BY l2.inicio DESC LIMIT 1) AS ultimo
+              FROM fuentes f
+             WHERE EXISTS (SELECT 1 FROM log_ingesta l
+                            WHERE l.fuente_id = f.id
+                              AND l.resultado = 'error'
+                              AND l.inicio > (NOW() - INTERVAL 1 DAY))
+             ORDER BY f.nombre
+             LIMIT 12";
+
+    $salida = [];
+
+    try {
+        $filas = bd()->query($sql);
+
+        foreach ($filas === false ? [] : $filas->fetchAll() as $fila) {
+            $salida[(string) $fila['nombre']] = salud_motivo((string) ($fila['ultimo'] ?? ''));
+        }
     } catch (Throwable $e) {
         return [];
     }
+
+    return $salida;
 }
 
 /**
@@ -134,14 +178,7 @@ $informe = [
         'ultima_lectura' => (string) (salud_valor('SELECT MAX(inicio) FROM log_ingesta', '') ?: 'nunca'),
         // Solo el nombre, nunca el mensaje del error: un mensaje de PDO lleva
         // rutas del servidor dentro y esta pagina la ve cualquiera.
-        'fallando'     => salud_lista(
-            "SELECT f.nombre FROM fuentes f
-               JOIN log_ingesta l ON l.fuente_id = f.id
-              WHERE l.resultado = 'error' AND l.inicio > (NOW() - INTERVAL 1 DAY)
-              GROUP BY f.id, f.nombre
-              ORDER BY f.nombre
-              LIMIT 12"
-        ),
+        'fallando'     => salud_fallando(),
         'nuevos_24h'   => (int) salud_valor(
             'SELECT COALESCE(SUM(nuevos), 0) FROM log_ingesta WHERE inicio > (NOW() - INTERVAL 1 DAY)',
             0
