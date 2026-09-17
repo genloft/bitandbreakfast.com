@@ -33,7 +33,7 @@ require_once __DIR__ . '/bits.php';
  * puede decir que version de criterios lleva el codigo desplegado sin arrastrar
  * media tarea del cron.
  */
-const AUTO_CRITERIOS = 9;
+const AUTO_CRITERIOS = 10;
 
 /**
  * Categoria del bit a partir de las fuentes que lo cuentan.
@@ -158,11 +158,12 @@ function auto_limpiar(string $bruto): string
     $texto = (string) preg_replace('/^[\s.:;,|\-\x{2013}\x{2014}\x{00B7}]+|[\s|\-\x{2013}\x{2014}\x{00B7}]+$/u', '', $texto);
 
     // Casi todos los feeds cortan el resumen a mitad de frase: unos dejan un
-    // "[...]" -que se acaba de quitar- y otros ni eso. Un parrafo que termina
-    // en coma parece un error de quien lo publica; los puntos suspensivos
-    // dicen lo que de verdad pasa: la noticia sigue, pero en la fuente.
-    if (preg_match('/[,;:]$/u', $texto)) {
-        $texto = rtrim($texto, ' ,;:') . '…';
+    // "[...]" -que se acaba de quitar-, otros lo cortan en una coma y otros en
+    // mitad de una palabra. Un parrafo que acaba asi parece un error de quien
+    // lo publica; los puntos suspensivos dicen lo que de verdad pasa: la
+    // noticia sigue, pero en la fuente.
+    if ($texto !== '' && !preg_match('/[.!?…»”"]$/u', $texto)) {
+        $texto = preg_replace('/[\s,;:]+$/u', '', $texto) . '…';
     }
 
     return $texto;

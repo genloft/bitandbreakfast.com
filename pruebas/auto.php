@@ -135,7 +135,7 @@ comprobar(
 // Las entidades llegan sin decodificar en la mitad de los feeds.
 comprobar(
     'las entidades se decodifican',
-    'Oracle «cayó» durante 4 horas',
+    'Oracle «cayó» durante 4 horas…',
     auto_limpiar('Oracle &laquo;cay&oacute;&raquo; durante 4 horas')
 );
 
@@ -251,6 +251,14 @@ comprobar(
     auto_limpiar('La AEPD multa a una cadena.')
 );
 
+// Y el corte mas comun de todos: el feed se para en una palabra cualquiera,
+// sin coma ni corchetes ni nada que lo avise.
+comprobar(
+    'un resumen que se corta en seco tambien lo dice',
+    'Los anfitriones pueden repartirlos por sus propios canales…',
+    auto_limpiar('Los anfitriones pueden repartirlos por sus propios canales')
+);
+
 // --- Entidades dobles y sellos del gestor -----------------------------------
 //
 // Hay feeds que escapan el HTML que ya venia escapado. Una sola pasada deja
@@ -258,7 +266,7 @@ comprobar(
 
 comprobar(
     'las entidades escapadas dos veces tambien se decodifican',
-    "Hilton at St George's Park",
+    "Hilton at St George's Park…",
     auto_limpiar('Hilton at St George&amp;#039;s Park')
 );
 
