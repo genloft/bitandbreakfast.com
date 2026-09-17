@@ -237,6 +237,15 @@ function arranque_cadena(string $raiz, bool $holgado = false): void
 {
     @set_time_limit($holgado ? 180 : 90);
 
+    // Lo primero, el esquema: si un despliegue trae una tabla nueva, las
+    // tareas de abajo ya cuentan con ella.
+    try {
+        require_once $raiz . '/lib/migrar.php';
+        migrar_pendientes($raiz);
+    } catch (Throwable $e) {
+        error_log('Bit & Breakfast, migraciones desde la web: ' . $e->getMessage());
+    }
+
     // Con la respuesta ya enviada nadie espera, asi que cada tarea puede
     // trabajar de verdad en lugar de ir a trocitos.
     arranque_tarea($raiz, 'ingesta',  'ingesta_lote',       $holgado ? 25 : 12);

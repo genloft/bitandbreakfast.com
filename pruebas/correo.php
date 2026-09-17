@@ -17,6 +17,8 @@
 
 require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
+require_once dirname(__DIR__) . '/lib/smtp.php';
+require_once dirname(__DIR__) . '/lib/migrar.php';
 
 // --- Normalizacion ----------------------------------------------------------
 
@@ -172,5 +174,115 @@ comprobar(
     true,
     str_contains(correo_interpretar(503, 'nope')['mensaje'], '503')
 );
+
+// --- El mensaje que se manda ------------------------------------------------
+//
+// El cuerpo del correo se construye sin tocar la red, asi que se puede
+// comprobar entero. Es donde estan los accidentes clasicos: un asunto con
+// acentos sin codificar, una cabecera inyectada con un salto de linea.
+
+$buzon = [
+    'host'      => 'smtp.ejemplo.com',
+    'puerto'    => 465,
+    'usuario'   => 'conserje@ejemplo.com',
+    'clave'     => 'no-se-usa-aqui',
+    'remitente' => 'conserje@ejemplo.com',
+    'nombre'    => 'Bit & Breakfast',
+];
+
+$mensaje = smtp_cuerpo($buzon, [
+    'para'      => 'lector@ejemplo.com',
+    'asunto'    => 'Edicion numero 3',
+    'texto'     => 'Hola',
+    'html'      => '<p>Hola</p>',
+    'cabeceras' => ['List-Unsubscribe: <https://ejemplo.com/baja>'],
+]);
+
+comprobar('el mensaje dice de quien viene', true, str_contains($mensaje, 'From: Bit & Breakfast <conserje@ejemplo.com>'));
+comprobar('y para quien es', true, str_contains($mensaje, 'To: lector@ejemplo.com'));
+comprobar('lleva la baja en una cabecera', true, str_contains($mensaje, 'List-Unsubscribe: <https://ejemplo.com/baja>'));
+comprobar('y va en dos partes, texto y html', true, str_contains($mensaje, 'multipart/alternative'));
+
+// Un asunto con acentos sin codificar se ve roto en medio mundo.
+comprobar(
+    'un asunto con acentos va codificado',
+    true,
+    str_starts_with(smtp_cabecera_codificada('Edición número 3'), '=?UTF-8?B?')
+);
+
+comprobar(
+    'y uno sin acentos se deja tal cual',
+    'Edicion numero 3',
+    smtp_cabecera_codificada('Edicion numero 3')
+);
+
+// Una cabecera solo puede ocupar una linea: un salto dentro es una cabecera
+// ajena metida en el mensaje.
+comprobar(
+    'un salto de linea en el asunto no sobrevive',
+    true,
+    !str_contains(smtp_cabecera_codificada("Hola
+Bcc: otro@ejemplo.com"), "
+")
+);
+
+comprobar('una direccion normal vale', true, smtp_direccion_limpia('lector@ejemplo.com'));
+comprobar('una con salto de linea no', false, smtp_direccion_limpia("lector@ejemplo.com
+Bcc: otro@ejemplo.com"));
+comprobar('ni una con un angulo dentro', false, smtp_direccion_limpia('<lector@ejemplo.com>'));
+comprobar('ni una que no es direccion', false, smtp_direccion_limpia('lector'));
+
+// --- El enlace de baja ------------------------------------------------------
+//
+// Tiene que seguir funcionando en un correo de hace dos anos, asi que la
+// firma no puede depender de nada que cambie.
+
+comprobar('la firma de baja es estable', lista_firma_baja(42), lista_firma_baja(42));
+comprobar('y distinta para cada suscriptor', true, lista_firma_baja(42) !== lista_firma_baja(43));
+
+// --- El correo de confirmacion ----------------------------------------------
+
+$enlace = 'https://ejemplo.com/api/confirmar.php?s=7&t=abc';
+
+comprobar(
+    'el texto lleva el enlace',
+    true,
+    str_contains(lista_texto_confirmacion($enlace, 'https://ejemplo.com'), $enlace)
+);
+
+// Lo mas importante del correo: decir que si no se pulsa, no pasa nada.
+comprobar(
+    'y dice que sin el clic no se apunta a nadie',
+    true,
+    str_contains(lista_texto_confirmacion($enlace, 'https://ejemplo.com'), 'no te apuntamos')
+);
+
+comprobar(
+    'el html escapa lo que pinta',
+    true,
+    str_contains(lista_html_confirmacion('https://ejemplo.com/?a=1&b=2', 'https://ejemplo.com'), '&amp;b=2')
+);
+
+// --- Migraciones ------------------------------------------------------------
+
+comprobar(
+    'un fichero con dos sentencias da dos sentencias',
+    2,
+    count(migrar_sentencias("CREATE TABLE a (id INT);
+INSERT INTO b VALUES (1);
+"))
+);
+
+comprobar(
+    'los comentarios no cuentan como sentencia',
+    1,
+    count(migrar_sentencias("-- esto es un comentario
+CREATE TABLE a (id INT);
+"))
+);
+
+comprobar('un fichero vacio no da ninguna', 0, count(migrar_sentencias("-- nada
+
+")));
 
 resumen_pruebas('Pruebas de la fase 5: alta con doble confirmacion');

@@ -14,7 +14,7 @@ declare(strict_types=1);
 // $vista la decide el controlador y nunca viene de la peticion, pero de aqui
 // sale un require: una lista blanca cuesta tres lineas y cierra la puerta a
 // que un descuido futuro convierta esto en una inclusion de ficheros.
-$vista = in_array($vista ?? '', ['entrar', 'cola', 'bit', 'edicion'], true) ? $vista : 'cola';
+$vista = in_array($vista ?? '', ['entrar', 'cola', 'bit', 'edicion', 'correo'], true) ? $vista : 'cola';
 
 $usuario = $usuario ?? panel_usuario();
 $avisos  = panel_avisos();
@@ -40,6 +40,7 @@ foreach ($errores ?? [] as $texto) {
     <nav>
       <a href="index.php?p=cola"<?= $vista === 'cola' ? ' class="activo"' : '' ?>>Cola</a>
       <a href="index.php?p=edicion"<?= $vista === 'edicion' ? ' class="activo"' : '' ?>>Edición</a>
+      <a href="index.php?p=correo"<?= $vista === 'correo' ? ' class="activo"' : '' ?>>Correo</a>
     </nav>
     <span class="quien"><?= panel_e($usuario['usuario']) ?> · <a href="index.php?p=salir">salir</a></span>
   </header>

@@ -344,8 +344,10 @@ Qué sobrevive a cada despliegue, porque no está en el repositorio:
 - `publico/` — la web generada.
 - `cache/` — los `robots.txt` cacheados.
 
-Si un despliegue trae SQL nuevo, lo ejecutas a mano en phpMyAdmin: el
-instalador no sirve para actualizar, solo para instalar desde cero.
+Si un despliegue trae SQL nuevo, **no tienes que hacer nada**: los ficheros de
+`sql/migraciones/` los aplica el despachador en orden antes de cualquier tarea,
+una sola vez, y deja constancia en el registro del cron. El instalador sigue
+sirviendo solo para instalar desde cero.
 
 Pendiente ahora mismo si instalaste antes de la fase 2: importar
 `sql/semilla_proveedores.sql` en phpMyAdmin. El catálogo de proveedores es la
@@ -355,41 +357,64 @@ segunda puerta del agrupador, y sin él solo agrupa la similitud de titulares.
 
 ## 9. El boletín: alta con doble confirmación
 
-El sitio no guarda ni una dirección de correo: la lista vive entera en el
-proveedor. El formulario del final de cada página envía a
-`api/suscribir.php`, que llama al proveedor y deja que sea él quien mande el
-correo de confirmación.
+Hay dos caminos y el sitio elige solo:
 
-Mientras no esté configurado, el bloque dice que el alta no está abierta y
-ofrece el RSS. No hay formulario roto en ningún momento.
+- **Buzón propio (SMTP).** Es lo que está montado. La lista vive en la tabla
+  `suscriptores` y los correos salen por el buzón del dominio.
+- **Proveedor (MailerLite o Brevo).** Sigue soportado para el día que haya
+  cuenta. Se activa poniendo `correo.api_key` y `correo.lista` en
+  `config/config.php`.
 
-### 9.1 Elegir proveedor y rellenar la configuración
+Mientras no haya ni lo uno ni lo otro, el bloque del final de cada página dice
+que el alta no está abierta y ofrece el RSS. No hay formulario roto en ningún
+momento.
 
-En `config/config.php`, sección `correo`:
+### 9.1 Configurar el buzón propio
 
-| Clave | MailerLite | Brevo |
-|---|---|---|
-| `proveedor` | `mailerlite` | `brevo` |
-| `api_key` | Integrations → MailerLite API | SMTP & API → API Keys |
-| `lista` | el id del **grupo** | el id de la **lista** |
-| `doi_plantilla` | déjalo a `0` | id de la plantilla de confirmación |
+**En el panel → Correo.** No se toca ningún fichero y no hace falta phpMyAdmin.
 
-Con MailerLite el alta se crea con estado `unconfirmed`, y es el propio
-MailerLite quien manda el correo de confirmación **siempre que el grupo tenga
-activada la doble confirmación en su panel**. Compruébalo antes de dar por
-buena la primera alta.
+| Campo | Valor en Hostinger |
+|---|---|
+| Servidor de salida | `smtp.hostinger.com` |
+| Puerto | `465` (SSL) o `587` (STARTTLS) |
+| Usuario | la dirección completa, p. ej. `conserje@tudominio.com` |
+| Contraseña | la del buzón |
+| Remitente | normalmente la misma dirección |
 
-Con Brevo hay que crear antes la plantilla del correo de confirmación y poner
-aquí su identificador.
+La contraseña **solo se teclea ahí**. Se guarda en `config/correo.php`, que no
+está en el repositorio, lo escribe el panel con permisos 0600 y Apache no lo
+sirve. El formulario nunca la vuelve a mostrar: si hay que cambiarla, se
+escribe entera.
 
-Después de tocar la configuración, la próxima pasada del cron regenera las
-páginas con el formulario ya activo: el generador incluye ese dato en su
-firma.
+Si esa contraseña ha pasado alguna vez por un correo, un chat o una captura,
+cámbiala en hPanel → **Correos → Cuentas** y vuelve a guardarla aquí. Una
+contraseña que ha viajado por un canal que no controlas es una contraseña
+prestada.
 
-### 9.2 Comprobarlo
+En la misma página hay un botón para **mandarte una prueba**. Merece la pena
+usarlo el día que lo configuras y no el martes, con la edición cerrada
+esperando.
 
-Suscríbete tú con una dirección de verdad y confirma. Si algo falla, la página
-de respuesta lo dice sin contar nada del servidor, y el detalle queda en el
+### 9.2 Qué pasa cuando alguien se suscribe
+
+1. El formulario envía a `api/suscribir.php`, que valida la dirección, aplica
+   el límite por IP y guarda el alta como **pendiente** con un testigo
+   aleatorio.
+2. Sale un correo con el enlace de confirmación, que vale **tres días** y solo
+   se puede usar una vez.
+3. Al pulsarlo, `api/confirmar.php` la marca como **confirmada**. Hasta ese
+   momento no recibe nada.
+4. Cada envío llevará el enlace de baja, firmado con HMAC y sin caducidad.
+   `api/baja.php` la marca como **baja**; la fila no se borra, porque guardar
+   la baja es lo único que impide volver a escribir a quien ya dijo que no.
+
+El panel → Correo enseña cuántos hay confirmados, pendientes y de baja.
+`/salud.php` también, sin direcciones.
+
+### 9.3 Comprobarlo
+
+Suscríbete con una dirección de verdad y confirma. Si algo falla, la página de
+respuesta lo dice sin contar nada del servidor, y el detalle queda en el
 registro de errores de PHP.
 
 El endpoint permite cinco altas por hora y por IP, contadas en `cache/altas/`
@@ -399,7 +424,10 @@ con la IP convertida en HMAC: sirve para contar, no para saber quién es.
 
 ## 10. Registros DNS del correo
 
-Cuando tengas proveedor, en hPanel → **Dominios → DNS**:
+Con el buzón del propio Hostinger, el SPF y el DKIM normalmente ya están
+puestos al activar el correo del dominio: compruébalo en hPanel → **Correos →
+Configuración del dominio** antes de tocar nada. Lo de abajo es para cuando el
+correo sale por un proveedor externo, en hPanel → **Dominios → DNS**:
 
 ### SPF
 

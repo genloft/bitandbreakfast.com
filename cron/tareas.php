@@ -28,6 +28,7 @@ if (PHP_SAPI !== 'cli') {
 
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/estado.php';
+require_once dirname(__DIR__) . '/lib/migrar.php';
 
 // Lo primero de todo, antes incluso de leer la configuracion: dejar constancia
 // de que el cron esta vivo. La portada mira esta marca para decidir si tiene
@@ -94,6 +95,19 @@ $tareas = [
 ];
 
 tareas_log('--- arranca el despachador' . ($forzada !== '' ? " (forzado: $forzada)" : ''));
+
+// Antes que nada, el esquema. Un despliegue puede traer una tabla nueva, y el
+// codigo que la usa ya esta ahi: si no se aplica ahora, la primera tarea que
+// la toque revienta.
+$migracion = migrar_pendientes(dirname(__DIR__));
+
+foreach ($migracion['aplicadas'] as $aplicada) {
+    tareas_log('migracion aplicada: ' . $aplicada);
+}
+
+if ($migracion['error'] !== '') {
+    tareas_log('ERROR de migracion, ' . $migracion['error']);
+}
 
 foreach ($tareas as $nombre => $fichero) {
     if (!tareas_toca($nombre, $forzada)) {

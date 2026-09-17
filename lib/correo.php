@@ -2,13 +2,23 @@
 /**
  * Alta de suscriptores contra el proveedor de correo.
  *
- * El proyecto no guarda ni una direccion de correo en su base de datos: la
- * lista vive entera en el proveedor. Es la decision mas barata y la mas
- * segura, porque una base de datos en alojamiento compartido no es sitio para
- * una lista de correos, y porque el proveedor ya sabe gestionar bajas,
- * rebotes y doble confirmacion mejor de lo que se puede escribir aqui.
+ * El proyecto nacio sin guardar ni una direccion de correo: la lista vivia
+ * entera en el proveedor, que ya sabe gestionar bajas, rebotes y doble
+ * confirmacion mejor de lo que se puede escribir aqui. Sigue siendo la mejor
+ * opcion y por eso sigue estando.
  *
- * Dos proveedores, uno u otro segun config/config.php:
+ * Pero el correo que hay es un buzon SMTP del propio alojamiento, no una
+ * cuenta de proveedor, y con un buzon SMTP la lista no puede vivir en ningun
+ * otro sitio. De ahi el tercer proveedor, 'propio', que guarda lo minimo en la
+ * tabla suscriptores y manda los correos el mismo. Lo que no cambia es la
+ * promesa: doble confirmacion siempre, baja en un clic desde cualquier envio,
+ * y ni un dato mas de los que hacen falta para escribir.
+ *
+ * Tres proveedores, uno u otro segun config/config.php:
+ *
+ *   propio      No sale a ninguna API: guarda el alta como pendiente, manda
+ *               el correo de confirmacion por SMTP y espera al clic. Es el que
+ *               se usa cuando hay buzon propio configurado.
  *
  *   mailerlite  POST https://connect.mailerlite.com/api/subscribers
  *               Authorization: Bearer <clave>
@@ -30,6 +40,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 
+// La lista propia vive aparte para que este fichero siga siendo legible:
+// aqui estan los proveedores, alli la tabla y los correos.
+require_once __DIR__ . '/lista.php';
+
 /** Segundos de espera de la peticion al proveedor. */
 const CORREO_TIMEOUT = 10;
 
@@ -40,13 +54,55 @@ function correo_conf(): array
 {
     $conf = config('correo') ?? [];
 
+    // El buzon propio se guarda aparte, en config/correo.php, porque lo
+    // escribe el panel: asi un error escribiendo ese fichero no puede
+    // llevarse por delante la configuracion de la base de datos.
+    $buzon = correo_buzon();
+
     return [
-        'proveedor'     => (string) ($conf['proveedor'] ?? 'mailerlite'),
+        // Si hay buzon configurado, manda el buzon. Es lo que hay puesto de
+        // verdad, y preguntarle al dueno del sitio "y ahora pon proveedor:
+        // propio" seria una tarea mas sin ninguna razon.
+        'proveedor'     => (string) ($conf['proveedor'] ?? ($buzon['host'] !== '' ? 'propio' : 'mailerlite')),
         'api_key'       => (string) ($conf['api_key'] ?? ''),
         'lista'         => (string) ($conf['lista'] ?? ''),
         'doi_plantilla' => (int) ($conf['doi_plantilla'] ?? 0),
-        'remitente'     => (string) ($conf['remitente'] ?? ''),
+        'remitente'     => (string) ($conf['remitente'] ?? $buzon['remitente']),
+        'nombre'        => (string) ($conf['nombre'] ?? 'Bit & Breakfast'),
+        'host'          => $buzon['host'],
+        'puerto'        => $buzon['puerto'],
+        'usuario'       => $buzon['usuario'],
+        'clave'         => $buzon['clave'],
     ];
+}
+
+/**
+ * Los datos del buzon SMTP, que viven en su propio fichero.
+ *
+ * config/correo.php no esta en el repositorio y lo escribe el panel. Si no
+ * existe, todo queda a cero y el alta simplemente no esta abierta.
+ */
+function correo_buzon(): array
+{
+    static $buzon = null;
+
+    if ($buzon !== null) {
+        return $buzon;
+    }
+
+    $ruta  = dirname(__DIR__) . '/config/correo.php';
+    $datos = is_readable($ruta) ? @require $ruta : [];
+    $datos = is_array($datos) ? $datos : [];
+
+    $buzon = [
+        'host'      => (string) ($datos['host'] ?? ''),
+        'puerto'    => (int) ($datos['puerto'] ?? 465),
+        'usuario'   => (string) ($datos['usuario'] ?? ''),
+        'clave'     => (string) ($datos['clave'] ?? ''),
+        'remitente' => (string) ($datos['remitente'] ?? ($datos['usuario'] ?? '')),
+    ];
+
+    return $buzon;
 }
 
 /**
@@ -59,6 +115,16 @@ function correo_configurado(?array $conf = null): bool
 {
     $conf = $conf ?? correo_conf();
 
+    if ($conf['proveedor'] === 'propio') {
+        // Con buzon propio hacen falta las cuatro cosas: sin cualquiera de
+        // ellas el correo de confirmacion no sale, y un alta cuya confirmacion
+        // no sale es peor que no tener alta.
+        return $conf['host'] !== ''
+            && $conf['usuario'] !== ''
+            && $conf['clave'] !== ''
+            && correo_valido($conf['remitente']);
+    }
+
     if ($conf['api_key'] === '' || $conf['lista'] === '') {
         return false;
     }
@@ -70,6 +136,113 @@ function correo_configurado(?array $conf = null): bool
     }
 
     return true;
+}
+
+/**
+ * Guarda los datos del buzon en config/correo.php.
+ *
+ * Lo escribe el panel, nunca nadie desde fuera, y por eso no vive en la base
+ * de datos: una contrasena de buzon en una tabla se acaba copiando en un
+ * volcado, y un volcado se acaba mandando por correo a alguien. En un fichero
+ * de configuracion esta donde estan las demas credenciales del sitio.
+ *
+ * Se escribe con rename sobre un temporal, como todo lo que escribe este
+ * proyecto: un fichero de configuracion a medias deja el sitio sin correo y,
+ * peor, sin poder arreglarlo desde el panel.
+ *
+ * @return array ['ok' => bool, 'mensaje' => string]
+ */
+function correo_guardar_buzon(array $datos): array
+{
+    $host      = trim((string) ($datos['host'] ?? ''));
+    $puerto    = (int) ($datos['puerto'] ?? 465);
+    $usuario   = trim((string) ($datos['usuario'] ?? ''));
+    $clave     = (string) ($datos['clave'] ?? '');
+    $remitente = correo_normalizar((string) ($datos['remitente'] ?? $usuario));
+
+    if (!preg_match('/^[a-z0-9.-]+$/i', $host)) {
+        return ['ok' => false, 'mensaje' => 'El servidor no parece un nombre de máquina.'];
+    }
+
+    if (!in_array($puerto, [465, 587, 25, 2525], true)) {
+        return ['ok' => false, 'mensaje' => 'El puerto tiene que ser 465 o 587.'];
+    }
+
+    if (!correo_valido($remitente)) {
+        return ['ok' => false, 'mensaje' => 'El remitente no es una dirección válida.'];
+    }
+
+    if ($usuario === '' || $clave === '') {
+        return ['ok' => false, 'mensaje' => 'Hacen falta el usuario y la contraseña del buzón.'];
+    }
+
+    $ruta      = dirname(__DIR__) . '/config/correo.php';
+    $temporal  = $ruta . '.' . getmypid();
+    // Las lineas sueltas y unidas con PHP_EOL, que es mas facil de leer -y de
+    // no romper- que una cadena con saltos dentro.
+    $contenido = implode(PHP_EOL, [
+        '<?php',
+        '/**',
+        ' * Datos del buzon de correo.',
+        ' *',
+        ' * Lo escribe el panel: no se edita a mano y no esta en el repositorio. Si',
+        ' * cambias la contrasena del buzon, cambiala tambien aqui desde el panel.',
+        ' */',
+        '',
+        'return [',
+        "    'host'      => " . var_export($host, true) . ',',
+        "    'puerto'    => " . var_export($puerto, true) . ',',
+        "    'usuario'   => " . var_export($usuario, true) . ',',
+        "    'clave'     => " . var_export($clave, true) . ',',
+        "    'remitente' => " . var_export($remitente, true) . ',',
+        '];',
+        '',
+    ]);
+
+    if (@file_put_contents($temporal, $contenido) === false) {
+        return ['ok' => false, 'mensaje' => 'No se ha podido escribir config/correo.php. Revisa los permisos de la carpeta.'];
+    }
+
+    // Antes de moverlo: que no lo pueda leer nadie mas que el propio sitio.
+    @chmod($temporal, 0600);
+
+    if (!@rename($temporal, $ruta)) {
+        @unlink($temporal);
+
+        return ['ok' => false, 'mensaje' => 'No se ha podido reemplazar config/correo.php.'];
+    }
+
+    return ['ok' => true, 'mensaje' => ''];
+}
+
+/**
+ * Manda un correo de prueba, para no descubrir que algo falla el martes.
+ *
+ * @return array ['ok' => bool, 'mensaje' => string]
+ */
+function correo_probar(string $destino): array
+{
+    $conf = correo_conf();
+
+    if (!correo_configurado($conf) || $conf['proveedor'] !== 'propio') {
+        return ['ok' => false, 'mensaje' => 'Todavía faltan datos del buzón.'];
+    }
+
+    if (!correo_valido($destino)) {
+        return ['ok' => false, 'mensaje' => 'Esa dirección de prueba no es válida.'];
+    }
+
+    require_once __DIR__ . '/smtp.php';
+
+    $envio = smtp_enviar($conf, [
+        'para'   => $destino,
+        'asunto' => 'Prueba de Bit & Breakfast',
+        'texto'  => 'Si lees esto, el buzon esta bien configurado y el boletin puede salir.',
+        'html'   => '<p>Si lees esto, el buzón está bien configurado y el boletín puede salir.</p>',
+        'cabeceras' => ['Auto-Submitted: auto-generated'],
+    ]);
+
+    return $envio;
 }
 
 /**
@@ -234,6 +407,10 @@ function correo_alta(string $email, string $url_vuelta = ''): array
 
     if (!correo_configurado($conf)) {
         return ['ok' => false, 'mensaje' => 'El alta todavía no está abierta.'];
+    }
+
+    if ($conf['proveedor'] === 'propio') {
+        return correo_alta_propia($email, $conf, $url_vuelta);
     }
 
     [$codigo, $cuerpo] = correo_peticion(correo_carga_alta($email, $conf, $url_vuelta));

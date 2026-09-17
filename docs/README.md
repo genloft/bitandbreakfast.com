@@ -27,15 +27,16 @@ salud.php     estado del radar en JSON: cron, cola, fuentes y ediciones
 instalar.php  instalador web; se borra solo al terminar
 config/       configuración (config.php no está en el repositorio)
 lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
-              puntuación, reglas del bit, sesión del panel e instalador
+              puntuación, reglas del bit, sesión del panel, instalador,
+              migraciones, cliente SMTP y lista de suscriptores
 cron/         tareas programadas; tareas.php es el despachador único
               (ingesta, procesar, auto, publicar, mantenimiento)
-api/          endpoints públicos: redirección contada, votos, redacción asistida
+api/          endpoints públicos: alta, confirmación, baja y redirección contada
 panel/        zona privada de curación: cola, edición del bit y cierre
 plantillas/   plantillas: web/ publicada, panel/ e instalador
 publico/      salida estática generada por cron/publicar.php (no se versiona)
 pruebas/      scripts de prueba sin framework
-sql/          esquema y semillas
+sql/          esquema, semillas y migraciones/ (cambios que se aplican solos)
 docs/         esta documentación e INSTALACION.md
 ```
 
@@ -85,7 +86,7 @@ un MariaDB 10.6 para la de humo.
 | 2 | Agrupación, puntuación, `cron/procesar.php` | completada |
 | 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | completada |
-| 5 | Proveedor de correo y alta con doble confirmación | alta hecha; envío pendiente |
+| 5 | Correo: buzón propio, alta con doble confirmación y baja | alta y baja hechas; envío de la edición pendiente |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador y clics hechos |
 
 ## Decisiones que conviene no olvidar
@@ -168,10 +169,31 @@ un MariaDB 10.6 para la de humo.
 - **La portada se lee con el pulgar.** El sumario va antes que los bits porque
   un radar tiene que decir en diez segundos si esta semana traía algo. Todo lo
   demás es consecuencia de eso.
-- **La lista de correo no se guarda aquí.** Vive entera en el proveedor. Una
-  base de datos en alojamiento compartido no es sitio para una lista de
-  direcciones, y el proveedor ya sabe gestionar bajas, rebotes y doble
-  confirmación mejor de lo que se escribiría aquí.
+- **La lista de correo se guarda aquí, y no era el plan.** El plan era que
+  viviera entera en el proveedor —que ya sabe gestionar bajas, rebotes y doble
+  confirmación mejor de lo que se escribiría aquí—, y ese camino sigue estando
+  para el día que haya cuenta de proveedor. Pero el correo que hay es un buzón
+  SMTP del propio alojamiento, y con un buzón SMTP la lista no puede vivir en
+  ningún otro sitio. Lo que no cambia es lo que se guarda: dirección, estado,
+  fechas y una huella HMAC de la IP del alta. Ni nombre, ni aperturas, ni
+  clics por persona.
+- **Quien apunta a alguien en la lista es el clic, no el formulario.**
+  Cualquiera puede escribir la dirección de otro; solo el dueño del buzón
+  puede pulsar el enlace de confirmación, que es de un solo uso y caduca en
+  tres días. Y la baja es un clic sin preguntas y sin sesión: cualquier
+  fricción ahí solo consigue que marquen el correo como spam, que para un
+  boletín es mucho peor que perder un lector.
+- **La contraseña del buzón se teclea en el panel, y solo ahí.** Se guarda en
+  `config/correo.php`, que no está en el repositorio, lo escribe el propio
+  panel con permisos 0600 y Apache no lo sirve. No está en la base de datos a
+  propósito: una contraseña en una tabla acaba en un volcado, y un volcado
+  acaba viajando por correo.
+- **Los cambios de esquema se aplican solos.** Un fichero por cambio en
+  `sql/migraciones/`, y el despachador los aplica en orden antes de cualquier
+  tarea. Antes, cada tabla nueva era una visita a phpMyAdmin, que es
+  exactamente el tipo de tarea que este proyecto le quita de encima a su
+  dueño; en la práctica significaba que el cambio no se hacía y el código
+  nuevo convivía con la base vieja.
 - **Al que ya estaba suscrito se le dice lo mismo que al que no.** Distinguir
   las dos respuestas permitiría averiguar quién está en la lista probando
   direcciones.

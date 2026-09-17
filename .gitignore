@@ -1,6 +1,9 @@
 # Credenciales y ajustes del entorno: nunca al repositorio (config.ejemplo.php sí)
 /config/config.php
 
+# El buzon de correo lo escribe el panel y lleva la clave del buzon dentro.
+/config/correo.php
+
 # Salida estática generada por cron/publicar.php
 /publico/*
 !/publico/.gitkeep

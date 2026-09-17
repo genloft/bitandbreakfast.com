@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/lib/panel.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
+require_once dirname(__DIR__) . '/lib/correo.php';
 require_once __DIR__ . '/datos.php';
 
 date_default_timezone_set('UTC');
@@ -207,6 +208,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             panel_ir('edicion');
             // no continua
 
+        case 'guardar_correo':
+            // La contrasena no pasa por aqui mas que de camino al fichero: ni
+            // se registra, ni se guarda en sesion, ni se devuelve al formulario.
+            $guardado = correo_guardar_buzon([
+                'host'      => (string) ($_POST['host'] ?? ''),
+                'puerto'    => (int) ($_POST['puerto'] ?? 465),
+                'usuario'   => (string) ($_POST['usuario'] ?? ''),
+                'clave'     => (string) ($_POST['clave'] ?? ''),
+                'remitente' => (string) ($_POST['remitente'] ?? ''),
+            ]);
+
+            if ($guardado['ok']) {
+                // La web se regenera para que aparezca el formulario de alta,
+                // que hasta ahora decia que no estaba abierta.
+                ajuste_guardar('publicar_firma', '');
+                panel_avisar('Buzón guardado. Manda una prueba antes de fiarte.');
+            } else {
+                panel_avisar($guardado['mensaje'], 'error');
+            }
+
+            panel_ir('correo');
+            // no continua
+
+        case 'probar_correo':
+            $prueba = correo_probar(trim((string) ($_POST['destino'] ?? '')));
+
+            if ($prueba['ok']) {
+                panel_avisar('Prueba enviada. Si no llega en un minuto, mira la carpeta de no deseados.');
+            } else {
+                panel_avisar($prueba['mensaje'], 'error');
+            }
+
+            panel_ir('correo');
+            // no continua
+
         default:
             panel_avisar('Acción desconocida.', 'error');
             panel_ir('cola');
@@ -237,6 +273,18 @@ switch ($pagina) {
         $sueltos  = datos_bits_sueltos();
         $revision = bits_revisar_edicion($bits, datos_conf_edicion());
         $vista    = 'edicion';
+        break;
+
+    case 'correo':
+        $buzon = correo_buzon();
+
+        // La clave no llega a la plantilla: lo que no se pinta no se puede
+        // filtrar en una captura de pantalla ni en el HTML de una cache.
+        unset($buzon['clave']);
+
+        $configurado = correo_configurado();
+        $cuentas     = lista_cuentas();
+        $vista       = 'correo';
         break;
 
     case 'entrar':

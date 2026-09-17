@@ -20,6 +20,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/lib/db.php';
 require_once __DIR__ . '/lib/estado.php';
 require_once __DIR__ . '/lib/auto.php';
+require_once __DIR__ . '/lib/correo.php';
 
 date_default_timezone_set('UTC');
 
@@ -168,6 +169,7 @@ if (!is_file($raiz . '/config/config.php')) {
 }
 
 $marcas   = salud_marcas($raiz, $ahora);
+$lista    = lista_cuentas();
 $callado  = estado_cron_callado(estado_marca($raiz . ESTADO_MARCA_CRON), $ahora, 7200);
 
 $informe = [
@@ -217,6 +219,13 @@ $informe = [
         'items_sin_agrupar' => (int) salud_valor("SELECT COUNT(*) FROM items WHERE estado = 'nuevo'", 0),
         'racimos_candidatos' => (int) salud_valor("SELECT COUNT(*) FROM racimos WHERE estado = 'candidato'", 0),
         'racimos_descartados' => (int) salud_valor("SELECT COUNT(*) FROM racimos WHERE estado = 'descartado'", 0),
+    ],
+    // El boletin: si el buzon esta configurado y cuanta gente hay. Son cuentas,
+    // nunca direcciones.
+    'boletin'   => [
+        'buzon'       => correo_configurado() ? 'configurado' : 'sin configurar',
+        'confirmados' => $lista['confirmado'],
+        'pendientes'  => $lista['pendiente'],
     ],
     'ediciones' => [
         'publicadas' => (int) salud_valor("SELECT COUNT(*) FROM ediciones WHERE estado <> 'abierta'", 0),

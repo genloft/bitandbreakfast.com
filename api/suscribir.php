@@ -22,6 +22,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/web.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
+require_once __DIR__ . '/respuesta.php';
 
 /** Altas permitidas por IP y hora. */
 const ALTA_LIMITE = 5;
@@ -87,50 +88,11 @@ function alta_huella(): string
     return substr(hash_hmac('sha256', $ip, (string) (config('secretos.secreto_hmac') ?? 'sin-secreto')), 0, 32);
 }
 
-/**
- * Pinta la respuesta con el mismo aspecto que el resto del sitio y termina.
- */
-function alta_responder(string $titulo, string $mensaje, int $codigo = 200): void
-{
-    global $base;
-
-    http_response_code($codigo);
-    header('Content-Type: text/html; charset=utf-8');
-
-    $enlace_activo = '';
-
-    echo '<!doctype html>', "\n";
-    echo '<html lang="es">', "\n";
-    echo '<head>', "\n";
-    echo '<meta charset="utf-8">', "\n";
-    echo '<meta name="viewport" content="width=device-width, initial-scale=1">', "\n";
-    echo '<meta name="robots" content="noindex,nofollow">', "\n";
-    echo '<title>', web_e($titulo), ' · Bit &amp; Breakfast</title>', "\n";
-    // Con la version colgada de la URL, como en el resto del sitio: la hoja
-    // lleva un mes de cache y se reescribe siempre en el mismo sitio.
-    echo '<link rel="stylesheet" href="', web_e($base), '/estilo.css?v=',
-         web_e(web_version(dirname(__DIR__) . '/publico/estilo.css')), '">', "\n";
-    echo '</head>', "\n<body>\n";
-
-    require dirname(__DIR__) . '/plantillas/web/cabecera.php';
-
-    echo '<main id="contenido">', "\n";
-    echo '<header class="edicion-cabecera"><h1>', web_e($titulo), '</h1></header>', "\n";
-    echo '<p class="alta-respuesta">', web_e($mensaje), '</p>', "\n";
-    echo '<p><a href="', web_e($base), '/">Volver a la última edición</a></p>', "\n";
-    echo '</main>', "\n";
-
-    require dirname(__DIR__) . '/plantillas/web/pie.php';
-
-    echo "\n</body>\n</html>\n";
-
-    exit;
-}
-
 // -----------------------------------------------------------------------------
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    alta_responder(
+    api_responder(
+        $base,
         'Aquí no hay nada',
         'Esta dirección solo atiende el formulario de alta.',
         405
@@ -140,11 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // La trampa: si viene rellena, es un robot. Se le contesta que todo ha ido
 // bien, porque decirle que ha fallado solo le ensena a intentarlo mejor.
 if (trim((string) ($_POST['web'] ?? '')) !== '') {
-    alta_responder('Ya casi está', 'Revisa tu correo y confirma el alta.');
+    api_responder($base, 'Ya casi está', 'Revisa tu correo y confirma el alta.');
 }
 
 if (alta_pasada_de_vueltas(alta_huella())) {
-    alta_responder(
+    api_responder(
+        $base,
         'Demasiados intentos',
         'Se han pedido varias altas seguidas desde aquí. Inténtalo dentro de un rato.',
         429
@@ -154,7 +117,8 @@ if (alta_pasada_de_vueltas(alta_huella())) {
 $email = correo_normalizar((string) ($_POST['email'] ?? ''));
 
 if (!correo_valido($email)) {
-    alta_responder(
+    api_responder(
+        $base,
         'Esa dirección no vale',
         'Revísala y vuelve a intentarlo: parece que le falta algo.',
         400
@@ -164,12 +128,13 @@ if (!correo_valido($email)) {
 $resultado = correo_alta($email, $base . '/');
 
 if (!$resultado['ok']) {
-    alta_responder('No ha podido ser', $resultado['mensaje'], 502);
+    api_responder($base, 'No ha podido ser', $resultado['mensaje'], 502);
 }
 
 // Mismo mensaje tanto si la direccion era nueva como si ya estaba: lo
 // contrario permitiria averiguar quien esta en la lista probando direcciones.
-alta_responder(
+api_responder(
+    $base,
     'Ya casi está',
     'Te hemos mandado un correo para confirmar el alta. Hasta que no pulses el enlace no te apuntamos, así que échale un ojo también a la carpeta de no deseados.'
 );
