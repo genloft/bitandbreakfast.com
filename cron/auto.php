@@ -21,6 +21,7 @@
  */
 
 require_once dirname(__DIR__) . '/lib/db.php';
+require_once dirname(__DIR__) . '/lib/traducir.php';
 require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/auto.php';
@@ -339,12 +340,19 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
     //   7. Y tiene que hablar de hoteles. El diccionario puntua palabras, no
     //      contextos: una vulnerabilidad de Chrome puntua igual en una noticia
     //      sobre un PMS que en una sobre Outlook.
-    //   8. Y alguien tiene que contarla en espanol. El radar se lee en Espana;
-    //      traducir seria dejar de decir lo que dijo la fuente.
+    //   8. Y tiene que poder leerse en espanol. Si nadie la cuenta en espanol
+    //      se traduce, y el bit lo dice en su cara. Sin traductor configurado
+    //      esto vuelve a ser una puerta cerrada, que es como estaba antes.
     $senal = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
+    // El idioma ya no descarta si hay traductor: se traduce y se dice. La
+    // puerta sigue ahi para cuando no lo hay, que es como estaba el sitio
+    // hasta ahora -y como vuelve a estar si se borra la clave-.
+    $traducible = !auto_hay_espanol($items) && traducir_configurado();
+
     $motivo = match (true) {
-        $solo_es && !auto_hay_espanol($items)             => 'automatico: no lo cuenta nadie en espanol',
+        $solo_es && !$traducible && !auto_hay_espanol($items)
+                                                         => 'automatico: no lo cuenta nadie en espanol',
         $senal['puntos'] < $minimo                        => 'automatico: sin senal tematica',
         texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN  => 'automatico: sin resumen utilizable',
         auto_es_recopilatorio($titular)                   => 'automatico: recopilatorio, no una noticia',
@@ -371,6 +379,19 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
 
         $categoria = auto_categoria_diccionario($texto, $terminos);
 
+        // Traducir es lo ultimo que se hace, cuando ya ha pasado todas las
+        // puertas: hacerlo antes seria gastar cuota en las novecientas
+        // noticias que se van a descartar de todas formas.
+        $origen    = $traducible ? auto_idioma_principal($items) : '';
+        $traducido = $traducible
+            ? auto_traducir($titular, $cuerpo, $origen)
+            : ['ok' => false];
+
+        if ($traducido['ok']) {
+            $titular = $traducido['titular'];
+            $cuerpo  = $traducido['cuerpo'];
+        }
+
         datos_guardar_bit($bit_id, [
             'titular'   => texto_recortar($titular, BITS_TITULAR_MAX),
             'cuerpo'    => $cuerpo,
@@ -391,8 +412,16 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         ]);
 
         // El dia en que este sitio se entero. Es lo que ordena la web entera.
-        bd()->prepare("UPDATE bits SET redactado_por = 'ia', revisado = 0, dia = UTC_DATE() WHERE id = ?")
-            ->execute([$bit_id]);
+        // Y de que idioma viene, si viene de otro: la web lo dice en la cara
+        // del bit, porque esas palabras no son las que escribio el periodista.
+        bd()->prepare(
+            "UPDATE bits
+                SET redactado_por = 'ia',
+                    revisado = 0,
+                    dia = UTC_DATE(),
+                    traducido_de = ?
+              WHERE id = ?"
+        )->execute([$traducido['ok'] ? $origen : null, $bit_id]);
 
         // Y el racimo deja de estar en la cola: ya tiene quien lo cuente.
         bd()->prepare("UPDATE racimos SET estado = 'publicado' WHERE id = ?")
@@ -435,6 +464,59 @@ function auto_terminos(): array
 function auto_solo_espanol(): bool
 {
     return (string) ajuste('auto_solo_espanol', '1') === '1';
+}
+
+/**
+ * El idioma del que habria que traducir: el del item que manda.
+ *
+ * El mismo orden con el que se elige el titular, porque es de ese item de
+ * donde sale el texto. Con otro orden se le pediria al traductor que tradujera
+ * del aleman un titular que esta en ingles.
+ */
+function auto_idioma_principal(array $items): string
+{
+    foreach ($items as $item) {
+        $idioma = trim((string) ($item['idioma'] ?? ''));
+
+        if ($idioma !== '') {
+            return substr($idioma, 0, 2);
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Traduce titular y cuerpo de una vez.
+ *
+ * Los dos en la misma peticion: DeepL cobra por caracter pero cuesta por
+ * viaje. Si algo falla -la cuota, la red, una respuesta rara- se devuelve que
+ * no y el bit se publica en su idioma: mejor una noticia en ingles y
+ * etiquetada que ninguna noticia.
+ *
+ * @return array ['ok' => bool, 'titular' => string, 'cuerpo' => string]
+ */
+function auto_traducir(string $titular, string $cuerpo, string $origen): array
+{
+    $traduccion = traducir_textos([$titular, $cuerpo], $origen);
+
+    if (!$traduccion['ok']) {
+        if ($traduccion['mensaje'] !== '') {
+            error_log('Bit & Breakfast, traductor: ' . $traduccion['mensaje']);
+        }
+
+        return ['ok' => false, 'titular' => $titular, 'cuerpo' => $cuerpo];
+    }
+
+    $nuevo_titular = trim((string) ($traduccion['textos'][0] ?? ''));
+    $nuevo_cuerpo  = trim((string) ($traduccion['textos'][1] ?? ''));
+
+    // Una traduccion vacia es peor que no traducir: se queda el original.
+    if ($nuevo_titular === '' || $nuevo_cuerpo === '') {
+        return ['ok' => false, 'titular' => $titular, 'cuerpo' => $cuerpo];
+    }
+
+    return ['ok' => true, 'titular' => $nuevo_titular, 'cuerpo' => $nuevo_cuerpo];
 }
 
 /**

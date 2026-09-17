@@ -608,7 +608,8 @@ function publicar_dias(int $limite = 180): array
  */
 function publicar_bits(?string $dia = null, int $tope = 80): array
 {
-    $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo, b.dia,
+    $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria, b.madurez, b.tipo,
+                   b.dia, b.traducido_de,
                    -- El enlace y el medio, con el mismo orden con el que se
                    -- eligio el titular: primero el que lo cuenta en espanol.
                    -- Con otro orden, el bit llevaria titular de un sitio y

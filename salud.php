@@ -9,7 +9,7 @@
  * lleva dos dias fallando". Esta pagina lo dice en una linea.
  *
  * Solo salen cuentas y fechas: cuantos items hay en cola, cuando corrio el
- * cron, que ediciones hay publicadas. Ni configuracion, ni credenciales, ni
+ * cron, cuanto hay publicado. Ni configuracion, ni credenciales, ni
  * direcciones de correo, ni nada que identifique a nadie. Todo lo que hay
  * aqui se puede deducir mirando la web con calma; la diferencia es que asi se
  * mira en un segundo.
@@ -21,6 +21,7 @@ require_once __DIR__ . '/lib/db.php';
 require_once __DIR__ . '/lib/estado.php';
 require_once __DIR__ . '/lib/auto.php';
 require_once __DIR__ . '/lib/correo.php';
+require_once __DIR__ . '/lib/traducir.php';
 
 date_default_timezone_set('UTC');
 
@@ -211,13 +212,24 @@ $informe = [
             0
         ),
     ],
-    'ediciones' => [
-        'publicadas' => (int) salud_valor("SELECT COUNT(*) FROM ediciones WHERE estado <> 'abierta'", 0),
-        // Los bits de la edicion abierta cuentan aunque todavia no esten en
-        // estado 'publicado': lo estaran en cuanto se cierre, y lo que interesa
-        // saber aqui es si se esta llenando.
-        'abierta'    => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE edicion_id IN (SELECT id FROM ediciones WHERE estado = 'abierta')", 0),
-        'bits'       => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'", 0),
+    // El traductor: si esta puesto y cuanto le queda del mes. Sin el, el
+    // sitio solo publica lo que venga en espanol, que son cuatro medios de
+    // setenta: es la primera explicacion de una portada corta.
+    'traductor' => [
+        'estado'  => traducir_configurado() ? 'conectado' : 'sin configurar',
+        'gastado' => (int) traducir_cuota()['gastado'],
+        'queda'   => (int) traducir_cuota()['queda'],
+        'solo_es' => (string) ajuste('auto_solo_espanol', '1') === '1',
+    ],
+    // Ya no se cuentan ediciones, que no existen: se cuenta lo que hay
+    // publicado y lo que ha entrado hoy, que es lo que contesta la pregunta
+    // de si esto se esta llenando o esta parado.
+    'contenido' => [
+        'bits'        => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'", 0),
+        'hoy'         => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado' AND dia = UTC_DATE()", 0),
+        'ayer'        => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado' AND dia = DATE_SUB(UTC_DATE(), INTERVAL 1 DAY)", 0),
+        'dias'        => (int) salud_valor("SELECT COUNT(DISTINCT dia) FROM bits WHERE estado = 'publicado'", 0),
+        'traducidos'  => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado' AND traducido_de IS NOT NULL", 0),
         'sin_revisar' => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE redactado_por = 'ia' AND revisado = 0", 0),
     ],
 ];

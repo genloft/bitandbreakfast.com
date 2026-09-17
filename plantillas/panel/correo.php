@@ -163,3 +163,53 @@ declare(strict_types=1);
     <button type="submit">Mandar prueba</button>
   </p>
 </form>
+
+<h2>Traductor</h2>
+
+<p class="explicacion">
+  Sin traductor, este sitio solo publica lo que alguien cuenta en español, y
+  eso son cuatro medios de setenta: la portada se queda vacía mientras el radar
+  lee mil doscientas entradas al día. Con él, lo extranjero se publica
+  traducido —titular y resumen, nunca el artículo— y cada noticia traducida lo
+  dice en su cara, con el enlace al original.
+</p>
+
+<p class="explicacion">
+  La clave se saca en <strong>deepl.com/pro-api</strong>, plan <em>Free</em>:
+  medio millón de caracteres al mes sin tarjeta, que a titular y resumen dan
+  para miles de noticias. Se guarda en <code>config/traductor.php</code>, fuera
+  del repositorio, y no se vuelve a enseñar aquí. Para desconectarlo, guarda el
+  campo vacío.
+</p>
+
+<?php if ($traductor): ?>
+  <p class="explicacion">
+    <strong>Conectado</strong> (plan <?= panel_e($traductor_plan === 'free' ? 'gratuito' : 'de pago') ?>).
+    Este mes van <?= number_format((int) $traductor_cuota['gastado'], 0, ',', '.') ?>
+    caracteres de <?= number_format($traductor_tope, 0, ',', '.') ?>;
+    quedan <?= number_format((int) $traductor_cuota['queda'], 0, ',', '.') ?>.
+  </p>
+<?php else: ?>
+  <p class="explicacion"><strong>Sin traductor.</strong> Solo se publica lo que venga en español.</p>
+<?php endif; ?>
+
+<form method="post" action="index.php?p=correo" autocomplete="off">
+  <input type="hidden" name="csrf" value="<?= panel_e(panel_csrf()) ?>">
+  <input type="hidden" name="accion" value="guardar_traductor">
+
+  <p>
+    <label for="clave_deepl">Clave de DeepL</label>
+    <input id="clave_deepl" name="clave" type="password" autocomplete="new-password"
+           placeholder="<?= $traductor ? 'Guardada. Escribe otra para cambiarla' : '00000000-0000-0000-0000-000000000000:fx' ?>">
+  </p>
+
+  <p>
+    <label for="limite_mes">Caracteres al mes</label>
+    <input id="limite_mes" name="limite_mes" type="number" min="1000" step="1000"
+           value="<?= (int) $traductor_tope ?>">
+  </p>
+
+  <p class="acciones">
+    <button type="submit">Guardar traductor</button>
+  </p>
+</form>

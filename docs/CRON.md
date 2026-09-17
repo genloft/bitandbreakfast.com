@@ -67,8 +67,15 @@ es deliberado:
   ↓ puerta del sector (habla de hoteles)
   ↓ no es recopilatorio, ni promoción, ni guía, ni entrevista
   ↓ tiene cuerpo utilizable
+  ↓ si no está en español, se traduce (y se dice)
    ~10-30 bits                    auto
+  ↓ publicado al momento, con la fecha de hoy
+      la portada                  publicar
 ```
+
+**La puerta del idioma era la que más apretaba.** Con `auto_solo_espanol` en 1,
+de setenta fuentes publicaban ocho. Con traductor configurado pasa a 0 y lo
+extranjero se publica traducido, etiquetado y con enlace al original.
 
 Cuando la portada trae poco, **el embudo dice dónde se cae**: `/salud.php`
 tiene `cola.racimos_candidatos` (lo que espera) y `cola.racimos_descartados`
@@ -106,6 +113,9 @@ de un vistazo:
 | `fuentes.fallando` con `http 403` | Cortafuegos del medio o de su CDN | Si persiste días, hablar con el medio |
 | `cola.items_sin_agrupar` creciendo | `procesar` no da abasto | Subir `presupuesto_cron` |
 | `criterios.codigo` ≠ `criterios.aplicados` | Hay criterios nuevos sin aplicar a lo ya publicado | Se aplica solo en las siguientes pasadas |
+| `contenido.hoy` en 0 a media tarde | Hoy no ha pasado nada las puertas | Mirar `cola.racimos_descartados` y los motivos |
+| `traductor.estado: sin configurar` | Solo se publica lo que venga en español | Poner la clave de DeepL en `/panel` → Correo |
+| `traductor.queda` cerca de 0 | Se acaba la cuota del mes | Sube el plan o baja el número de fuentes en inglés |
 
 **Los ajustes que gobiernan el ritmo** (tabla `ajustes` en la base de datos):
 
@@ -117,6 +127,10 @@ de un vistazo:
 | `auto_publicar` | Interruptor general del modo automático | 1 |
 | `cron_aviso` | Avisos por correo | cambios |
 | `cron_aviso_minutos` | Mínimo entre avisos | 60 |
+| `auto_solo_espanol` | Publicar solo lo que venga en español | 0 (con traductor) |
+| `edicion_max_bits` | Tope de seguridad por día | 200 |
+| `web_bits_portada` | Noticias en la portada | 80 |
+| `web_dias_archivo` | Días que lista el archivo | 180 |
 
 ---
 

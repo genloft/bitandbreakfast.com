@@ -20,6 +20,7 @@ require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/migrar.php';
 require_once dirname(__DIR__) . '/lib/envio.php';
+require_once dirname(__DIR__) . '/lib/traducir.php';
 
 // --- Normalizacion ----------------------------------------------------------
 
@@ -403,5 +404,50 @@ comprobar('el parte cuenta lo que entro', true, str_contains($parte, '3 noticias
 comprobar('y lo que se archivo', true, str_contains($parte, '9 han pasado'));
 comprobar('y lleva el registro de las tareas', true, str_contains($parte, 'procesar: 40 items'));
 comprobar('y dice como dejar de recibirlo', true, str_contains($parte, 'cron_aviso'));
+
+
+// --- El traductor -----------------------------------------------------------
+//
+// Lo que se comprueba aqui es la puerta, no la traduccion: que sin clave no se
+// sale a la red, que una clave que no lo parece se rechaza antes de guardarla
+// y que la cuota se cuenta por meses.
+
+comprobar(
+    'sin clave no hay traductor',
+    false,
+    traducir_configurado(['clave' => '', 'plan' => 'free', 'limite_mes' => 500000])
+);
+
+comprobar(
+    'con clave, si',
+    true,
+    traducir_configurado(['clave' => str_repeat('a', 8) . '-1111-2222-3333-444444444444:fx', 'plan' => 'free', 'limite_mes' => 500000])
+);
+
+// El plan gratuito y el de pago no comparten servidor, y la clave lo dice:
+// las del gratuito acaban en ':fx'.
+comprobar(
+    'la clave del plan gratuito va al servidor del plan gratuito',
+    'https://api-free.deepl.com/v2/translate',
+    traducir_url(['plan' => 'free'])
+);
+
+comprobar(
+    'y la de pago, al otro',
+    'https://api.deepl.com/v2/translate',
+    traducir_url(['plan' => 'pro'])
+);
+
+// Sin clave no se sale a la red ni para fallar: se contesta que no y ya.
+$intento = traducir_textos(['Hello'], 'en', ['clave' => '', 'plan' => 'free', 'limite_mes' => 500000]);
+
+comprobar('sin clave no se intenta traducir', false, $intento['ok']);
+comprobar('y se dice por que', 'sin traductor configurado', $intento['mensaje']);
+
+// Una clave que no es una clave se rechaza antes de escribir el fichero: es
+// la diferencia entre un error ahora y un 403 en cada pasada del cron.
+$malo = traducir_guardar(['clave' => 'esto-no-es-una-clave', 'limite_mes' => 500000]);
+
+comprobar('una clave con mala pinta no se guarda', false, $malo['ok']);
 
 resumen_pruebas('Pruebas de la fase 5: alta con doble confirmacion');

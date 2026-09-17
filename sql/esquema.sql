@@ -165,6 +165,9 @@ CREATE TABLE bits (
   -- El dia en que este sitio se entero de la noticia. Es lo que ordena la web
   -- entera: la portada es un rio por dias, no una coleccion de ediciones.
   dia           DATE         NULL DEFAULT NULL,
+  -- De que idioma se tradujo, si se tradujo. NULL quiere decir que estas son
+  -- las palabras que escribio quien las escribio.
+  traducido_de  CHAR(2)      NULL DEFAULT NULL,
   edicion_id    INT UNSIGNED NULL DEFAULT NULL,
   orden         SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   redactado_por ENUM('ia','humano') NOT NULL DEFAULT 'humano',

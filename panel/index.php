@@ -23,6 +23,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/panel.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
+require_once dirname(__DIR__) . '/lib/traducir.php';
 require_once __DIR__ . '/datos.php';
 
 date_default_timezone_set('UTC');
@@ -231,6 +232,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             panel_ir('correo');
             // no continua
 
+        case 'guardar_traductor':
+            // La clave no pasa por aqui mas que de camino al fichero: ni se
+            // registra, ni se guarda en sesion, ni vuelve al formulario.
+            $guardado = traducir_guardar([
+                'clave'      => (string) ($_POST['clave'] ?? ''),
+                'limite_mes' => (int) ($_POST['limite_mes'] ?? 500000),
+            ]);
+
+            if ($guardado['ok']) {
+                // Con traductor, lo que no esta en espanol deja de descartarse.
+                // Sin el, vuelve a descartarse: es la misma decision al reves.
+                ajuste_guardar('auto_solo_espanol', traducir_configurado() ? '0' : '1');
+                panel_avisar($guardado['mensaje']);
+            } else {
+                panel_avisar($guardado['mensaje'], 'error');
+            }
+
+            panel_ir('correo');
+            // no continua
+
         case 'guardar_aviso':
             $modo = (string) ($_POST['cron_aviso'] ?? 'siempre');
 
@@ -320,7 +341,14 @@ switch ($pagina) {
         $configurado = correo_configurado();
         $cuentas     = lista_cuentas();
         $envio       = panel_estado_envio();
-        $aviso_modo   = (string) ajuste('cron_aviso', 'siempre');
+        // Del traductor tampoco sale la clave a la plantilla. Lo que se
+        // enseña es si esta puesto y cuanta cuota queda del mes.
+        $traductor      = traducir_configurado();
+        $traductor_plan = (string) traducir_conf()['plan'];
+        $traductor_tope = (int) traducir_conf()['limite_mes'];
+        $traductor_cuota = traducir_cuota();
+
+        $aviso_modo   = (string) ajuste('cron_aviso', 'cambios');
         $aviso_correo = (string) ajuste('cron_aviso_correo', '');
         $vista       = 'correo';
         break;

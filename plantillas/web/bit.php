@@ -37,11 +37,14 @@ $secreto  = $secreto ?? '';
               // titular no anaden nada y convierten la linea de arriba en
               // una fila de tres cosas iguales. Siguen en el dato del bit
               // para el explorador y el correo. ?>
-        <?php if (($bit['idioma'] ?? 'es') !== 'es'): ?>
-          <?php // El titular es el que publico el medio. Decir en que idioma
-                // esta evita que parezca un descuido: es la noticia tal cual
-                // la conto su fuente, sin traducir, que es lo que promete
-                // este radar. ?>
+        <?php if (!empty($bit['traducido_de'])): ?>
+          <?php // Estas palabras no son las que escribio el periodista, y eso
+                // hay que decirlo donde se leen, no en una pagina de avisos.
+                // El enlace de abajo sigue llevando al original. ?>
+          <span class="etiqueta etiqueta-idioma">Traducido del <?= web_e(mb_strtolower((string) ($idiomas[$bit['traducido_de']] ?? $bit['traducido_de']), 'UTF-8')) ?></span>
+        <?php elseif (($bit['idioma'] ?? 'es') !== 'es'): ?>
+          <?php // Sin traducir: el titular es tal cual lo publico el medio, y
+                // decir en que idioma esta evita que parezca un descuido. ?>
           <span class="etiqueta etiqueta-idioma">Titular en <?= web_e(mb_strtolower((string) ($idiomas[$bit['idioma']] ?? $bit['idioma']), 'UTF-8')) ?></span>
         <?php endif; ?>
       </p>
