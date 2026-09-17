@@ -313,4 +313,21 @@ comprobar(
     web_sobran(['.', '..', '1-vieja'], [])
 );
 
+// --- Que ninguna plantilla se olvide de abrir PHP ---------------------------
+//
+// Un fichero sin <?php al principio es PHP valido: todo lo que hay dentro es
+// texto y se imprime tal cual. php -l no dice nada, las pruebas tampoco, y lo
+// que se ve en produccion es el comentario de cabecera escrito encima de la
+// portada. Paso exactamente eso, asi que aqui queda la guardia.
+
+$sin_abrir = [];
+
+foreach (glob(dirname(__DIR__) . '/plantillas/**/*.php') ?: [] as $plantilla) {
+    if (!str_starts_with((string) file_get_contents($plantilla), '<?php')) {
+        $sin_abrir[] = basename(dirname($plantilla)) . '/' . basename($plantilla);
+    }
+}
+
+comprobar('todas las plantillas abren PHP en la primera linea', [], $sin_abrir);
+
 resumen_pruebas('Pruebas de la fase 4: la web generada');

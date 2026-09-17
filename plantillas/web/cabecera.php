@@ -1,3 +1,4 @@
+<?php
 /**
  * Cabecera comun de la web publicada.
  *
