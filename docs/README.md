@@ -1,13 +1,19 @@
 # Bit & Breakfast
 
-Radar de noticias de tecnología hotelera. Rastrea 59 fuentes, agrupa las que
-cuentan la misma noticia, las puntúa y de esa cola salen entre 15 y 20 *bits*
-por edición, que se publican como HTML estático y se enviarán como newsletter
-semanal en español. Los elige la puntuación: el panel de curación sigue ahí
-para escribirlos a mano, pero ya no es el único camino.
+Agregador de noticias de tecnología hotelera en español. Rastrea casi cien
+fuentes, agrupa las que cuentan la misma noticia, las puntúa, y lo que pasa las
+puertas se publica en el momento como HTML estático. Los elige la puntuación:
+el panel de curación sigue ahí para escribirlos a mano, pero ya no es el único
+camino.
 
-La promesa al lector: **cinco minutos de lectura a la semana y no te pierdes
-nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
+**La web se ordena por el día en que el radar descubrió cada noticia**, no por
+ediciones. Una edición solo existía cuando se cerraba, así que lo de hoy no se
+veía hasta mañana; un día existe en cuanto cae en él la primera noticia. La
+portada es el río de los últimos días, cada día tiene su página en
+`/d/AAAA-MM-DD/` y el boletín manda lo del día anterior.
+
+La promesa al lector: **lo que ha aparecido hoy en tecnología hotelera, en
+español y con enlace a la fuente.**
 
 ## Restricciones de partida
 
@@ -23,7 +29,7 @@ nada relevante.** Es un radar, no un agregador: filtra duro y enseña poco.
 
 ```
 index.php     arranque: sin configuración lleva al instalador, con ella a la portada
-salud.php     estado del radar en JSON: cron, cola, fuentes y ediciones
+salud.php     estado del radar en JSON: cron, esquema, cola, fuentes y contenido
 instalar.php  instalador web; se borra solo al terminar
 config/       configuración (config.php no está en el repositorio)
 lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
@@ -172,16 +178,25 @@ un MariaDB 10.6 para la de humo.
   rompe en ningún sitio.
 - **La cuota de fuentes españolas y europeas avisa, no bloquea.** Es una
   intención editorial, y una semana floja en Europa no puede impedir el envío.
-- **La web se genera, no se sirve.** Una edición cerrada se convierte en
-  ficheros dentro de `publico/` y a partir de ahí Apache los sirve sin tocar
-  PHP ni la base de datos. Es lo único que aguanta una portada compartida de
+- **La web se genera, no se sirve.** Lo publicado se convierte en ficheros
+  dentro de `publico/` y a partir de ahí Apache los sirve sin tocar PHP ni la
+  base de datos. Es lo único que aguanta una portada compartida de
   golpe, y en un alojamiento compartido no hay plan B.
-- **Todo en español, y no traduciendo.** Entra solo lo que alguien cuenta en
-  español; el titular, el cuerpo y el enlace salen del mismo medio, el que lo
-  contó en español. Traducir sería dejar de decir lo que dijo la fuente, y una
-  traducción automática en un radar que presume de comprobable es una mentira
-  pequeña repetida veinte veces por edición. Se pierde alguna primicia
-  internacional: se sabe, y se prefiere. Se apaga con `auto_solo_espanol` a 0.
+- **Todo en español, y diciendo cuándo es traducido.** Durante meses la regla
+  fue no traducir: entraba solo lo que alguien contara en español. La razón era
+  buena —traducir a máquina es poner en boca de un medio algo que no ha
+  dicho— y el efecto, malo: de casi cien fuentes publicaban ocho, y la portada
+  se quedaba vacía mientras el radar leía mil trescientas entradas al día. Una
+  promesa que se cumple dejando la casa vacía es una excusa.
+
+  Ahora se traduce con DeepL, con tres reglas: titular y resumen y nunca el
+  artículo —el artículo es del medio y se lee en el medio—; cada bit traducido
+  lo dice en su cara y mantiene el enlace y el nombre de la fuente; y solo se
+  traduce lo que ya pasó todas las puertas, para no gastar cuota en lo que se
+  va a descartar. **Sin clave de DeepL, la puerta del idioma se cierra sola**
+  aunque el ajuste diga lo contrario: quien lo apaga cuenta con que hay
+  traductor, y sin él lo que saldría no es una web en español con más
+  contenido, es una portada de titulares en inglés.
 - **Un icono por temática, y de una sola lista.** Los once se dibujan en
   `plantillas/web/iconos.php` y de ahí salen la edición, los filtros, los
   resultados y el archivo: una lista, no cuatro copias. Los colores por tema
@@ -209,16 +224,23 @@ un MariaDB 10.6 para la de humo.
   una foto del momento en que se generó la página, no un dato en vivo: el sitio
   es HTML estático y esa es la razón de que aguante. Si no ha cambiado nada, lo
   dice; escribir «0 noticias nuevas» es ruido con forma de dato.
-- **El delta se calcula con tres ajustes, no con un histórico.** Cuándo fue la
-  última generación, qué edición estaba en portada y con cuántos bits. Si la
-  portada sigue siendo la misma, lo nuevo es lo que le ha crecido; si ha
-  cambiado, la nueva entra entera y la anterior pasa al archivo con todo lo que
-  llevaba. Tres números contestan la pregunta; un diario de operaciones habría
-  sido otra tabla que mantener.
-- **El cron manda un parte por correo al terminar.** Con `cron_aviso` en
-  `siempre` —lo que se pidió— son veinticuatro correos al día por el mismo
-  buzón que envía el boletín, que tiene límite por hora; con `cambios`, uno o
-  dos. Se elige en el panel → Correo.
+- **El delta se calcula con dos ajustes, no con un histórico.** Cuándo fue la
+  última generación y cuántos bits había. Lo nuevo es lo que ha crecido; lo
+  archivado, lo que esos nuevos han empujado fuera de la portada. Dos números
+  contestan la pregunta; un diario de operaciones habría sido otra tabla que
+  mantener.
+- **El cron manda un parte por correo al terminar.** Con el cron cada cinco
+  minutos, «uno por pasada» serían doscientos ochenta y ocho al día por el
+  mismo buzón que envía el boletín, que tiene límite por hora. Por eso hay un
+  mínimo de una hora entre avisos y lo que ocurre mientras tanto no se calla:
+  se suma y sale en el siguiente. Se elige en el panel → Correo.
+- **Una migración que falla para la cola entera, y eso tiene que verse.** El
+  despliegue trae el código nuevo antes de que el cron aplique la migración, así
+  que hay una ventana en la que el código pide algo que no existe. Si la
+  migración además falla, la ventana no se cierra nunca y el síntoma no es un
+  error: es que el sitio deja de publicar. `/salud.php` lo dice ahora —última
+  aplicada, cuántas hay, el error y el motor— y el código pide lo accesorio con
+  `bd_columna()` o en su propia consulta, para que no arrastre a lo principal.
 - **El boletín se manda por tandas, y la tabla `envios` es la que lo permite.**
   Un buzón de alojamiento compartido tiene un límite de correos por hora, y
   pasárselo no devuelve un error amable: bloquea el buzón. Se manda un puñado
