@@ -382,3 +382,25 @@ function feed_filtrar(array $entradas): array
 
     return $validas;
 }
+
+/**
+ * Cuantas horas se deja dormir a una fuente que lleva $fallos seguidos.
+ *
+ * Los cuatro primeros no cuentan: un feed falla por mil razones de un rato
+ * -el servidor reiniciando, la red, un 502 de paso- y castigar eso seria
+ * dejar de leer a quien no ha hecho nada. A partir del quinto, el plazo crece
+ * pero no sin limite: una semana es suficiente para que una IP compartida
+ * deje de estar en una lista negra, y mas seria dar la fuente por perdida.
+ *
+ * @return int Horas de sueno, o 0 si todavia no toca dormir.
+ */
+function feed_sueno(int $fallos): int
+{
+    return match (true) {
+        $fallos >= 20 => 168,
+        $fallos >= 10 => 72,
+        $fallos >= 7  => 24,
+        $fallos >= 5  => 6,
+        default       => 0,
+    };
+}

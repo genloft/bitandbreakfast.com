@@ -19,6 +19,18 @@ require_once dirname(__DIR__) . '/lib/canonica.php';
 require_once dirname(__DIR__) . '/lib/texto.php';
 
 /**
+ * Las fuentes que hoy se pueden pedir: encendidas y no dormidas.
+ *
+ * Esta a medias a proposito -le falta la condicion del puntero y el orden-,
+ * porque las dos consultas que recorren el catalogo solo se diferencian en
+ * eso, y el dia que cambie lo que significa "se puede pedir" no puede
+ * cambiarse en una y olvidarse en la otra.
+ */
+const INGESTA_DESPIERTAS = 'SELECT * FROM fuentes
+                             WHERE activa = 1
+                               AND (dormida_hasta IS NULL OR dormida_hasta <= UTC_TIMESTAMP())';
+
+/**
  * Ejecuta un lote de ingesta.
  *
  * @param float $limite Marca de tiempo (microtime) a partir de la cual se
@@ -63,14 +75,17 @@ function ingesta_lote(float $limite): array
 }
 
 /**
- * Devuelve las siguientes fuentes activas a partir del puntero, dando la
+ * Devuelve las siguientes fuentes despiertas a partir del puntero, dando la
  * vuelta al catalogo cuando se llega al final.
+ *
+ * Se saltan las dormidas -las que encadenaron fallos y tienen plazo hasta
+ * dentro de un rato-, pero no se apagan: vuelven solas cuando les toque.
  */
 function ingesta_siguientes(int $puntero, int $tamano): array
 {
     // LIMIT exige entero de verdad: con consultas preparadas no emuladas,
     // pasarlo como cadena hace que MySQL rechace la sentencia.
-    $st = bd()->prepare('SELECT * FROM fuentes WHERE activa = 1 AND id > ? ORDER BY id LIMIT ?');
+    $st = bd()->prepare(INGESTA_DESPIERTAS . ' AND id > ? ORDER BY id LIMIT ?');
     $st->bindValue(1, $puntero, PDO::PARAM_INT);
     $st->bindValue(2, $tamano, PDO::PARAM_INT);
     $st->execute();
@@ -81,7 +96,7 @@ function ingesta_siguientes(int $puntero, int $tamano): array
     }
 
     // Faltan fuentes para completar el lote: se completa desde el principio.
-    $st2 = bd()->prepare('SELECT * FROM fuentes WHERE activa = 1 AND id <= ? ORDER BY id LIMIT ?');
+    $st2 = bd()->prepare(INGESTA_DESPIERTAS . ' AND id <= ? ORDER BY id LIMIT ?');
     $st2->bindValue(1, $puntero, PDO::PARAM_INT);
     $st2->bindValue(2, $tamano - count($fuentes), PDO::PARAM_INT);
     $st2->execute();
@@ -191,6 +206,7 @@ function ingesta_marcar_ok(int $fuente_id, array $respuesta): void
     $sql = 'UPDATE fuentes
                SET ultimo_ok = UTC_TIMESTAMP(),
                    fallos_consecutivos = 0,
+                   dormida_hasta = NULL,
                    etag = ?,
                    last_modified = ?
              WHERE id = ?';
@@ -203,25 +219,48 @@ function ingesta_marcar_ok(int $fuente_id, array $respuesta): void
 }
 
 /**
- * Suma un fallo y, al quinto seguido, desactiva la fuente y lo deja anotado
- * para que se vea en el panel. No se borra nada: solo se apaga.
+ * Suma un fallo y, si ya van muchos, duerme la fuente una temporada.
+ *
+ * Antes se apagaba -activa = 0- al quinto fallo seguido, y ya no volvia a
+ * encenderse jamas. En un alojamiento compartido eso es una trampa: hay
+ * cortafuegos que contestan 403 a la IP del vecino durante unas horas, y la
+ * regla vieja convertia esa tarde mala en una fuente perdida para siempre.
+ *
+ * Ahora se duerme y despierta sola. Apagarla del todo -activa = 0- sigue
+ * estando ahi, pero como lo que es: una decision de una persona.
  */
 function ingesta_marcar_fallo(array $fuente, string $mensaje): void
 {
     $fallos = (int) $fuente['fallos_consecutivos'] + 1;
+    $horas  = feed_sueno($fallos);
 
-    if ($fallos >= 5) {
-        $nota = texto_recortar(
-            'Desactivada automaticamente el ' . gmdate('Y-m-d') . ' tras 5 fallos: ' . $mensaje,
-            490
-        );
-        $sql = 'UPDATE fuentes SET fallos_consecutivos = ?, activa = 0, notas = ? WHERE id = ?';
-        bd()->prepare($sql)->execute([$fallos, $nota, $fuente['id']]);
+    if ($horas === 0) {
+        bd()->prepare('UPDATE fuentes SET fallos_consecutivos = ? WHERE id = ?')
+            ->execute([$fallos, $fuente['id']]);
+
         return;
     }
 
-    bd()->prepare('UPDATE fuentes SET fallos_consecutivos = ? WHERE id = ?')
-        ->execute([$fallos, $fuente['id']]);
+    // La nota queda en la tabla para cuando alguien se pregunte por que esta
+    // fuente no trae nada: dice desde cuando, cuanto duerme y por que. El
+    // recuento de dormidas sale ademas en /salud.php.
+    $nota = texto_recortar(
+        'Dormida ' . $horas . ' h el ' . gmdate('Y-m-d H:i') . ' tras ' . $fallos
+            . ' fallos seguidos: ' . $mensaje,
+        490
+    );
+
+    // Las horas van pegadas a la consulta y no como parametro: INTERVAL ? HOUR
+    // no lo aceptan todos los servidores, y aqui fallar significa tumbar la
+    // pasada entera desde el manejador de errores. El valor sale de
+    // feed_sueno(), que devuelve uno de cinco enteros, y ademas va forzado.
+    $sql = 'UPDATE fuentes
+               SET fallos_consecutivos = ?,
+                   dormida_hasta = DATE_ADD(UTC_TIMESTAMP(), INTERVAL ' . (int) $horas . ' HOUR),
+                   notas = ?
+             WHERE id = ?';
+
+    bd()->prepare($sql)->execute([$fallos, $nota, $fuente['id']]);
 }
 
 // Ejecucion directa por linea de comandos, para poder probar sin esperar al cron.

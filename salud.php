@@ -58,32 +58,6 @@ function salud_valor(string $sql, $defecto = null)
 }
 
 /**
- * El motivo de un fallo de ingesta, reducido a una palabra.
- *
- * El mensaje entero no sale de aqui: lo escribe una excepcion, y una excepcion
- * puede llevar dentro rutas del servidor o trozos de consulta. Lo que hace
- * falta para arreglar un feed cabe en una palabra -si contesta 403, si tarda
- * demasiado o si lo que devuelve no es XML-, y eso no delata nada.
- */
-function salud_motivo(string $mensaje): string
-{
-    $m = mb_strtolower($mensaje);
-
-    if (preg_match('/\b([45]\d{2})\b/', $m, $coincide)) {
-        return 'http ' . $coincide[1];
-    }
-
-    return match (true) {
-        str_contains($m, 'timed out'), str_contains($m, 'timeout')  => 'tarda demasiado',
-        str_contains($m, 'ssl'), str_contains($m, 'certificate')    => 'certificado',
-        str_contains($m, 'resolve'), str_contains($m, 'dns')        => 'no resuelve el dominio',
-        str_contains($m, 'xml'), str_contains($m, 'entradas')       => 'no devuelve un feed',
-        str_contains($m, 'vac')                                     => 'contesta vacio',
-        default                                                     => 'otro',
-    };
-}
-
-/**
  * Las fuentes que han fallado hoy, con el motivo en una palabra.
  */
 function salud_fallando(): array
@@ -109,7 +83,7 @@ function salud_fallando(): array
         $filas = bd()->query($sql);
 
         foreach ($filas === false ? [] : $filas->fetchAll() as $fila) {
-            $salida[(string) $fila['nombre']] = salud_motivo((string) ($fila['mensaje'] ?? ''));
+            $salida[(string) $fila['nombre']] = estado_motivo((string) ($fila['mensaje'] ?? ''));
         }
     } catch (Throwable $e) {
         return [];
@@ -205,10 +179,16 @@ $informe = [
               WHERE resultado = 'error' AND inicio > (NOW() - INTERVAL 1 DAY)",
             0
         ),
+        // Encendidas pero en penitencia: encadenaron fallos y no se les pide
+        // nada hasta que pase el plazo. Si este numero sube y no baja, el
+        // problema no es de los feeds, es de la IP del alojamiento.
+        'dormidas'     => (int) salud_valor(
+            'SELECT COUNT(*) FROM fuentes WHERE activa = 1 AND dormida_hasta > UTC_TIMESTAMP()',
+            0
+        ),
         'ultima_lectura' => (string) (salud_valor('SELECT MAX(inicio) FROM log_ingesta', '') ?: 'nunca'),
-        // Las que estan fallando ahora mismo, con el motivo en una palabra. El
-        // mensaje entero no sale: lo escribe una excepcion y una excepcion
-        // puede llevar rutas del servidor dentro.
+        // Las que estan fallando ahora mismo, con el motivo. Las rutas del
+        // servidor se quitan: esta pagina es publica.
         'fallando'      => salud_fallando(),
         'nuevos_24h'   => (int) salud_valor(
             'SELECT COALESCE(SUM(nuevos), 0) FROM log_ingesta WHERE inicio > (NOW() - INTERVAL 1 DAY)',

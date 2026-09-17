@@ -99,4 +99,93 @@ comprobar(
         && str_contains(feed_agente(false), 'BitAndBreakfast')
 );
 
+// --- Por que falla una fuente -----------------------------------------------
+//
+// Esta etiqueta es lo unico que se ve desde fuera cuando un feed deja de
+// contestar, asi que tiene que bastar para decidir que hacer con el.
+
+comprobar('un 403 se dice con su numero', 'http 403', estado_motivo('HTTP 403 - Forbidden'));
+comprobar('y un 500 tambien', 'http 500', estado_motivo('Error HTTP 500 del servidor'));
+comprobar('agotar el tiempo tiene nombre', 'tarda demasiado', estado_motivo('cURL error 28: Operation timed out'));
+comprobar('el certificado, tambien', 'certificado', estado_motivo('SSL certificate problem'));
+comprobar('y el dominio que no resuelve', 'no resuelve el dominio', estado_motivo('Could not resolve host'));
+comprobar('lo que no es un feed', 'no devuelve un feed', estado_motivo('El XML no se puede leer'));
+
+// Lo que no encaja en ninguna familia se enseña tal cual. Decir "otro" es no
+// decir nada, y justo entonces es cuando hace falta saber que ha pasado.
+
+comprobar(
+    'un motivo desconocido se cuenta con sus palabras',
+    'Conexion cerrada por el otro extremo',
+    estado_motivo('Conexion cerrada por el otro extremo')
+);
+
+comprobar(
+    'y en una sola linea',
+    'dos lineas en una',
+    estado_motivo("dos lineas\n   en una")
+);
+
+// La pagina es publica: el error de una descarga no tiene por que contar donde
+// vive el codigo.
+
+comprobar(
+    'las rutas del servidor no salen',
+    true,
+    !str_contains(estado_motivo('Fallo al abrir /home/u123456/domains/ejemplo.com/lib/feed.php'), 'home')
+);
+
+comprobar(
+    'pero la direccion del feed si, que es la que hay que arreglar',
+    true,
+    str_contains(estado_motivo('Respuesta rara de https://ejemplo.com/feed/'), 'https://ejemplo.com/feed/')
+);
+
+comprobar(
+    'un mensaje kilometrico se recorta',
+    90,
+    mb_strlen(estado_motivo(str_repeat('a', 300)))
+);
+
+comprobar('sin mensaje, otro', 'otro', estado_motivo('   '));
+
+// --- Cuando se duerme una fuente --------------------------------------------
+//
+// Lo que se protege aqui es el catalogo: antes, cinco fallos seguidos apagaban
+// una fuente para siempre, y en una IP compartida eso se lo lleva todo por
+// delante la primera tarde que un cortafuegos se pone tonto.
+
+comprobar('un fallo suelto no se castiga', 0, feed_sueno(1));
+comprobar('ni cuatro', 0, feed_sueno(4));
+comprobar('al quinto, seis horas', 6, feed_sueno(5));
+comprobar('siete fallos, un dia', 24, feed_sueno(7));
+comprobar('diez, tres dias', 72, feed_sueno(10));
+comprobar('veinte, una semana', 168, feed_sueno(20));
+
+comprobar(
+    'y de ahi no pasa: nunca se da por perdida',
+    168,
+    feed_sueno(500)
+);
+
+comprobar(
+    'el plazo nunca se acorta al encadenar fallos',
+    true,
+    (function (): bool {
+        $anterior = 0;
+
+        for ($fallos = 1; $fallos <= 60; $fallos++) {
+            $horas = feed_sueno($fallos);
+
+            if ($horas < $anterior) {
+                return false;
+            }
+
+            $anterior = $horas;
+        }
+
+        return true;
+    })()
+);
+
 resumen_pruebas('Pruebas del estado del sitio');

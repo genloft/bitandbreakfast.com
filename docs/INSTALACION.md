@@ -314,7 +314,20 @@ SELECT f.nombre, l.resultado, l.nuevos, LEFT(l.mensaje, 60) AS mensaje
 ```
 
 Algún `error` suelto es normal. Una fuente que falla cinco veces seguidas se
-desactiva sola y deja el motivo en `fuentes.notas`.
+**duerme** —no se apaga—: `fuentes.dormida_hasta` dice hasta cuándo no se le
+pide nada, el plazo crece con los fallos (6 h, 1 día, 3, 7 como mucho) y el
+primer intento que sale bien la despierta. El motivo queda en `fuentes.notas`
+y el recuento, en `/salud.php` → `fuentes.dormidas`.
+
+Si duermen varias a la vez y todas por 403, casi nunca es cosa de los feeds:
+es la IP del alojamiento compartido, que está en alguna lista. Se pasa solo.
+
+Para despertar una a mano:
+
+```sql
+UPDATE fuentes SET dormida_hasta = NULL, fallos_consecutivos = 0
+ WHERE nombre = 'TecnoHotel';
+```
 
 ---
 

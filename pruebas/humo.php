@@ -108,6 +108,29 @@ comprobar(
 );
 
 // -----------------------------------------------------------------------------
+// Las migraciones, encima del esquema recien montado
+// -----------------------------------------------------------------------------
+//
+// El esquema ya trae todo lo que anaden, asi que aqui no cambian nada: lo que
+// se comprueba es que el SQL es valido y que se puede pasar dos veces sin
+// romperse. Hasta ahora una migracion con una errata no se descubria hasta que
+// el cron la ejecutaba en produccion, y al fallar una se paran las siguientes.
+
+require_once $raiz . '/lib/migrar.php';
+
+$migradas = migrar_pendientes($raiz);
+
+comprobar('las migraciones se aplican sin error', '', $migradas['error']);
+comprobar('y se aplican todas', true, count($migradas['aplicadas']) > 0);
+
+// Segunda pasada desde cero: el ajuste dice que ya estan, asi que no deberia
+// tocar ninguna. Se fuerza a que las repita para ver que aguantan.
+ajuste_guardar('migracion_ultima', '');
+$otra_vez = migrar_pendientes($raiz);
+
+comprobar('y se pueden repetir sin romperse', '', $otra_vez['error']);
+
+// -----------------------------------------------------------------------------
 // Items de prueba
 //
 // Dos titulares cuentan la misma caida y vienen de fuentes distintas: tienen

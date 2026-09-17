@@ -136,6 +136,15 @@ un MariaDB 10.6 para la de humo.
   noticias» o «la ingesta lleva dos días fallando», y desde fuera no hay forma
   de distinguirlo. Solo devuelve cuentas y fechas, nunca configuración ni
   nada que identifique a nadie.
+- **Una fuente que falla se duerme, no se muere.** Cinco fallos seguidos la
+  apagaban para siempre, y eso solo es correcto cuando el feed ha
+  desaparecido. Este sitio vive en un alojamiento compartido: la IP la
+  comparten miles y hay cortafuegos que contestan 403 durante unas horas a
+  quien no ha hecho nada. Con la regla vieja, una tarde mala se llevaba la
+  fuente por delante y nadie volvía a encenderla. Ahora duerme un plazo que
+  crece —6 h, 1 día, 3, 7— y la despierta el primer intento que sale bien.
+  Duele sobre todo en español, que son cuatro medios contados: perder uno es
+  perder un cuarto de lo único que este radar puede publicar.
 - **La puntuación no sabe de qué va la noticia, y por eso hay puertas.** El
   diccionario puntúa palabras, no contextos: «malware» o «agente de IA» valen
   lo mismo en una noticia sobre un PMS que en una sobre Outlook. Antes de

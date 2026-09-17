@@ -32,6 +32,10 @@ CREATE TABLE fuentes (
   categoria_defecto   VARCHAR(40)       NOT NULL DEFAULT 'tecnologia-general',
   peso                TINYINT UNSIGNED  NOT NULL DEFAULT 5,
   activa              TINYINT(1)        NOT NULL DEFAULT 1,
+  -- Hasta cuando no se le pide nada. Se pone sola cuando la fuente encadena
+  -- fallos y se borra al primer intento que sale bien: activa = 0 es una
+  -- decision de una persona y esto no lo es.
+  dormida_hasta       DATETIME          NULL DEFAULT NULL,
   ultimo_intento      DATETIME          NULL DEFAULT NULL,
   ultimo_ok           DATETIME          NULL DEFAULT NULL,
   etag                VARCHAR(255)      NULL DEFAULT NULL,

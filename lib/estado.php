@@ -11,6 +11,10 @@
  * toca cada vez que se despierta, y las cuentas para decidir si lleva
  * demasiado tiempo callado. Son funciones puras sobre marcas de tiempo,
  * porque quien decide -index.php- no puede permitirse ni una consulta.
+ *
+ * Y, del mismo palo, poner nombre a un fallo de ingesta: son cadenas de
+ * entrada y cadenas de salida, sin base de datos ni red, asi que viven aqui
+ * -donde se pueden probar- y no dentro de la pagina que las enseña.
  */
 
 declare(strict_types=1);
@@ -99,4 +103,52 @@ function estado_edad_texto(?int $segundos): string
     }
 
     return 'hace ' . intdiv($segundos, 86400) . ' días';
+}
+
+/**
+ * El motivo de un fallo de ingesta, en cuatro palabras.
+ *
+ * Casi siempre es una de cinco cosas -contesta 403, tarda demasiado, el
+ * certificado, el dominio no resuelve, lo que devuelve no es un feed-, y con
+ * esa etiqueta ya se sabe si hay que cambiar la URL, bajar la frecuencia o
+ * quitar la fuente. Lo que no encaje en ninguna baja a estado_motivo_crudo().
+ */
+function estado_motivo(string $mensaje): string
+{
+    $m = mb_strtolower($mensaje);
+
+    if (preg_match('/\b([45]\d{2})\b/', $m, $coincide)) {
+        return 'http ' . $coincide[1];
+    }
+
+    return match (true) {
+        str_contains($m, 'timed out'), str_contains($m, 'timeout')  => 'tarda demasiado',
+        str_contains($m, 'ssl'), str_contains($m, 'certificate')    => 'certificado',
+        str_contains($m, 'resolve'), str_contains($m, 'dns')        => 'no resuelve el dominio',
+        str_contains($m, 'xml'), str_contains($m, 'entradas')       => 'no devuelve un feed',
+        str_contains($m, 'vac')                                     => 'contesta vacio',
+        default                                                     => estado_motivo_crudo($mensaje),
+    };
+}
+
+/**
+ * Cuando el motivo no encaja en ninguna familia, el mensaje tal cual.
+ *
+ * Decir "otro" es no decir nada: la unica vez que hace falta esta pagina es
+ * justo cuando algo falla por una razon que no estaba prevista, y esa es
+ * precisamente la que se quedaba sin nombre. Va recortado y en una linea
+ * porque esto se lee de un vistazo, y sin rutas del servidor: la pagina es
+ * publica y el error de una descarga no tiene por que contar donde vive el
+ * codigo.
+ */
+function estado_motivo_crudo(string $mensaje): string
+{
+    $limpio = (string) preg_replace('~(?<![:\w/])/(?:[\w.-]+/)+[\w.-]*~u', '…', $mensaje);
+    $limpio = trim((string) preg_replace('/\s+/', ' ', $limpio));
+
+    if ($limpio === '') {
+        return 'otro';
+    }
+
+    return mb_substr($limpio, 0, 90);
 }
