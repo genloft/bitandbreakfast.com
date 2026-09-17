@@ -45,8 +45,12 @@ function auto_publicar_lote(float $limite): array
         return $resumen;
     }
 
-    // Antes de escribir nada, se revisa lo que ya se publico sin mirar.
-    $resumen['revisados'] = auto_revisar_publicados();
+    // Antes de escribir nada, se revisa lo que ya se publico sin mirar. Se le
+    // da la mitad del presupuesto: es trabajo de mantenimiento y no puede
+    // comerse la pasada entera.
+    $resumen['revisados'] = auto_revisar_publicados(
+        microtime(true) + max(1.0, ($limite - microtime(true)) / 2)
+    );
 
     $tope     = max(1, (int) ajuste('edicion_max_bits', '20'));
     $umbral   = (int) ajuste('auto_umbral', '30');
@@ -116,7 +120,7 @@ function auto_publicar_lote(float $limite): array
  *
  * @return int Cuantos bits se han revisado.
  */
-function auto_revisar_publicados(): int
+function auto_revisar_publicados(float $limite): int
 {
     if ((int) ajuste('auto_criterios', '0') >= AUTO_CRITERIOS) {
         return 0;
@@ -125,19 +129,48 @@ function auto_revisar_publicados(): int
     $terminos = auto_terminos();
     $minimo   = (int) ajuste('auto_min_diccionario', '8');
 
-    $bits = bd()->query(
-        "SELECT id, racimo_id, edicion_id, estado FROM bits
-          WHERE redactado_por = 'ia' AND revisado = 0 AND racimo_id IS NOT NULL"
-    )->fetchAll();
-
+    // Con puntero y por lotes, como todo lo demas del sistema. Esta es la
+    // unica tarea que BORRA en vez de anadir, y antes se cargaba todos los
+    // bits de golpe sin mirar el reloj: si el proceso moria a la mitad -y en
+    // alojamiento compartido muere-, la version de criterios no llegaba a
+    // guardarse y la pasada siguiente volvia a empezar desde el principio,
+    // borrando otro trozo cada vez. Un bucle destructivo sin final.
+    $desde     = (int) ajuste('auto_criterios_puntero', '0');
     $ediciones = [];
     $tocados   = 0;
+    $quedan    = true;
 
-    foreach ($bits as $bit) {
-        $ediciones[(int) $bit['edicion_id']] = true;
+    while (microtime(true) < $limite) {
+        $st = bd()->prepare(
+            "SELECT id, racimo_id, edicion_id, estado FROM bits
+              WHERE redactado_por = 'ia' AND revisado = 0 AND racimo_id IS NOT NULL
+                AND id > ?
+              ORDER BY id
+              LIMIT 25"
+        );
+        $st->execute([$desde]);
+        $bits = $st->fetchAll();
 
-        if (auto_revisar_bit($bit, $terminos, $minimo)) {
-            $tocados++;
+        if (!$bits) {
+            $quedan = false;
+            break;
+        }
+
+        foreach ($bits as $bit) {
+            $ediciones[(int) $bit['edicion_id']] = true;
+            $desde = (int) $bit['id'];
+
+            if (auto_revisar_bit($bit, $terminos, $minimo)) {
+                $tocados++;
+            }
+
+            // El puntero se guarda por bit: lo revisado no se vuelve a tocar
+            // aunque el proceso se muera en la linea siguiente.
+            ajuste_guardar('auto_criterios_puntero', (string) $desde);
+
+            if (microtime(true) >= $limite) {
+                break 2;
+            }
         }
     }
 
@@ -156,13 +189,19 @@ function auto_revisar_publicados(): int
         }
     }
 
-    auto_fechar_ediciones();
+    // La web se regenera: los bits revisados han cambiado de titular, de
+    // cuerpo y de categoria. Tambien si la revision se ha quedado a medias,
+    // porque lo que ya se ha tocado hay que ensenarlo.
+    if ($tocados > 0 || !$quedan) {
+        ajuste_guardar('publicar_firma', '');
+    }
 
-    ajuste_guardar('auto_criterios', (string) AUTO_CRITERIOS);
-
-    // La web se regenera entera: los bits que sobreviven han cambiado de
-    // titular, de cuerpo y de categoria.
-    ajuste_guardar('publicar_firma', '');
+    // Y solo cuando no queda ninguno por mirar se da la version por aplicada.
+    if (!$quedan) {
+        auto_fechar_ediciones();
+        ajuste_guardar('auto_criterios', (string) AUTO_CRITERIOS);
+        ajuste_guardar('auto_criterios_puntero', '0');
+    }
 
     return $tocados;
 }
@@ -206,11 +245,14 @@ function auto_revisar_bit(array $bit, array $terminos, int $minimo): bool
     $cuerpo  = auto_sin_titular($cuerpo, $titular);
     $senal   = puntuar_diccionario($titular, $cuerpo, $terminos, 100);
 
+    // Los dos filtros de forma -recopilatorio y promocional- no entran aqui a
+    // proposito. Son heuristicas: aciertan lo bastante como para descartar un
+    // candidato, que no cuesta nada, y no lo bastante como para retirar algo
+    // que ya esta publicado. Una noticia buena que mencione de pasada un
+    // seminario desapareceria de una edicion que alguien ya ha leido.
     if ($racimo === null
         || $senal['puntos'] < $minimo
         || texto_contar_palabras($cuerpo) < BITS_CUERPO_MIN
-        || auto_es_recopilatorio($titular)
-        || auto_es_promocional($titular . ' ' . $cuerpo)
     ) {
         datos_borrar_bit((int) $bit['id']);
 

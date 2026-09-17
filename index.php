@@ -64,14 +64,17 @@ if (!is_file($config)) {
 // Sin web generada: generarla ahora
 // -----------------------------------------------------------------------------
 
-$vacio   = arranque_sin_contenido($raiz);
-$solo    = $vacio || arranque_sin_cron($raiz);
-$trabajo = '';
+$sin_cron = arranque_sin_cron($raiz);
+$trabajo  = '';
 
 // Cuando la web va sola, se intenta mas a menudo: cada pasada avanza un lote y
 // la cola de un arranque son cientos de items. Con el cron vivo no hace falta.
-if (arranque_toca_intentar($raiz, $solo ? ARRANQUE_ESPERA_SOLO : ARRANQUE_ESPERA)) {
-    if ($solo) {
+//
+// Lo que hay dentro de este if se ejecuta una vez cada varios minutos, no en
+// cada visita: ahi dentro se puede mirar el indice o preguntar a la base de
+// datos. Fuera no, que por aqui pasa la portada entera.
+if (arranque_toca_intentar($raiz, $sin_cron ? ARRANQUE_ESPERA_SOLO : ARRANQUE_ESPERA)) {
+    if ($sin_cron || arranque_sin_contenido($raiz)) {
         // Sitio recien puesto en marcha, o cron que no contesta: cada visita
         // empuja la cadena entera un paso -rastrear, agrupar, publicar y
         // generar-. Asi el radar se llena y se mantiene aunque el cron no este
@@ -89,16 +92,6 @@ if (arranque_toca_intentar($raiz, $solo ? ARRANQUE_ESPERA_SOLO : ARRANQUE_ESPERA
     }
 }
 
-// Si hay portada que servir y el servidor sabe cerrar la respuesta antes de
-// terminar el proceso, se sirve primero y se trabaja despues: el visitante no
-// tiene por que esperar a que se rastreen cuarenta feeds. Sin portada no hay
-// nada que adelantar, y entonces toca trabajar antes.
-$despues = !$vacio && function_exists('fastcgi_finish_request');
-
-if ($trabajo !== '' && !$despues) {
-    arranque_trabajar($raiz, $trabajo);
-}
-
 // -----------------------------------------------------------------------------
 // Servir
 // -----------------------------------------------------------------------------
@@ -107,6 +100,25 @@ if ($trabajo !== '' && !$despues) {
 // medias, ya no habria forma de cambiar la cabecera ni el codigo de estado.
 // Un fichero vacio cuenta como portada rota y cae a la provisional.
 $contenido = is_file($portada) ? @file_get_contents($portada) : false;
+
+// Si hay portada que servir y el servidor sabe cerrar la respuesta antes de
+// terminar el proceso, se sirve primero y se trabaja despues: el visitante no
+// tiene por que esperar a que se rastreen cuarenta feeds.
+//
+// La pregunta es si hay fichero que mandar, no si hay bits publicados: un
+// sitio recien arrancado tiene portada provisional y ninguna edicion, y ese es
+// justo el caso en que la cadena tarda mas. Hacerle esperar noventa segundos
+// para acabar dandole la misma pagina provisional era lo peor de los dos
+// mundos.
+$despues = $contenido !== false && $contenido !== '' && function_exists('fastcgi_finish_request');
+
+if ($trabajo !== '' && !$despues) {
+    arranque_trabajar($raiz, $trabajo);
+
+    // El trabajo puede haber escrito justo la portada que faltaba, que es el
+    // motivo por el que ha tocado hacerlo antes de contestar.
+    $contenido = is_file($portada) ? @file_get_contents($portada) : false;
+}
 
 if ($contenido !== false && $contenido !== '') {
     header('Content-Type: text/html; charset=utf-8');
@@ -122,10 +134,6 @@ if ($contenido !== false && $contenido !== '') {
     }
 
     exit;
-}
-
-if ($trabajo !== '' && $despues) {
-    arranque_trabajar($raiz, $trabajo);
 }
 
 arranque_provisional();
@@ -292,6 +300,17 @@ function arranque_toca_intentar(string $raiz, int $espera = ARRANQUE_ESPERA): bo
     $marca = $raiz . '/cache/.publicar';
 
     if (is_file($marca) && time() - (int) @filemtime($marca) < $espera) {
+        return false;
+    }
+
+    // Entre mirar la marca y ponerla hay un hueco, y por ese hueco caben diez
+    // visitas del mismo segundo: diez cadenas a la vez rastreando los mismos
+    // feeds y peleandose por las mismas filas. El candado lo cierra. No se
+    // suelta a mano a proposito: se suelta cuando muere el proceso, que es
+    // exactamente lo que hace falta si el trabajo se queda a medias.
+    $fh = @fopen($marca, 'c');
+
+    if ($fh === false || !@flock($fh, LOCK_EX | LOCK_NB)) {
         return false;
     }
 

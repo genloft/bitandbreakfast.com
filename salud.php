@@ -27,8 +27,17 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Robots-Tag: noindex, nofollow');
 
+// Es el unico fichero del sitio pensado para que lo lea un desconocido. Si el
+// alojamiento trae display_errors encendido -que es lo normal-, cualquier
+// aviso imprimiria la ruta del servidor dentro del JSON, que es justo lo que
+// la cabecera de arriba promete que no pasa.
+ini_set('display_errors', '0');
+
 $raiz  = __DIR__;
 $ahora = time();
+
+/** Segundos que vale la respuesta guardada. */
+const SALUD_CACHE = 60;
 
 /**
  * Una consulta de una sola celda, que nunca revienta la pagina.
@@ -133,6 +142,22 @@ function salud_marcas(string $raiz, int $ahora): array
 
 // -----------------------------------------------------------------------------
 
+// Todo el sitio es estatico precisamente para aguantar visitas; esta pagina es
+// el unico punto que siempre pregunta a la base de datos, y no pide contrasena.
+// Sin esto, un bucle de peticiones desde una sola maquina tumba la base del
+// plan compartido y con ella la generacion de la web. Un minuto de cache no le
+// quita utilidad a un informe que habla de minutos y de horas.
+$cache = $raiz . '/cache/salud.json';
+
+if (is_file($cache) && $ahora - (int) @filemtime($cache) < SALUD_CACHE) {
+    $guardado = (string) @file_get_contents($cache);
+
+    if ($guardado !== '') {
+        echo $guardado;
+        exit;
+    }
+}
+
 if (!is_file($raiz . '/config/config.php')) {
     http_response_code(503);
     echo json_encode(['instalado' => false], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), "\n";
@@ -200,4 +225,9 @@ $informe = [
     ],
 ];
 
-echo json_encode($informe, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), "\n";
+$json = json_encode($informe, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+      . PHP_EOL;
+
+@file_put_contents($cache, $json, LOCK_EX);
+
+echo $json;

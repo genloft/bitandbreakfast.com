@@ -53,25 +53,20 @@ function procesar_lote(float $limite): array
     // presupuesto de tiempo. Con un solo lote por ejecucion la cuenta no salia
     // -cuarenta items por hora contra mil al dia que entran- y la cola crecia
     // sola hasta no vaciarse nunca.
-    $vistos = [];
+    $ultimo = 0;
 
     while (microtime(true) < $limite) {
-        $pendientes = procesar_pendientes($tamano);
-        $nuevos     = 0;
+        $pendientes = procesar_pendientes($tamano, $ultimo);
+
+        if (!$pendientes) {
+            break;
+        }
 
         foreach ($pendientes as $item) {
-            $id = (int) $item['id'];
-
-            // Un item que falla por algo transitorio se queda en la cola, asi
-            // que la consulta siguiente vuelve a traerlo. Sin esta cuenta, la
-            // pasada se quedaria dando vueltas sobre los mismos cuarenta hasta
-            // agotar el presupuesto.
-            if (isset($vistos[$id])) {
-                continue;
-            }
-
-            $vistos[$id] = true;
-            $nuevos++;
+            // El cursor avanza pase lo que pase con el item. Lo que falla de
+            // forma transitoria se queda en la cola y se reintenta en la
+            // pasada siguiente, no en esta: si no, la ventana no avanzaria.
+            $ultimo = (int) $item['id'];
 
             if (microtime(true) >= $limite) {
                 break 2;
@@ -96,11 +91,6 @@ function procesar_lote(float $limite): array
                     procesar_descartar((int) $item['id']);
                 }
             }
-        }
-
-        // Ni items nuevos que mirar ni cola que vaciar: se ha terminado.
-        if ($nuevos === 0) {
-            break;
         }
     }
 
@@ -189,18 +179,23 @@ function procesar_terminos(): array
  * los que ya estaban, y el orden de llegada es el unico que garantiza que el
  * racimo lo abre el primero que conto la noticia.
  */
-function procesar_pendientes(int $tamano): array
+function procesar_pendientes(int $tamano, int $desde = 0): array
 {
+    // El cursor no es un lujo: un item que falla por algo transitorio se queda
+    // en 'nuevo', o sea en la cabeza de la ventana, y sin cursor la consulta
+    // siguiente devuelve exactamente los mismos y la pasada se planta con el
+    // presupuesto sin gastar y novecientos items detras sin mirar.
     $sql = "SELECT i.id, i.titulo, i.resumen_origen, i.publicado, i.capturado,
                    i.fuente_id, f.peso AS peso_fuente, f.tipo AS tipo_fuente
               FROM items i
               JOIN fuentes f ON f.id = i.fuente_id
-             WHERE i.estado = 'nuevo'
+             WHERE i.estado = 'nuevo' AND i.id > ?
              ORDER BY i.id
              LIMIT ?";
 
     $st = bd()->prepare($sql);
-    $st->bindValue(1, $tamano, PDO::PARAM_INT);
+    $st->bindValue(1, $desde, PDO::PARAM_INT);
+    $st->bindValue(2, $tamano, PDO::PARAM_INT);
     $st->execute();
 
     return $st->fetchAll();

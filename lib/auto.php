@@ -132,9 +132,12 @@ function auto_limpiar(string $bruto): string
         '/\s*(Continue reading|Read more|Read the full|Leer m[aá]s|Seguir leyendo|Sigue leyendo).*$/sui',
         // La entradilla cortada que dejan muchos feeds.
         '/\s*\[\s*[…\.]+\s*\]\s*/u',
-        // La firma que deja Drupal en el resumen: "mcottam Mon, 09/14/2026 -
-        // 12:31". Es el usuario que publico y la hora, no la noticia.
-        '/\s*\S+\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*\d{1,2}\/\d{1,2}\/\d{4}\s*-\s*\d{1,2}:\d{2}\s*/u',
+        // La firma que deja Drupal al principio del resumen: "mcottam Mon,
+        // 09/14/2026 - 12:31". Es el usuario que publico y la hora, no la
+        // noticia. Anclada al principio, que es donde la pone el gestor: sin
+        // anclar se comia tambien la palabra anterior a cualquier fecha que
+        // apareciera en mitad de una frase legitima.
+        '/^\s*\S+\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*\d{1,2}\/\d{1,2}\/\d{4}\s*-\s*\d{1,2}:\d{2}\s*/u',
     ];
 
     foreach ($coletillas as $patron) {
@@ -145,7 +148,14 @@ function auto_limpiar(string $bruto): string
 
     // Ademas de espacios, se quitan los guiones y barras con los que muchos
     // feeds separan el resumen de la firma del medio.
-    $texto = trim($texto, " \t\n\r\0\x0B-–—·|");
+    //
+    // Con preg_replace y no con trim(): trim() recorta BYTES, no caracteres,
+    // y la lista lleva dentro guiones largos y puntos medios, que ocupan dos
+    // y tres bytes. Un texto que empezara por una comilla tipografica perdia
+    // el primer byte de la comilla y se quedaba en UTF-8 invalido: la clase
+    // de fallo que no se ve hasta que MySQL rechaza la fila o json_encode
+    // devuelve false y el indice del buscador sale vacio.
+    $texto = (string) preg_replace('/^[\s.:;,|\-\x{2013}\x{2014}\x{00B7}]+|[\s|\-\x{2013}\x{2014}\x{00B7}]+$/u', '', $texto);
 
     // Casi todos los feeds cortan el resumen a mitad de frase: unos dejan un
     // "[...]" -que se acaba de quitar- y otros ni eso. Un parrafo que termina
@@ -201,7 +211,9 @@ function auto_sin_titular(string $cuerpo, string $titular): string
         return $cuerpo;
     }
 
-    $resto = ltrim(mb_substr($cuerpo, $largo), " \t\n\r.:;,-–—|·");
+    // Igual que arriba: ltrim() recorta bytes y aqui hay caracteres de dos
+    // y tres bytes en la lista.
+    $resto = (string) preg_replace('/^[\s.:;,|\-\x{2013}\x{2014}\x{00B7}]+/u', '', mb_substr($cuerpo, $largo));
 
     // Si el resumen no era mas que el titular, se deja como estaba: quien
     // llama decide si un cuerpo vacio vale, y aqui no se puede saber.
@@ -254,7 +266,12 @@ function auto_es_promocional(string $texto): bool
 function auto_titular(string $bruto, array $medios = []): string
 {
     $titular = auto_decodificar(strip_tags(texto_limpiar_html($bruto)));
-    $titular = trim((string) preg_replace('/\s+/u', ' ', $titular));
+
+    // Con /u, preg_replace devuelve null si el texto no es UTF-8 valido, y de
+    // los feeds llega de todo: sin este reintento, un titular con un byte malo
+    // se publicaria vacio.
+    $juntado = preg_replace('/\s+/u', ' ', $titular);
+    $titular = trim((string) ($juntado ?? preg_replace('/\s+/', ' ', $titular)));
 
     foreach ($medios as $medio) {
         $medio = trim((string) $medio);

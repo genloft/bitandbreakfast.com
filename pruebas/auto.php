@@ -268,6 +268,28 @@ comprobar(
     auto_limpiar('mcottam Mon, 09/14/2026 - 12:31 El resumen de verdad empieza aqui.')
 );
 
+// Y la firma solo se quita donde la pone el gestor, al principio: una fecha en
+// mitad de una frase legitima no puede llevarse por delante la palabra anterior.
+comprobar(
+    'una fecha en mitad de la frase no se toca',
+    'La caida empezo el Mon, 09/14/2026 - 12:31 y duro cuatro horas.',
+    auto_limpiar('La caida empezo el Mon, 09/14/2026 - 12:31 y duro cuatro horas.')
+);
+
+// Los caracteres multibyte de la lista de recorte ocupan dos y tres bytes:
+// recortando por bytes se partian por la mitad y el texto quedaba invalido.
+comprobar(
+    'una comilla tipografica al principio sobrevive entera',
+    true,
+    mb_check_encoding(auto_sin_titular('Mews compra Atomize “la mayor del ano”, dicen', 'Mews compra Atomize'), 'UTF-8')
+);
+
+comprobar(
+    'y el cuerpo empieza donde tiene que empezar',
+    '“la mayor del ano”, dicen',
+    auto_sin_titular('Mews compra Atomize “la mayor del ano”, dicen', 'Mews compra Atomize')
+);
+
 // --- El titular repetido dentro del cuerpo ----------------------------------
 //
 // Muchos gestores meten el titular como primera linea del resumen: en el bit

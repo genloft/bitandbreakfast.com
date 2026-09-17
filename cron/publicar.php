@@ -131,6 +131,13 @@ function publicar_pendiente(float $limite): array
     $proveedores = publicar_proveedores();
 
     foreach ($proveedores as $proveedor) {
+        if (microtime(true) >= $limite) {
+            // Como con las ediciones: sin firma guardada, la proxima pasada
+            // vuelve a empezar y no queda ninguna ficha a medias. Con doscientos
+            // proveedores esta cola es lo que de verdad manda en la duracion.
+            return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
+        }
+
         $ficheros += publicar_escribir(
             $publico . '/' . web_ruta_proveedor((string) $proveedor['slug']),
             publicar_plantilla('proveedor', $comunes + [
@@ -209,6 +216,16 @@ function publicar_barrer(string $carpeta, array $vivos): int
             && $nombre !== '.'
             && $nombre !== '..'
     ));
+
+    // Un barrido que se lo lleva todo no es un barrido: es un sintoma. Pasa si
+    // alguien reabre las ediciones a mano, o si una revision las deja vacias, y
+    // el precio seria borrar el archivo entero de una web que no esta en el
+    // repositorio y solo vuelve con una regeneracion completa.
+    if (!$vivos && $hijas) {
+        error_log('Bit & Breakfast, barrido abortado en ' . $carpeta . ': no queda ningun slug vivo');
+
+        return 0;
+    }
 
     $borradas = 0;
 
