@@ -87,15 +87,18 @@ function salud_motivo(string $mensaje): string
  */
 function salud_fallando(): array
 {
-    $sql = "SELECT f.nombre,
-                   (SELECT l2.mensaje FROM log_ingesta l2
-                     WHERE l2.fuente_id = f.id AND l2.resultado = 'error'
-                     ORDER BY l2.inicio DESC LIMIT 1) AS ultimo
+    // La pregunta no es "¿ha fallado hoy?" sino "¿esta fallando ahora?": una
+    // fuente que fallo esta manana y se arreglo a mediodia no es un problema,
+    // y mientras salga en esta lista parece que si. Se mira la ULTIMA lectura
+    // de cada fuente, no las de todo el dia.
+    $sql = "SELECT f.nombre, u.mensaje
               FROM fuentes f
-             WHERE EXISTS (SELECT 1 FROM log_ingesta l
-                            WHERE l.fuente_id = f.id
-                              AND l.resultado = 'error'
-                              AND l.inicio > (NOW() - INTERVAL 1 DAY))
+              JOIN log_ingesta u ON u.id = (
+                    SELECT l.id FROM log_ingesta l
+                     WHERE l.fuente_id = f.id
+                     ORDER BY l.inicio DESC, l.id DESC
+                     LIMIT 1)
+             WHERE u.resultado = 'error'
              ORDER BY f.nombre
              LIMIT 12";
 
@@ -105,7 +108,7 @@ function salud_fallando(): array
         $filas = bd()->query($sql);
 
         foreach ($filas === false ? [] : $filas->fetchAll() as $fila) {
-            $salida[(string) $fila['nombre']] = salud_motivo((string) ($fila['ultimo'] ?? ''));
+            $salida[(string) $fila['nombre']] = salud_motivo((string) ($fila['mensaje'] ?? ''));
         }
     } catch (Throwable $e) {
         return [];
@@ -195,15 +198,16 @@ $informe = [
     ],
     'fuentes'   => [
         'activas'      => (int) salud_valor('SELECT COUNT(*) FROM fuentes WHERE activa = 1', 0),
-        'con_error'    => (int) salud_valor(
+        'con_error_hoy' => (int) salud_valor(
             "SELECT COUNT(DISTINCT fuente_id) FROM log_ingesta
               WHERE resultado = 'error' AND inicio > (NOW() - INTERVAL 1 DAY)",
             0
         ),
         'ultima_lectura' => (string) (salud_valor('SELECT MAX(inicio) FROM log_ingesta', '') ?: 'nunca'),
-        // Solo el nombre, nunca el mensaje del error: un mensaje de PDO lleva
-        // rutas del servidor dentro y esta pagina la ve cualquiera.
-        'fallando'     => salud_fallando(),
+        // Las que estan fallando ahora mismo, con el motivo en una palabra. El
+        // mensaje entero no sale: lo escribe una excepcion y una excepcion
+        // puede llevar rutas del servidor dentro.
+        'fallando'      => salud_fallando(),
         'nuevos_24h'   => (int) salud_valor(
             'SELECT COALESCE(SUM(nuevos), 0) FROM log_ingesta WHERE inicio > (NOW() - INTERVAL 1 DAY)',
             0
