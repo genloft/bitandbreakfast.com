@@ -53,6 +53,11 @@ function publicar_pendiente(float $limite): array
     $ficheros = 0;
     $hechas   = 0;
 
+    // Los bits de cada edicion, guardados al pasar: el RSS los necesita para
+    // decir que trae la edicion, y volver a pedirlos seria repetir una
+    // consulta que ya se ha hecho.
+    $titulares = [];
+
     // Si no hay proveedor de correo configurado, el bloque de alta se pinta
     // como "todavia no". Mejor eso que un formulario que no lleva a ningun
     // sitio.
@@ -85,9 +90,11 @@ function publicar_pendiente(float $limite): array
             return ['ediciones' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
         }
 
+        $titulares[(int) $edicion['id']] = publicar_bits((int) $edicion['id']);
+
         $datos = $comunes + [
             'edicion' => $edicion,
-            'bits'    => publicar_bits((int) $edicion['id']),
+            'bits'    => $titulares[(int) $edicion['id']],
             'fuentes' => publicar_fuentes((int) $edicion['id']),
             // Firma los enlaces contados. Si falta, los enlaces salen
             // directos a la fuente y simplemente no se cuentan.
@@ -158,7 +165,11 @@ function publicar_pendiente(float $limite): array
 
     $ficheros += publicar_escribir(
         $publico . '/feed.xml',
-        publicar_plantilla('feed', ['ediciones' => $ediciones, 'base' => $base])
+        publicar_plantilla('feed', [
+            'ediciones' => $ediciones,
+            'base'      => $base,
+            'titulares' => $titulares,
+        ])
     ) ? 1 : 0;
 
     // Y se barre lo que ya no le corresponde a nada: una edicion retirada no
