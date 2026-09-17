@@ -135,6 +135,25 @@ un MariaDB 10.6 para la de humo.
   noticias» o «la ingesta lleva dos días fallando», y desde fuera no hay forma
   de distinguirlo. Solo devuelve cuentas y fechas, nunca configuración ni
   nada que identifique a nadie.
+- **La puntuación no sabe de qué va la noticia, y por eso hay puertas.** El
+  diccionario puntúa palabras, no contextos: «malware» o «agente de IA» valen
+  lo mismo en una noticia sobre un PMS que en una sobre Outlook. Antes de
+  escribir un bit, el modo automático comprueba cinco cosas más, y cada una
+  nació de algo que se publicó y no debería:
+  1. Que el sector aparezca en el texto (`auto_es_del_sector`). Es la puerta
+     más barata y la que más basura para: el juzgado de California, los
+     botones de Copilot, el rastreador de despidos de Crunchbase.
+  2. Que tenga cuerpo. Un bit que solo dice quién lo publica no ahorra el clic.
+  3. Que cuente una noticia y no cinco (`auto_es_recopilatorio`): hay boletines
+     que meten su resumen semanal en una sola entrada del feed.
+  4. Que no sea material promocional (`auto_es_promocional`) ni una guía
+     (`auto_es_didactico`). Una guía no caduca: si entra una vez, entra
+     siempre, y desplaza a lo que sí ha pasado esta semana.
+  5. Que no sea una entrevista (`auto_es_entrevista`). No son malas; no son un
+     hecho.
+  Todas son heurísticas, así que descartan candidatos —que no cuesta nada— y
+  solo retiran algo ya publicado mientras su edición no se haya enviado por
+  correo. Una edición enviada es un hecho consumado.
 - **Ningún bit llega a una edición sin pasar por el formato.** El titular
   cabe en 120 caracteres, el cuerpo entre 25 y 110 palabras y el "por qué
   importa" es obligatorio. Un borrador se guarda como sea, pero aprobarlo
