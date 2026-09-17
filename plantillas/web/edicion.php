@@ -133,7 +133,7 @@ require_once __DIR__ . '/iconos.php';
           <h2 id="titular-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></h2>
 
           <p class="etiquetas">
-            <a class="etiqueta etiqueta-categoria" href="<?= web_e($base) ?>/buscar.html?c=<?= web_e(rawurlencode($tema)) ?>"><?= web_e($categorias[$tema] ?? $bit['categoria']) ?></a>
+            <a class="etiqueta etiqueta-categoria" href="<?= web_e(web_url_tema($base, $tema)) ?>"><?= web_e($categorias[$tema] ?? $bit['categoria']) ?></a>
             <span class="etiqueta"><?= web_e($tipos[$bit['tipo']] ?? $bit['tipo']) ?></span>
             <span class="etiqueta"><?= web_e($madureces[$bit['madurez']] ?? $bit['madurez']) ?></span>
             <?php if (($bit['idioma'] ?? 'es') !== 'es'): ?>

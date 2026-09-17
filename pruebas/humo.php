@@ -415,10 +415,18 @@ comprobar(
 
 // El cuerpo llega de un textarea: si alguna vez saliera sin escapar, esto lo
 // caza antes que un lector.
+// Los proveedores ya no tienen ficha: se nombran y se enlazan al buscador.
 comprobar(
-    'la portada enlaza la ficha del proveedor desde el bit',
+    'la portada nombra al proveedor y lleva al buscador',
     true,
-    str_contains($portada, '/p/oracle-hospitality/')
+    str_contains($portada, 'buscar.html?q=Oracle')
+);
+
+// Y el medio del que sale el bit si tiene ficha propia.
+comprobar(
+    'la portada enlaza la ficha del medio',
+    true,
+    str_contains($portada, '/m/humo-uno/') || str_contains($portada, '/m/humo-dos/')
 );
 
 comprobar(
