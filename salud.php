@@ -169,6 +169,17 @@ $informe = [
     // aplicado ya a lo publicado. Si la primera es mayor, hay una revision
     // pendiente; si son distintas y no bajan nunca, es que el despliegue se
     // quedo atras.
+    // El esquema: cual fue la ultima migracion aplicada y cuantas hay escritas.
+    // Sin esto, una migracion que falla es invisible desde fuera -el error va
+    // al registro del cron, que vive en el servidor- y lo unico que se nota es
+    // que una funcion nueva no hace nada. Esta linea contesta esa pregunta.
+    'esquema' => [
+        'ultima'     => (string) salud_valor(
+            "SELECT valor FROM ajustes WHERE clave = 'migracion_ultima'",
+            ''
+        ) ?: 'ninguna',
+        'escritas'   => count(glob(__DIR__ . '/sql/migraciones/*.sql') ?: []),
+    ],
     'criterios' => [
         'codigo'    => AUTO_CRITERIOS,
         'aplicados' => (int) salud_valor("SELECT valor FROM ajustes WHERE clave = 'auto_criterios'", 0),
