@@ -130,6 +130,30 @@ $otra_vez = migrar_pendientes($raiz);
 
 comprobar('y se pueden repetir sin romperse', '', $otra_vez['error']);
 
+// El diccionario es lo que decide si una noticia "habla del tema", y estaba
+// escrito mirando a la prensa internacional: una noticia espanola pertinente
+// podia no llegar al minimo. Se comprueba con titulares de verdad, en espanol,
+// porque es el idioma en el que este sitio publica siempre.
+
+require_once $raiz . '/lib/puntuar.php';
+
+$terminos = bd()->query('SELECT termino, peso FROM diccionario WHERE activo = 1')->fetchAll();
+
+comprobar('el diccionario pasa de ciento ochenta terminos', true, count($terminos) > 180);
+
+foreach ([
+    'Una brecha de datos deja al descubierto el PMS de una cadena hotelera',
+    'Los hoteles espanoles apuestan por la venta directa frente a las OTAs',
+    'El nuevo reconocimiento facial acelera el check-in digital en recepcion',
+    'La sostenibilidad y el consumo energetico entran en el cuadro de mando del hotel',
+] as $titular) {
+    comprobar(
+        'suma senal tematica: ' . mb_substr($titular, 0, 38),
+        true,
+        puntuar_diccionario($titular, '', $terminos, 100)['puntos'] >= 8
+    );
+}
+
 // -----------------------------------------------------------------------------
 // Items de prueba
 //
