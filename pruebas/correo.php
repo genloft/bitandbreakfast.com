@@ -336,7 +336,14 @@ comprobar('y el enlace a la fuente', true, str_contains($texto_ed, 'https://ejem
 
 // Lo que no puede faltar en ningun envio, ni por error ni por prisa.
 comprobar('el texto lleva la baja', true, str_contains($texto_ed, $baja_url));
-comprobar('y el html tambien', true, str_contains($html_ed, $baja_url));
+
+// En el HTML va escapada -el & de la URL es &amp; en un href-, asi que se
+// busca escapada. Buscarla en crudo daria un fallo con el codigo correcto.
+comprobar(
+    'y el html tambien, escapada',
+    true,
+    str_contains($html_ed, htmlspecialchars($baja_url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
+);
 
 comprobar('el html escapa lo que pinta', true, str_contains(
     envio_html($edicion_correo, [[
