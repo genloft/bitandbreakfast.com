@@ -291,7 +291,11 @@ declare(strict_types=1);
     cargando = true;
     estado.textContent = 'Cargando el índice…';
 
-    fetch('/indice.json', { credentials: 'omit' })
+    // cache: 'no-cache' no significa "no guardes": significa "pregunta antes de
+    // usar lo guardado". El indice cambia cada vez que se publica y no lleva
+    // version en la URL, asi que sin esto el explorador puede ensenar la
+    // edicion de la semana pasada con toda la confianza del mundo.
+    fetch('/indice.json', { credentials: 'omit', cache: 'no-cache' })
       .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function (datos) {
         // Formato nuevo con etiquetas; se acepta el antiguo por si queda una
