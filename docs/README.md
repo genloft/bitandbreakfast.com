@@ -166,6 +166,17 @@ un MariaDB 10.6 para la de humo.
   ficheros dentro de `publico/` y a partir de ahí Apache los sirve sin tocar
   PHP ni la base de datos. Es lo único que aguanta una portada compartida de
   golpe, y en un alojamiento compartido no hay plan B.
+- **Todo en español, y no traduciendo.** Entra solo lo que alguien cuenta en
+  español; el titular, el cuerpo y el enlace salen del mismo medio, el que lo
+  contó en español. Traducir sería dejar de decir lo que dijo la fuente, y una
+  traducción automática en un radar que presume de comprobable es una mentira
+  pequeña repetida veinte veces por edición. Se pierde alguna primicia
+  internacional: se sabe, y se prefiere. Se apaga con `auto_solo_espanol` a 0.
+- **Un color y un icono por temática, y solo ahí.** Los once iconos se dibujan
+  en `plantillas/web/iconos.php` y de ahí salen la edición, el sumario, los
+  filtros y los resultados: una sola lista, no cuatro copias. El color pinta
+  el icono y su marco, nunca el texto, porque once colores de texto en una
+  página son un arcoíris, no una guía.
 - **La portada se lee con el pulgar.** El sumario va antes que los bits porque
   un radar tiene que decir en diez segundos si esta semana traía algo. Todo lo
   demás es consecuencia de eso.

@@ -661,6 +661,16 @@ h1 {
   color: var(--apagado);
 }
 
+/* El icono del tema delante del titular de cada resultado, alineado con la
+   primera linea y no centrado: un icono centrado en un titular de tres lineas
+   se queda flotando en mitad de la nada. */
+#resultados h2 .icono {
+  display: inline-block;
+  vertical-align: baseline;
+  margin-right: .4rem;
+  color: var(--tema, var(--apagado));
+}
+
 /* --- Temas y medios, al final de la edicion -------------------------------- */
 
 .explorar {

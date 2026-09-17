@@ -245,8 +245,18 @@ require_once __DIR__ . '/iconos.php';
     resultados.slice(0, MAXIMO).forEach(function (f) {
       var url = '/e/' + encodeURIComponent(f.s) + '/#bit-' + f.i;
 
-      html += '<li>';
-      html += '<h2><a href="' + escapar(url) + '">' + escapar(f.t) + '</a></h2>';
+      html += '<li data-tema="' + escapar(f.c || '') + '">';
+      html += '<h2>';
+
+      // El mismo icono que en la edicion: quien ha visto la portada reconoce
+      // el tema del resultado sin leer la etiqueta.
+      if (ICONOS[f.c]) {
+        html += '<svg class="icono icono-mini" viewBox="0 0 24 24" fill="none" '
+              + 'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" '
+              + 'stroke-linejoin="round" aria-hidden="true">' + ICONOS[f.c] + '</svg>';
+      }
+
+      html += '<a href="' + escapar(url) + '">' + escapar(f.t) + '</a></h2>';
       html += '<p class="datos">Edición ' + f.n + '<span class="punto">·</span>';
       html += '<time datetime="' + escapar(f.f) + '">' + escapar(f.d || f.f) + '</time>';
 
