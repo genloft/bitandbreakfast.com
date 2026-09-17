@@ -10,6 +10,7 @@
 
 require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/estado.php';
+require_once dirname(__DIR__) . '/lib/feed.php';
 
 $ahora    = 1_800_000_000;
 $silencio = 7200;
@@ -78,5 +79,24 @@ comprobar('segundos', 'hace 45 s', estado_edad_texto(45));
 comprobar('minutos', 'hace 30 min', estado_edad_texto(1800));
 comprobar('horas', 'hace 5 h', estado_edad_texto(18000));
 comprobar('dias', 'hace 3 días', estado_edad_texto(259200));
+
+// --- Como se presenta el rastreador -----------------------------------------
+//
+// Hay cortafuegos que devuelven 403 a cualquier agente con la palabra "bot"
+// dentro, aunque el feed sea publico. En el reintento se quita esa palabra,
+// pero el nombre y la direccion del sitio siguen ahi: no se finge ser otro.
+
+comprobar(
+    'por defecto se presenta como lo que es',
+    true,
+    str_contains(strtolower(feed_agente()), 'bot')
+);
+
+comprobar(
+    'en el reintento se quita la palabra, no el nombre',
+    true,
+    !str_contains(strtolower(feed_agente(false)), 'bot')
+        && str_contains(feed_agente(false), 'BitAndBreakfast')
+);
 
 resumen_pruebas('Pruebas del estado del sitio');

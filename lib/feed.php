@@ -50,6 +50,57 @@ function feed_pausa_dominio(string $url): void
  */
 function feed_descargar(string $url, ?string $etag = null, ?string $last_modified = null): array
 {
+    $resultado = feed_peticion($url, $etag, $last_modified, feed_agente());
+
+    // Hay cortafuegos que devuelven 403 a cualquier agente que lleve la palabra
+    // "bot" dentro, aunque el feed sea publico y este ahi para leerlo. Tres de
+    // las fuentes en espanol del catalogo hacen justo eso. Se reintenta una vez
+    // presentandose sin esa palabra -el nombre y la direccion del sitio siguen
+    // ahi, no se finge ser otro-, y solo cuando la respuesta ha sido un no por
+    // quien pregunta, no por lo que se pregunta.
+    if (in_array($resultado['codigo'], [401, 403, 406, 429], true)) {
+        $segundo = feed_peticion($url, $etag, $last_modified, feed_agente(false));
+
+        if ($segundo['codigo'] >= 200 && $segundo['codigo'] < 400) {
+            return $segundo;
+        }
+    }
+
+    return $resultado;
+}
+
+/**
+ * Como se presenta el rastreador.
+ *
+ * Con la palabra "bot" por defecto, que es lo correcto: quien recibe la
+ * peticion tiene derecho a saber que no es una persona. Sin ella en el
+ * reintento, porque hay cortafuegos que la usan como unica regla.
+ */
+function feed_agente(bool $declarado = true): string
+{
+    $defecto = 'Mozilla/5.0 (compatible; BitAndBreakfastBot/1.0; +https://bitandbreakfast.com/bot)';
+
+    try {
+        // Sin configuracion -en las pruebas, por ejemplo- se usa el de casa:
+        // presentarse mal es mejor que no presentarse, y desde luego mejor que
+        // romper por leer un ajuste.
+        $agente = (string) (config('rastreador.user_agent') ?: $defecto);
+    } catch (Throwable $e) {
+        $agente = $defecto;
+    }
+
+    if ($declarado) {
+        return $agente;
+    }
+
+    return trim((string) preg_replace('/\s*bot\b/i', '', $agente)) ?: 'Mozilla/5.0';
+}
+
+/**
+ * Una peticion, con el agente que se le diga.
+ */
+function feed_peticion(string $url, ?string $etag, ?string $last_modified, string $agente): array
+{
     $resultado = [
         'codigo' => 0, 'cuerpo' => '', 'etag' => null,
         'last_modified' => null, 'error' => '',
@@ -74,7 +125,7 @@ function feed_descargar(string $url, ?string $etag = null, ?string $last_modifie
         CURLOPT_MAXREDIRS      => 5,
         CURLOPT_TIMEOUT        => (int) (config('rastreador.timeout') ?? 10),
         CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_USERAGENT      => (string) config('rastreador.user_agent'),
+        CURLOPT_USERAGENT      => $agente,
         CURLOPT_HTTPHEADER     => $cabeceras,
         // Acepta gzip: los feeds grandes ocupan la cuarta parte y el
         // alojamiento compartido agradece cada byte.
