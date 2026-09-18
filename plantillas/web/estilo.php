@@ -43,6 +43,10 @@ declare(strict_types=1);
   --papel:   #f4f2ee;
   --tarjeta: #faf9f7;
   --tinta:   #0d0d0d;
+  /* El texto seguido, casi negro. Estaba en --apagado, que es el gris de los
+     datos secundarios: valido para una fecha de tres palabras y no para
+     cuatro lineas seguidas. La diferencia entre leer y descifrar. */
+  --texto:   #26241f;
   --apagado: #5f5c57;
   --suave:   #8d8982;
   --filete:  #0d0d0d;
@@ -59,7 +63,14 @@ declare(strict_types=1);
   --titular: "Arial Narrow", "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
   --ui:      ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
              Inter, Helvetica, Arial, sans-serif;
-  --cuerpo:  Georgia, Charter, "Iowan Old Style", "Times New Roman", serif;
+  /* El cuerpo pasa de serif a sans. La serif es mas bonita en una columna
+     ancha y de papel; aqui el texto vive en celdas de veinte caracteres y a
+     quince pixeles, y ahi la sans de sistema se lee sin esfuerzo y la serif se
+     emborrona. Se mantiene la serif para las paginas de texto seguido, que es
+     donde tenia razon de ser. */
+  --cuerpo:  ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+             Roboto, Inter, Helvetica, Arial, sans-serif;
+  --lectura-serif: Georgia, Charter, "Iowan Old Style", "Times New Roman", serif;
 
   --ancho:   80rem;
   --lectura: 38rem;
@@ -75,8 +86,8 @@ body {
   background: var(--papel);
   color: var(--tinta);
   font-family: var(--cuerpo);
-  font-size: clamp(.98rem, .94rem + .2vw, 1.05rem);
-  line-height: 1.55;
+  font-size: clamp(1rem, .96rem + .25vw, 1.1rem);
+  line-height: 1.6;
   overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -96,9 +107,9 @@ img { max-width: 100%; height: auto; }
 .sello, .facetas h3, .explorar-grupo, .ano h2, .rotulo {
   margin: 0 0 .8rem;
   font-family: var(--titular);
-  font-size: .72rem;
+  font-size: .74rem;
   font-weight: 700;
-  letter-spacing: .14em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--tinta);
 }
@@ -204,9 +215,9 @@ img { max-width: 100%; height: auto; }
 .panel dt, .panel dd { margin: 0; }
 
 .panel dt {
-  font-size: .58rem;
+  font-size: .64rem;
   font-weight: 700;
-  letter-spacing: .14em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--suave);
 }
@@ -305,7 +316,9 @@ h1 {
   text-transform: uppercase;
 }
 
-.datos { margin: 0; color: var(--apagado); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+/* Las mayusculas espaciadas se leen peor que las minusculas, asi que aqui van
+   lo justo: un poco mas grandes y con menos espaciado del que tenian. */
+.datos { margin: 0; color: var(--apagado); font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; }
 .punto { padding: 0 .35rem; color: var(--filete-fino); }
 
 .intro { margin: 1rem 0 0; max-width: var(--lectura); font-size: 1.05em; color: var(--apagado); }
@@ -409,7 +422,12 @@ h1 {
   letter-spacing: -.01em;
 }
 
-.texto p { margin: 0 0 .6rem; color: var(--apagado); font-size: .93rem; }
+.texto p {
+  margin: 0 0 .65rem;
+  color: var(--texto);
+  font-size: 1.02rem;
+  line-height: 1.58;
+}
 
 .por-que {
   margin: .8rem 0;
@@ -432,7 +450,7 @@ h1 {
 }
 
 .bit-lead .texto { max-width: var(--lectura); }
-.bit-lead .texto p { font-size: 1rem; }
+.bit-lead .texto p { font-size: 1.12rem; line-height: 1.55; }
 .bit-lead .numero { font-size: 1.6rem; }
 
 .etiquetas { display: flex; flex-wrap: wrap; align-items: baseline; gap: .45rem; margin: 0 0 .5rem; }
@@ -454,7 +472,7 @@ h1 {
 .etiqueta-categoria:hover { background: var(--acento); }
 .etiqueta-idioma { color: var(--acento); }
 
-.menciona { margin: .5rem 0 0; font-size: .72rem; color: var(--apagado); }
+.menciona { margin: .5rem 0 0; font-size: .78rem; color: var(--apagado); }
 .menciona a { color: var(--apagado); }
 
 .pie-bit {
@@ -679,7 +697,8 @@ h1 {
 
 /* --- Paginas de texto ---------------------------------------------------------------- */
 
-.pagina { margin-top: 1.5rem; max-width: var(--lectura); }
+/* Aqui si: una columna estrecha de texto seguido es donde la serif gana. */
+.pagina { margin-top: 1.5rem; max-width: var(--lectura); font-family: var(--lectura-serif); font-size: 1.05rem; }
 .pagina h2 { margin: 2rem 0 .5rem; font-family: var(--titular); font-weight: 700; font-size: 1.6rem; text-transform: uppercase; }
 .pagina ul { margin: 0 0 1rem; padding-left: 1.1rem; }
 .pagina li { margin-bottom: .4rem; }
