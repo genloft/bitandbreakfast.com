@@ -88,4 +88,10 @@ comprobar(
     cifras_limite_revision('esto no es una fecha')
 );
 
+comprobar(
+    'el valor de IA en España tiene forma de porcentaje, sin el simbolo',
+    1,
+    (int) preg_match('/^\d+,\d$/', cifras_valor_ia_espana())
+);
+
 resumen_pruebas('Pruebas de lib/cifras.php');

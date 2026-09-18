@@ -443,3 +443,12 @@ un MariaDB 10.6 para la de humo.
   correo, contado hacia delante en vez de hacia atrás- y la página lo
   enseña como "con revisión antes del…". No es una promesa nueva, es la
   misma que ya existía hecha visible.
+- **El banner de Cifras en portada no repite el número a mano.** Citaba
+  "21,1 %" como literal suelto, sin nada que lo atara al array `$grupos` de
+  `estadisticas.php` de donde en realidad sale ese dato -el propio
+  comentario de `lib/cifras.php` ya avisaba de que solo debían quedar dos
+  sitios que tocar el día que cambien los datos, y portada.php era un
+  tercero sin documentar-. Ahora los dos leen `cifras_valor_ia_espana()`,
+  en `lib/cifras.php`: cambiar el número una vez lo cambia en las dos
+  páginas a la vez, en vez de dejar que portada.html siga citando un dato
+  que la propia página de Cifras ya haya dejado atrás.

@@ -96,7 +96,7 @@ $grupos = [
         'cifras' => [
             [
                 'ambito'  => 'España',
-                'valor'   => '21,1%',
+                'valor'   => cifras_valor_ia_espana() . '%',
                 'detalle' => 'de las empresas de 10 o más empleados usa inteligencia artificial',
                 'fuente'  => 'INE, Encuesta sobre el uso de TIC y comercio electrónico en las empresas',
                 'fecha'   => 'dato de 2025 (1T) · publicado en octubre de 2025',
