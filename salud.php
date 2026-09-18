@@ -22,6 +22,7 @@ require_once __DIR__ . '/lib/estado.php';
 require_once __DIR__ . '/lib/auto.php';
 require_once __DIR__ . '/lib/correo.php';
 require_once __DIR__ . '/lib/traducir.php';
+require_once __DIR__ . '/lib/cifras.php';
 
 date_default_timezone_set('UTC');
 
@@ -312,6 +313,20 @@ $informe = [
     // Ya no se cuentan ediciones, que no existen: se cuenta lo que hay
     // publicado y lo que ha entrado hoy, que es lo que contesta la pregunta
     // de si esto se esta llenando o esta parado.
+    // /estadisticas.html no sale de esta base: alguien la revisa a mano, y
+    // cron/mantenimiento.php avisa por correo cuando lleva demasiado sin
+    // hacerlo. Esta pagina cuenta lo mismo que ese cron para que se pueda
+    // comprobar desde fuera sin esperar al aviso.
+    'cifras' => [
+        'revisado'         => cifras_revisado(),
+        'dias_sin_revisar' => (int) floor(($ahora - (strtotime(cifras_revisado() . ' UTC') ?: $ahora)) / 86400),
+        'caduca_en_dias'   => CIFRAS_CADUCIDAD_DIAS,
+        'caducada'         => cifras_caducadas(
+            cifras_revisado(),
+            gmdate('Y-m-d', $ahora),
+            (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'cifras_aviso_revisado'", '')
+        ),
+    ],
     'contenido' => [
         'bits'        => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'", 0),
         'hoy'         => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado' AND dia = UTC_DATE()", 0),

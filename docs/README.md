@@ -416,3 +416,10 @@ un MariaDB 10.6 para la de humo.
   de la fuente: es lo único de los dos que este sitio puede prometer que
   sigue existiendo, y es donde vive el contexto -las demás fuentes que lo
   cuentan, el tema, el «por qué importa»- que la fuente sola no tiene.
+- **`/salud.php` también cuenta la caducidad de Cifras.** El bloque
+  `cifras` dice desde cuándo no se revisa `/estadisticas.html` y si ya ha
+  cruzado el umbral de `cron/mantenimiento.php`. No hace nada que ese cron
+  no haga ya -el aviso por correo sigue siendo el que de verdad avisa-,
+  pero es la misma pregunta que el resto de esta página contesta para todo
+  lo demás: se puede comprobar desde fuera sin esperar a que llegue un
+  correo.
