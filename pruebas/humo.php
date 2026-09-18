@@ -387,6 +387,13 @@ comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe el dia en su carpeta', true, is_file($publico . '/' . web_ruta_dia($dia)));
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
+
+$sobre = (string) file_get_contents($publico . '/sobre.html');
+
+comprobar('y enlaza a Cifras', true, str_contains($sobre, '/estadisticas.html'));
+comprobar('y a Tendencias', true, str_contains($sobre, '/tendencias.html'));
+comprobar('y a Glosario', true, str_contains($sobre, '/glosario.html'));
+comprobar('y a Medios', true, str_contains($sobre, '/medios.html'));
 comprobar('escribe el cuadro de cifras', true, is_file($publico . '/estadisticas.html'));
 comprobar(
     'y dice hasta cuando vale esa revision',

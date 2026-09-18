@@ -98,6 +98,19 @@ $alta_abierta  = $alta_abierta ?? false;
     <p>Cada bit enlaza a su fuente original. La idea es que leas el bit y, si
     te toca de cerca, vayas a la fuente. Lo contrario sería quedarse con el
     tráfico de otro.</p>
+
+    <h2>Más que el día a día</h2>
+
+    <p>El río de bits es el centro, pero no es todo. <a href="<?= web_e($base) ?>/estadisticas.html">Cifras</a>
+    pone a España frente al mundo en adopción de IA, cloud, comercio
+    electrónico y ciberseguridad, con fuente y fecha en cada dato.
+    <a href="<?= web_e($base) ?>/tendencias.html">Tendencias</a> dice qué tema
+    sube y cuál baja este trimestre, comparado con el anterior.
+    <a href="<?= web_e($base) ?>/glosario.html">Glosario</a> explica las
+    siglas del sector sin salir del sitio -las tres, siempre a mano, bajo
+    «Recursos» en el menú de arriba-. Y
+    <a href="<?= web_e($base) ?>/medios.html">Medios</a> enseña de dónde sale
+    cada noticia y cuánto aporta cada fuente.</p>
   </div>
 
   <?php require __DIR__ . '/suscribir.php'; ?>

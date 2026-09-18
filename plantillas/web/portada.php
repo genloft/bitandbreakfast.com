@@ -73,8 +73,6 @@ foreach ($rio as $tramo) {
     $total += count($tramo['bits']);
 }
 
-$hoy_bits = isset($rio[0]) ? count($rio[0]['bits']) : 0;
-
 $descripcion = sprintf(
     'Lo último en tecnología hotelera: %d noticias de %d días, con enlace a la fuente.',
     $total,
