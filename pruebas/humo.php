@@ -428,6 +428,7 @@ comprobar(
 comprobar('el bit del indice trae su fuente', 'Humo Uno', $bits_indice[0]['fu'] ?? '');
 comprobar('y su ambito', 'global', $bits_indice[0]['a'] ?? '');
 comprobar('y su idioma', 'es', $bits_indice[0]['l'] ?? '');
+comprobar('y la lista de proveedores que menciona, para poder filtrar por uno', ['Oracle Hospitality'], $bits_indice[0]['pv'] ?? null);
 
 // Y las etiquetas, para que el buscador no lleve una copia de los catalogos.
 comprobar(

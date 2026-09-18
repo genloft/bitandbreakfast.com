@@ -30,7 +30,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Explorar · Bit &amp; Breakfast</title>
-<meta name="description" content="Busca y filtra en todo lo publicado por Bit &amp; Breakfast: por tema, ámbito, idioma y medio.">
+<meta name="description" content="Busca y filtra en todo lo publicado por Bit &amp; Breakfast: por tema, ámbito, idioma, medio y proveedor.">
 <link rel="canonical" href="<?= web_e($base) ?>/buscar.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
@@ -79,6 +79,11 @@ $alta_abierta  = $alta_abierta ?? false;
     <div class="faceta" data-faceta="fu">
       <h3 id="faceta-fu">Fuente</h3>
       <div class="opciones" role="group" aria-labelledby="faceta-fu"></div>
+    </div>
+
+    <div class="faceta" data-faceta="pv">
+      <h3 id="faceta-pv">Proveedor</h3>
+      <div class="opciones" role="group" aria-labelledby="faceta-pv"></div>
     </div>
 
     <button type="button" class="limpiar" id="limpiar" hidden>Quitar todos los filtros</button>

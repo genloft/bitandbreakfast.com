@@ -40,13 +40,13 @@ require_once __DIR__ . '/iconos.php';
     return;
   }
 
-  var GRUPOS = ['c', 'a', 'l', 'fu'];
+  var GRUPOS = ['c', 'a', 'l', 'fu', 'pv'];
   var MAXIMO = 60;
 
   var bits = null;
   var etiquetas = {};
   var cargando = false;
-  var seleccion = { c: [], a: [], l: [], fu: [] };
+  var seleccion = { c: [], a: [], l: [], fu: [], pv: [] };
 
   // Mismas reglas que texto_normalizar() en PHP.
   function normalizar(texto) {
@@ -77,6 +77,13 @@ require_once __DIR__ . '/iconos.php';
   /**
    * ¿Pasa este bit los filtros? Se puede pedir ignorar un grupo, que es como
    * se calculan los recuentos de ese mismo grupo.
+   *
+   * Todos los grupos menos 'pv' llevan un solo valor por bit: una tematica,
+   * un ambito. 'pv' -los proveedores que menciona el bit- puede llevar
+   * varios o ninguno, porque una noticia puede citar dos productos a la vez.
+   * Coincide si el bit menciona a cualquiera de los proveedores marcados,
+   * no solo si los lleva todos: exigir todos habria escondido un bit que
+   * menciona a Mews y a Cloudbeds en cuanto se marcaran los dos.
    */
   function pasa(bit, salvo) {
     for (var i = 0; i < GRUPOS.length; i++) {
@@ -86,7 +93,15 @@ require_once __DIR__ . '/iconos.php';
         continue;
       }
 
-      if (seleccion[grupo].indexOf(bit[grupo]) === -1) {
+      if (Array.isArray(bit[grupo])) {
+        var alguno = seleccion[grupo].some(function (valor) {
+          return bit[grupo].indexOf(valor) !== -1;
+        });
+
+        if (!alguno) {
+          return false;
+        }
+      } else if (seleccion[grupo].indexOf(bit[grupo]) === -1) {
         return false;
       }
     }
@@ -160,12 +175,15 @@ require_once __DIR__ . '/iconos.php';
 
       for (var i = 0; i < bits.length; i++) {
         var bit = bits[i];
+        var valores_bit = Array.isArray(bit[grupo]) ? bit[grupo] : (bit[grupo] ? [bit[grupo]] : []);
 
-        if (!bit[grupo] || !pasa(bit, grupo) || puntuar(bit, palabras) === 0) {
+        if (!valores_bit.length || !pasa(bit, grupo) || puntuar(bit, palabras) === 0) {
           continue;
         }
 
-        cuentas[bit[grupo]] = (cuentas[bit[grupo]] || 0) + 1;
+        valores_bit.forEach(function (valor) {
+          cuentas[valor] = (cuentas[valor] || 0) + 1;
+        });
       }
 
       // Las seleccionadas siguen apareciendo aunque el recuento sea cero: si

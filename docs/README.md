@@ -461,3 +461,15 @@ un MariaDB 10.6 para la de humo.
   la mitad de lo que ofrece es la misma clase de fallo que un `<details>`
   que nunca se abre. Añadido un párrafo "Más que el día a día" con enlace
   a las cuatro.
+- **El buscador filtra por proveedor, no solo por texto libre.** `bit['v']`
+  ya llevaba los nombres de los proveedores mencionados, pero unidos en una
+  frase, solo para la búsqueda de texto: no había forma de marcar "Mews" y
+  ver solo esos bits. Nueva faceta `pv` en el índice -lista, no cadena,
+  porque un bit puede mencionar más de un proveedor a la vez- y `pasa()` en
+  `buscarjs.php` distingue ahora facetas de un solo valor (tema, ámbito,
+  idioma, fuente) de facetas de varios (proveedor): coincide con cualquiera
+  de los marcados, no con todos, igual que ya sumaban entre sí los valores
+  de una misma faceta escalar. Sin librería de pruebas para JavaScript en
+  este proyecto, se verificó a mano con un guion de Node de usar y tirar
+  -no vive en el repositorio- antes de escribir esto: las facetas
+  existentes (escalares) se comportan byte a byte igual que antes.

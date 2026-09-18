@@ -201,7 +201,7 @@ function web_fila_indice(array $bit): array
         't' => (string) $bit['titular'],
         'q' => (string) ($bit['por_que'] ?? ''),
         'c' => bits_categoria_canonica((string) $bit['categoria']) ?: (string) $bit['categoria'],
-        // Las tres facetas que se pueden filtrar, ademas de la categoria.
+        // Las demas facetas que se pueden filtrar, ademas de la categoria.
         'fu' => (string) ($bit['fuente'] ?? ''),
         'a'  => (string) ($bit['ambito'] ?? 'global'),
         'l'  => (string) ($bit['idioma'] ?? 'en'),
@@ -211,7 +211,13 @@ function web_fila_indice(array $bit): array
         // Y el mismo dia ya escrito, para no repetir los nombres de los meses
         // en JavaScript ni arriesgarse a que los dos formatos difieran.
         'd' => web_fecha_larga(substr((string) ($bit['dia'] ?? ''), 0, 10)),
-        'v' => $nombres,
+        // La cuarta faceta filtrable, y la unica que puede llevar mas de un
+        // valor a la vez: un bit puede mencionar varios proveedores. 'v' seguia
+        // llevando los mismos nombres ya unidos en una frase, para la busqueda
+        // de texto libre; 'pv' es la lista, para poder marcar "Mews" y que
+        // cuente solo los bits que de verdad lo mencionan.
+        'v'  => $nombres,
+        'pv' => array_column($proveedores, 'nombre'),
         'b' => $buscable,
     ];
 }
