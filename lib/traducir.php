@@ -20,11 +20,24 @@
  *   3. Solo se traduce lo que ya ha pasado todas las puertas. Traducir antes
  *      seria gastar cuota en las novecientas noticias que se van a descartar.
  *
- * El proveedor es DeepL, por el plan gratuito -medio millon de caracteres al
- * mes, que a titular y resumen dan para miles de noticias- y porque es el que
- * mejor traduce al espanol. La clave la teclea el dueno del sitio en el panel
- * y se guarda en config/traductor.php, fuera del repositorio y con permisos
- * 0600, igual que la del buzon.
+ * Hay dos proveedores, y el orden importa:
+ *
+ *   deepl     El bueno. Plan gratuito de medio millon de caracteres al mes,
+ *             que a titular y resumen dan para miles de noticias, y es el que
+ *             mejor traduce al espanol. Necesita una clave, y la clave la
+ *             teclea una persona: se guarda en config/traductor.php, fuera del
+ *             repositorio y con permisos 0600, igual que la del buzon.
+ *
+ *   mymemory  El de respaldo. No necesita clave ninguna, asi que funciona
+ *             desde el primer minuto, a cambio de dos cosas: traduce algo peor
+ *             y tiene un limite diario de palabras -cinco mil sin identificar,
+ *             cincuenta mil dando un correo de contacto-.
+ *
+ * El respaldo existe porque sin el la regla era "no se publica nada que no
+ * este en espanol", y eso dejaba fuera cuatro de cada cinco noticias que este
+ * radar entiende. Esperar a que alguien pegue una clave para enseñar lo que ya
+ * se tiene es una forma tonta de tener la casa vacia. Cuando la clave llega,
+ * DeepL manda y el respaldo se queda quieto.
  */
 
 declare(strict_types=1);
@@ -36,6 +49,9 @@ const TRADUCIR_TIMEOUT = 12;
 
 /** Caracteres que se dejan sin gastar del plan, por si acaso. */
 const TRADUCIR_COLCHON = 20000;
+
+/** Palabras al dia del respaldo. Su limite anonimo es 5.000; se deja margen. */
+const TRADUCIR_PALABRAS_DIA = 4000;
 
 /**
  * La configuracion del traductor, con los huecos a cero.
@@ -57,15 +73,44 @@ function traducir_conf(): array
     $datos = is_array($datos) ? $datos : [];
 
     $conf = [
-        'proveedor'  => (string) ($datos['proveedor'] ?? 'deepl'),
         'clave'      => (string) ($datos['clave'] ?? ''),
         // Las claves del plan gratuito acaban en ':fx' y van a otro dominio.
         // Se deduce de la clave para que no haya un ajuste mas que equivocar.
         'plan'       => str_ends_with((string) ($datos['clave'] ?? ''), ':fx') ? 'free' : 'pro',
         'limite_mes' => (int) ($datos['limite_mes'] ?? 500000),
+        // El respaldo se puede apagar, pero viene encendido: con el apagado y
+        // sin clave, este sitio vuelve a publicar solo lo que este en espanol.
+        'respaldo'   => (string) traducir_ajuste('traductor_respaldo', '1') === '1',
+        // Un correo de contacto multiplica por diez la cuota del respaldo. Es
+        // opcional y va a un tercero, asi que lo pone quien quiera ponerlo.
+        'contacto'   => (string) traducir_ajuste('traductor_contacto', ''),
     ];
 
+    $conf['proveedor'] = trim($conf['clave']) !== ''
+        ? 'deepl'
+        : ($conf['respaldo'] ? 'mymemory' : '');
+
     return $conf;
+}
+
+/**
+ * Un ajuste que no revienta si todavia no hay base de datos.
+ *
+ * traducir_conf() la llaman las pruebas y el panel, y en las pruebas no
+ * siempre hay tabla de ajustes. Sin esto, mirar la configuracion del traductor
+ * seria un error fatal en el sitio mas tonto.
+ *
+ * Con prefijo traducir_ porque vive en este fichero: una funcion llamada
+ * ajuste_algo fuera de lib/db.php es una colision esperando a que alguien
+ * escriba la de verdad.
+ */
+function traducir_ajuste(string $clave, string $defecto): string
+{
+    try {
+        return (string) ajuste($clave, $defecto);
+    } catch (Throwable $e) {
+        return $defecto;
+    }
 }
 
 /**
@@ -75,7 +120,7 @@ function traducir_configurado(?array $conf = null): bool
 {
     $conf = $conf ?? traducir_conf();
 
-    return trim((string) $conf['clave']) !== '';
+    return ($conf['proveedor'] ?? '') !== '';
 }
 
 /**
@@ -159,6 +204,26 @@ function traducir_textos(array $textos, string $origen = '', ?array $conf = null
         return ['ok' => true, 'textos' => [], 'mensaje' => ''];
     }
 
+    return ($conf['proveedor'] ?? '') === 'deepl'
+        ? traducir_deepl($textos, $origen, $conf)
+        : traducir_mymemory($textos, $origen, $conf);
+}
+
+/**
+ * DeepL: los textos van juntos en una peticion.
+ *
+ * Juntos porque cobra por caracter pero cuesta por peticion: mandar el titular
+ * y el resumen de una vez es la mitad de viajes y exactamente el mismo gasto.
+ * El orden de la respuesta es el de la peticion -lo promete su documentacion-
+ * pero si vuelven menos de los que fueron se da por fallida: emparejar mal un
+ * titular con otro resumen es peor que no traducir.
+ *
+ * @param string[] $textos
+ *
+ * @return array ['ok' => bool, 'textos' => string[], 'mensaje' => string]
+ */
+function traducir_deepl(array $textos, string $origen, array $conf): array
+{
     $caracteres = 0;
 
     foreach ($textos as $texto) {
@@ -244,6 +309,126 @@ function traducir_textos(array $textos, string $origen = '', ?array $conf = null
     traducir_apuntar($caracteres);
 
     return ['ok' => true, 'textos' => $salida, 'mensaje' => ''];
+}
+
+/**
+ * MyMemory: el respaldo que no necesita clave.
+ *
+ * Una peticion por texto, porque su API no admite mas. Es mas lento y traduce
+ * algo peor que DeepL, y aun asi es la diferencia entre una portada con lo que
+ * pasa en el mundo y una portada con lo que pasa en Espana.
+ *
+ * Su limite es por palabras y por dia -cinco mil sin identificarse-, no por
+ * caracteres y por mes. Asi que lleva su propia cuenta, con un tope por debajo
+ * del real: pasarse no devuelve un error claro, devuelve traducciones vacias, y
+ * eso es peor que parar a tiempo.
+ *
+ * @param string[] $textos
+ *
+ * @return array ['ok' => bool, 'textos' => string[], 'mensaje' => string]
+ */
+function traducir_mymemory(array $textos, string $origen, array $conf): array
+{
+    $palabras = 0;
+
+    foreach ($textos as $texto) {
+        $palabras += str_word_count(strip_tags($texto));
+    }
+
+    if ($palabras > traducir_palabras_libres()) {
+        return ['ok' => false, 'textos' => [], 'mensaje' => 'cuota diaria del respaldo agotada'];
+    }
+
+    $origen = $origen !== '' && $origen !== 'es' ? substr($origen, 0, 2) : 'en';
+    $salida = [];
+
+    foreach ($textos as $texto) {
+        $parametros = [
+            'q'        => $texto,
+            'langpair' => $origen . '|es',
+        ];
+
+        // Un correo de contacto multiplica por diez la cuota. Es opcional y va
+        // a un tercero, asi que solo se manda si alguien lo ha puesto.
+        if (trim((string) ($conf['contacto'] ?? '')) !== '') {
+            $parametros['de'] = trim((string) $conf['contacto']);
+        }
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => 'https://api.mymemory.translated.net/get?' . http_build_query($parametros),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => TRADUCIR_TIMEOUT,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_HTTPHEADER     => ['User-Agent: BitAndBreakfast/1.0'],
+        ]);
+
+        $respuesta = curl_exec($ch);
+        $codigo    = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error     = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($respuesta === false) {
+            return ['ok' => false, 'textos' => [], 'mensaje' => 'el respaldo no contesta: ' . $error];
+        }
+
+        if ($codigo !== 200) {
+            return ['ok' => false, 'textos' => [], 'mensaje' => 'el respaldo contesta HTTP ' . $codigo];
+        }
+
+        $datos = json_decode((string) $respuesta, true);
+        $texto_traducido = trim((string) ($datos['responseData']['translatedText'] ?? ''));
+
+        // Cuando se pasa de cuota no devuelve un error: devuelve el aviso en el
+        // sitio de la traduccion. Si lo que vuelve parece eso, se para.
+        if ($texto_traducido === '' || stripos($texto_traducido, 'MYMEMORY WARNING') !== false) {
+            traducir_apuntar_palabras(traducir_palabras_libres());
+
+            return ['ok' => false, 'textos' => [], 'mensaje' => 'cuota diaria del respaldo agotada'];
+        }
+
+        $salida[] = $texto_traducido;
+    }
+
+    traducir_apuntar_palabras($palabras);
+
+    return ['ok' => true, 'textos' => $salida, 'mensaje' => ''];
+}
+
+/**
+ * Palabras que le quedan hoy al respaldo.
+ */
+function traducir_palabras_libres(): int
+{
+    $hoy = gmdate('Y-m-d');
+
+    $gastadas = (string) ajuste('traductor_dia', '') === $hoy
+        ? (int) ajuste('traductor_palabras', '0')
+        : 0;
+
+    return max(0, TRADUCIR_PALABRAS_DIA - $gastadas);
+}
+
+/**
+ * Apunta las palabras del dia. Como el mes de DeepL, pero por dias.
+ */
+function traducir_apuntar_palabras(int $palabras): void
+{
+    $hoy = gmdate('Y-m-d');
+
+    if ((string) ajuste('traductor_dia', '') !== $hoy) {
+        ajuste_guardar('traductor_dia', $hoy);
+        ajuste_guardar('traductor_palabras', '0');
+    }
+
+    ajuste_guardar(
+        'traductor_palabras',
+        (string) ((int) ajuste('traductor_palabras', '0') + max(0, $palabras))
+    );
 }
 
 /**

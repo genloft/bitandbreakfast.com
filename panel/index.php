@@ -240,6 +240,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'limite_mes' => (int) ($_POST['limite_mes'] ?? 500000),
             ]);
 
+            // El respaldo y su correo de contacto viven en ajustes y no en el
+            // fichero: no son secretos, son preferencias.
+            ajuste_guardar('traductor_respaldo', isset($_POST['respaldo']) ? '1' : '0');
+
+            $contacto = trim((string) ($_POST['contacto'] ?? ''));
+
+            if ($contacto === '' || correo_valido($contacto)) {
+                ajuste_guardar('traductor_contacto', $contacto);
+            }
+
             if ($guardado['ok']) {
                 // Con traductor, lo que no esta en espanol deja de descartarse.
                 // Sin el, vuelve a descartarse: es la misma decision al reves.
@@ -365,10 +375,14 @@ switch ($pagina) {
         $envio       = panel_estado_envio();
         // Del traductor tampoco sale la clave a la plantilla. Lo que se
         // enseña es si esta puesto y cuanta cuota queda del mes.
-        $traductor      = traducir_configurado();
-        $traductor_plan = (string) traducir_conf()['plan'];
-        $traductor_tope = (int) traducir_conf()['limite_mes'];
+        $traductor       = traducir_configurado();
+        $traductor_quien = (string) traducir_conf()['proveedor'];
+        $traductor_plan  = (string) traducir_conf()['plan'];
+        $traductor_tope  = (int) traducir_conf()['limite_mes'];
         $traductor_cuota = traducir_cuota();
+        $traductor_respaldo = (bool) traducir_conf()['respaldo'];
+        $traductor_contacto = (string) traducir_conf()['contacto'];
+        $traductor_palabras = traducir_palabras_libres();
 
         $aviso_modo   = (string) ajuste('cron_aviso', 'cambios');
         $aviso_correo = (string) ajuste('cron_aviso_correo', '');

@@ -182,12 +182,20 @@ declare(strict_types=1);
   campo vacío.
 </p>
 
-<?php if ($traductor): ?>
+<?php if ($traductor_quien === 'deepl'): ?>
   <p class="explicacion">
-    <strong>Conectado</strong> (plan <?= panel_e($traductor_plan === 'free' ? 'gratuito' : 'de pago') ?>).
+    <strong>DeepL conectado</strong> (plan <?= panel_e($traductor_plan === 'free' ? 'gratuito' : 'de pago') ?>).
     Este mes van <?= number_format((int) $traductor_cuota['gastado'], 0, ',', '.') ?>
     caracteres de <?= number_format($traductor_tope, 0, ',', '.') ?>;
     quedan <?= number_format((int) $traductor_cuota['queda'], 0, ',', '.') ?>.
+  </p>
+<?php elseif ($traductor_quien === 'mymemory'): ?>
+  <p class="explicacion">
+    <strong>Traduciendo con el respaldo</strong>, que no necesita clave. Hoy le
+    quedan <?= number_format($traductor_palabras, 0, ',', '.') ?> palabras,
+    que dan para unas <?= (int) floor($traductor_palabras / 115) ?> noticias.
+    Traduce algo peor que DeepL y se le acaba la cuota a diario: en cuanto
+    pongas la clave de arriba, deja de usarse solo.
   </p>
 <?php else: ?>
   <p class="explicacion"><strong>Sin traductor.</strong> Solo se publica lo que venga en español.</p>
@@ -207,6 +215,24 @@ declare(strict_types=1);
     <label for="limite_mes">Caracteres al mes</label>
     <input id="limite_mes" name="limite_mes" type="number" min="1000" step="1000"
            value="<?= (int) $traductor_tope ?>">
+  </p>
+
+  <p>
+    <label for="respaldo">
+      <input id="respaldo" name="respaldo" type="checkbox" value="1"<?= $traductor_respaldo ? ' checked' : '' ?>>
+      Traducir con el respaldo mientras no haya clave
+    </label>
+  </p>
+
+  <p>
+    <label for="contacto">Correo de contacto para el respaldo (opcional)</label>
+    <input id="contacto" name="contacto" type="email" value="<?= panel_e($traductor_contacto) ?>">
+  </p>
+
+  <p class="explicacion">
+    Ese correo va al servicio de respaldo y multiplica por diez su cuota diaria:
+    de unas 35 noticias al día a unas 350. Sin él funciona igual, solo que con
+    menos margen.
   </p>
 
   <p class="acciones">

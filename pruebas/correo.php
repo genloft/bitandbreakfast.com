@@ -412,16 +412,24 @@ comprobar('y dice como dejar de recibirlo', true, str_contains($parte, 'cron_avi
 // sale a la red, que una clave que no lo parece se rechaza antes de guardarla
 // y que la cuota se cuenta por meses.
 
+// Quien traduce: el bueno si hay clave, el de respaldo si no, y nadie si se
+// apaga el respaldo. Esto ultimo devuelve el sitio a como estaba: solo espanol.
 comprobar(
-    'sin clave no hay traductor',
-    false,
-    traducir_configurado(['clave' => '', 'plan' => 'free', 'limite_mes' => 500000])
+    'con clave manda DeepL',
+    true,
+    traducir_configurado(['proveedor' => 'deepl', 'clave' => 'x', 'plan' => 'free', 'limite_mes' => 500000])
 );
 
 comprobar(
-    'con clave, si',
+    'sin clave entra el respaldo',
     true,
-    traducir_configurado(['clave' => str_repeat('a', 8) . '-1111-2222-3333-444444444444:fx', 'plan' => 'free', 'limite_mes' => 500000])
+    traducir_configurado(['proveedor' => 'mymemory', 'clave' => '', 'respaldo' => true])
+);
+
+comprobar(
+    'y sin respaldo no hay nadie',
+    false,
+    traducir_configurado(['proveedor' => '', 'clave' => '', 'respaldo' => false])
 );
 
 // El plan gratuito y el de pago no comparten servidor, y la clave lo dice:
@@ -439,9 +447,9 @@ comprobar(
 );
 
 // Sin clave no se sale a la red ni para fallar: se contesta que no y ya.
-$intento = traducir_textos(['Hello'], 'en', ['clave' => '', 'plan' => 'free', 'limite_mes' => 500000]);
+$intento = traducir_textos(['Hello'], 'en', ['proveedor' => '', 'clave' => '', 'respaldo' => false]);
 
-comprobar('sin clave no se intenta traducir', false, $intento['ok']);
+comprobar('sin traductor no se sale a la red', false, $intento['ok']);
 comprobar('y se dice por que', 'sin traductor configurado', $intento['mensaje']);
 
 // Una clave que no es una clave se rechaza antes de escribir el fichero: es

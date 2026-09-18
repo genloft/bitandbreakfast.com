@@ -297,9 +297,16 @@ $informe = [
     // sitio solo publica lo que venga en espanol, que son cuatro medios de
     // setenta: es la primera explicacion de una portada corta.
     'traductor' => [
+        // Cual de los dos esta trabajando: el bueno, el de respaldo, o ninguno.
+        'proveedor' => (string) (traducir_conf()['proveedor'] ?: 'ninguno'),
         'estado'  => traducir_configurado() ? 'conectado' : 'sin configurar',
+        // La cuota de DeepL va por caracteres y por mes; la del respaldo, por
+        // palabras y por dia. Se enseñan las dos porque la que aprieta es la
+        // del que este trabajando.
         'gastado' => (int) traducir_cuota()['gastado'],
         'queda'   => (int) traducir_cuota()['queda'],
+        'palabras_hoy' => max(0, TRADUCIR_PALABRAS_DIA - traducir_palabras_libres()),
+        'palabras_libres' => traducir_palabras_libres(),
         'solo_es' => (string) ajuste('auto_solo_espanol', '1') === '1',
     ],
     // Ya no se cuentan ediciones, que no existen: se cuenta lo que hay
