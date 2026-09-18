@@ -382,3 +382,11 @@ un MariaDB 10.6 para la de humo.
   también apaga el aviso. La fecha de revisión y el umbral viven en
   `lib/cifras.php`, no dentro de la plantilla, para que el mantenimiento
   pueda leerlos sin ejecutar la página entera.
+- **Los destacados de la portada son un titular, no un enlace de menú.**
+  La primera versión era dos cajas de papel con un rótulo y un título: se
+  leía como dos entradas más del menú, no como algo que mereciera pararse.
+  Ahora cada uno es una cifra a la escala del nombre de la cabecera, sobre
+  fondo negro, con una línea corta debajo de qué va. La cifra de Tendencias
+  sale sola del primer resultado de `publicar_tendencias()`, la misma
+  regla que ya tenía el teaser; la de Cifras sigue fija porque esa página
+  la revisa una persona.

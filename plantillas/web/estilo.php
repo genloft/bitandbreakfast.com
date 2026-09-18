@@ -385,55 +385,70 @@ img { max-width: 100%; height: auto; }
 
 main { max-width: var(--ancho); margin: 0 auto; padding: 0 var(--gutter) 3rem; }
 
-/* --- Destacados: los dos avisos de arriba de la portada --------------------------
-   Solo en la portada, y solo dos: Cifras y Tendencias. Mas de dos habria sido
-   un menu escondido dentro de otro menu. Mismo gesto que las fichas de tema y
-   medio -caja con filete, invierte a negro al pasar por encima-, para que se
-   lean como "aqui hay mas" y no como publicidad. */
+/* --- Destacados: el titular de portada, no un menu ---------------------------
+   Solo en la portada, y solo dos: Cifras y Tendencias. La primera version
+   era dos cajas de papel con un rotulo, un titulo y una linea: se leia como
+   dos enlaces mas del menu, no como algo que mereciera pararse. Una revista
+   no anuncia su reportaje con un enlace, lo anuncia con una cifra enorme en
+   la portada, asi que eso es lo que hay aqui: fondo negro a todo lo ancho,
+   una cifra a la escala del nombre de la cabecera, y una linea corta debajo
+   de que va. Sigue siendo del sitio -mismo negro, mismo rojo, misma
+   condensada- y no una pieza de otro diseno pegada encima. */
 
 .destacados {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 0;
   margin-top: 1.6rem;
-  border-top: 3px solid var(--filete);
-  border-left: 1px solid var(--filete);
+  border-top: 3px solid var(--tinta);
+  border-bottom: 3px solid var(--tinta);
 }
 
 .destacado {
   display: flex;
   flex-direction: column;
-  gap: .3rem;
-  padding: 1.1rem 1.2rem 1.3rem;
-  border-right: 1px solid var(--filete);
-  border-bottom: 1px solid var(--filete);
-  background: var(--tarjeta);
-  color: inherit;
+  gap: .1rem;
+  padding: 1.5rem 1.3rem 1.7rem;
+  background: var(--tinta);
+  border-right: 1px solid #2a2825;
+  color: var(--papel);
   text-decoration: none;
 }
 
-.destacado:hover { background: var(--tinta); color: var(--papel); }
-.destacado:hover .destacado-rotulo { color: var(--acento); }
-.destacado:hover .destacado-teaser { color: #cfc9c0; }
+.destacado:hover { background: #1c1a17; }
+.destacado:hover .destacado-rotulo { color: var(--papel); }
 
 .destacado-rotulo {
   font-family: var(--ui);
-  font-size: .64rem;
+  font-size: .68rem;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--acento);
+  color: #9a958c;
 }
 
-.destacado-titulo {
+/* La cifra es la pieza que tiene que pararte el pulgar: misma escala que el
+   nombre de la cabecera, tabular para que no baile si cambia de un digito a
+   otro, y el unico acento rojo que compite en tamaño con la marca. */
+.destacado-cifra {
+  margin: .25rem 0 .2rem;
   font-family: var(--titular);
   font-weight: 700;
-  font-size: clamp(1.3rem, 4.5vw, 1.7rem);
-  line-height: 1.05;
-  text-transform: uppercase;
+  font-size: clamp(2.8rem, 11vw, 4.6rem);
+  line-height: .92;
+  letter-spacing: -.01em;
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.destacado-teaser { font-size: .85rem; color: var(--apagado); }
+.destacado-pie {
+  font-family: var(--ui);
+  font-size: .88rem;
+  line-height: 1.4;
+  color: #cfc9c0;
+  max-width: 24rem;
+}
 
 .edicion-cabecera {
   display: flex;

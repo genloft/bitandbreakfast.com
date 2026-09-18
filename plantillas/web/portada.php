@@ -36,20 +36,30 @@ $tendencias = $tendencias ?? [];
 $secreto    = $secreto ?? '';
 $alta_abierta = $alta_abierta ?? false;
 
-// El segundo destacado cuenta lo que ha subido mas, si hay algo que contar
-// todavia: es mejor teaser que uno generico, y sale del mismo dato que ya
-// calcula publicar_pendiente() para tendencias.html, no de una consulta mas.
+// Los dos destacados de arriba no son un menu, son un titular: una cifra
+// grande y una linea de que va. La de Tendencias sale sola del mismo dato
+// que ya calcula publicar_pendiente() para tendencias.html -el movimiento
+// mas grande del trimestre-, asi que cambia cuando cambia el trimestre. La
+// de Cifras es fija a proposito: esa pagina la revisa una persona, y
+// "España supera la media europea en IA" es el titular mientras eso siga
+// siendo cierto en lib/cifras.php.
+$cifra_cifras = '21,1 %';
+$pie_cifras   = 'España ya supera la media de la UE en adopción de IA';
+
 $tendencia_top = $tendencias[0] ?? null;
 
 if ($tendencia_top === null) {
-    $teaser_tendencias = 'Qué sube y qué baja este trimestre, tema a tema.';
+    $cifra_tendencias = '?';
+    $pie_tendencias   = 'Qué sube y qué baja este trimestre, tema a tema';
 } elseif ($tendencia_top['nuevo']) {
-    $teaser_tendencias = $tendencia_top['nombre'] . ' aparece como tema nuevo este trimestre.';
+    $cifra_tendencias = 'NUEVO';
+    $pie_tendencias   = $tendencia_top['nombre'] . ', que no existía hace un trimestre';
 } elseif ($tendencia_top['porcentaje'] !== null) {
-    $teaser_tendencias = $tendencia_top['nombre'] . ' ' . ($tendencia_top['delta'] > 0 ? 'sube' : 'baja')
-        . ' un ' . abs($tendencia_top['porcentaje']) . '% este trimestre.';
+    $cifra_tendencias = ($tendencia_top['delta'] > 0 ? '+' : '−') . abs($tendencia_top['porcentaje']) . ' %';
+    $pie_tendencias   = $tendencia_top['nombre'] . ', este trimestre';
 } else {
-    $teaser_tendencias = $tendencia_top['nombre'] . ' ' . ($tendencia_top['delta'] > 0 ? 'sube' : 'baja') . ' este trimestre.';
+    $cifra_tendencias = $tendencia_top['delta'] > 0 ? '▲' : '▼';
+    $pie_tendencias   = $tendencia_top['nombre'] . ', este trimestre';
 }
 
 $categorias = bits_categorias();
@@ -102,14 +112,14 @@ require_once __DIR__ . '/iconos.php';
 
   <section class="destacados" aria-label="Destacados">
     <a class="destacado" href="<?= web_e($base) ?>/estadisticas.html">
-      <span class="destacado-rotulo">Cifras del sector</span>
-      <span class="destacado-titulo">España frente al mundo</span>
-      <span class="destacado-teaser">IA y ciberseguridad, con fuente y fecha en cada dato</span>
+      <span class="destacado-rotulo">Cifras del sector →</span>
+      <span class="destacado-cifra"><?= web_e($cifra_cifras) ?></span>
+      <span class="destacado-pie"><?= web_e($pie_cifras) ?></span>
     </a>
     <a class="destacado" href="<?= web_e($base) ?>/tendencias.html">
-      <span class="destacado-rotulo">Tendencias</span>
-      <span class="destacado-titulo">Qué sube y qué baja</span>
-      <span class="destacado-teaser"><?= web_e($teaser_tendencias) ?></span>
+      <span class="destacado-rotulo">Tendencias →</span>
+      <span class="destacado-cifra"><?= web_e($cifra_tendencias) ?></span>
+      <span class="destacado-pie"><?= web_e($pie_tendencias) ?></span>
     </a>
   </section>
 
