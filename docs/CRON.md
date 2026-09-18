@@ -124,6 +124,7 @@ de un vistazo:
 | `traductor.proveedor: ninguno` | Solo se publica lo que venga en español | Poner la clave, o encender el respaldo en `/panel` → Correo |
 | `traductor.palabras_libres` en 0 | El respaldo agotó su cuota del día | Poner un correo de contacto (×10) o la clave de DeepL |
 | `traductor.queda` cerca de 0 | Se acaba la cuota mensual de DeepL | Sube el plan o baja el número de fuentes en inglés |
+| `cifras.caducada: true` | `/estadisticas.html` lleva más de `cifras.caduca_en_dias` sin revisarse a mano | Revisar las fuentes citadas y actualizar `plantillas/web/estadisticas.php` y la fecha en `lib/cifras.php`; el mismo día que se avisa por correo, una sola vez |
 
 **Los ajustes que gobiernan el ritmo** (tabla `ajustes` en la base de datos):
 
