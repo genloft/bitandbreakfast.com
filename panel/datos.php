@@ -58,6 +58,35 @@ function datos_items_racimo(int $racimo_id): array
     return $st->fetchAll();
 }
 
+/**
+ * Un candidato de la cola, listo para mandarse tal cual por api/candidatos.php.
+ *
+ * Pura -recibe lo que ya devuelven datos_cola() y datos_items_racimo(), no
+ * hace ninguna consulta propia-, para poder probarla sin base de datos.
+ */
+function datos_formatear_candidato(array $racimo, array $items): array
+{
+    return [
+        'id'           => (int) $racimo['id'],
+        'titulo'       => (string) $racimo['titulo_representativo'],
+        'puntuacion'   => (int) $racimo['puntuacion'],
+        'fuentes'      => (int) $racimo['fuentes'],
+        'primer_visto' => (string) $racimo['primer_visto'],
+        'ultimo_visto' => (string) $racimo['ultimo_visto'],
+        'items'        => array_map(
+            static fn (array $item): array => [
+                'titulo'         => (string) $item['titulo'],
+                'url'            => (string) $item['url'],
+                'fuente'         => (string) $item['fuente'],
+                'idioma'         => (string) $item['idioma'],
+                'resumen_origen' => (string) $item['resumen_origen'],
+                'publicado'      => (string) $item['publicado'],
+            ],
+            $items
+        ),
+    ];
+}
+
 function datos_racimo(int $id): ?array
 {
     $st = bd()->prepare('SELECT * FROM racimos WHERE id = ?');

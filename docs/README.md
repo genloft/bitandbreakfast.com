@@ -503,3 +503,22 @@ un MariaDB 10.6 para la de humo.
   añade ningún script -son enlaces `<a href>`, como los de compartir-, así
   que esa política sigue intacta, y un futuro widget en la propia web,
   si algún día se quiere, seguiría esa misma regla.
+- **`api/candidatos.php` da la cola de curación en JSON, de solo lectura.**
+  `secretos.token_api` llevaba generándose desde el instalador -y
+  documentado en `config/config.ejemplo.php` y en la propia pantalla de
+  "3. Token de la API" del instalador, que ya decía "lo necesitarás en la
+  fase 6, para la redacción asistida"- sin que ningún fichero lo leyera
+  todavía. Este es la mitad de lectura de esa promesa: cabecera
+  `Authorization: Bearer <token>`, y la misma cola que ya pinta
+  `panel/index.php`, para revisarla desde fuera sin iniciar sesión. El
+  formateo vive en `datos_formatear_candidato()`, en `panel/datos.php` y
+  no en el propio `api/candidatos.php`: es una función pura sobre lo que ya
+  devuelven `datos_cola()` y `datos_items_racimo()`, así que se puede
+  probar sin base de datos ni servidor, igual que el resto de
+  `panel/datos.php`.
+  **`api/bits.php` -crear o publicar un bit por API, no solo leerlo- se
+  queda sin escribir, a propósito.** Abrir un camino para publicar
+  contenido sin pasar por una persona es un cambio de proceso editorial,
+  no una función más, y es exactamente el tipo de decisión que este sitio
+  reserva para quien lo lleva, no para quien programa. "Redacción
+  asistida" se queda como la única pieza de la fase 6 sin resolver.
