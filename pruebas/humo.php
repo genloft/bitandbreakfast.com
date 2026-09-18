@@ -409,6 +409,20 @@ comprobar(
 );
 comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
 comprobar('y el de medios', true, is_file($publico . '/medios.html'));
+
+// Las dos paginas de indice eran las unicas de todo el sitio sin enlace de
+// autodescubrimiento al RSS general: un lector de feeds que las visitara no
+// tenia forma de encontrarlo desde ahi.
+comprobar(
+    'temas.html enlaza el feed general para autodescubrimiento',
+    true,
+    str_contains((string) file_get_contents($publico . '/temas.html'), 'rel="alternate"')
+);
+comprobar(
+    'y medios.html tambien',
+    true,
+    str_contains((string) file_get_contents($publico . '/medios.html'), 'rel="alternate"')
+);
 comprobar('escribe el buscador', true, is_file($publico . '/buscar.html'));
 comprobar('escribe el guion del buscador', true, is_file($publico . '/buscar.js'));
 comprobar('escribe el indice de busqueda', true, is_file($publico . '/indice.json'));
