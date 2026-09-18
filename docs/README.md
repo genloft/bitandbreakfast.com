@@ -399,3 +399,12 @@ un MariaDB 10.6 para la de humo.
   hay nada que pueda caducar aquí. Cada término enlaza opcionalmente a un
   tema del catálogo de `bits_categorias()`, para quien ya sabe qué
   significa la sigla y quiere ver qué se ha publicado sobre ello.
+- **Cada tema tiene su propio RSS, en `t/<tema>/feed.xml`.** A quien solo
+  le interesa Pagos y fraude o Revenue y RMS, suscribirse al feed general
+  es suscribirse a diez temas para leer uno. Vive en `feed_tema.php`,
+  aparte de `feed.php`, para que un cambio pensado para el feed de un tema
+  no pueda romper el general por accidente. Como esa carpeta ya no
+  contiene solo `index.html`, `publicar_barrer()` tiene que borrar también
+  `feed.xml` antes de intentar `rmdir()` la carpeta de un tema retirado:
+  sin eso, la carpeta se queda huérfana para siempre porque `rmdir()` se
+  niega a vaciar algo que no está vacío.

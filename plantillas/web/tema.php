@@ -8,6 +8,10 @@
  * pregunta de un hotel. El radar es para el segundo.
  *
  * Recibe $tema -slug, nombre, bits-, $bits y $base.
+ *
+ * Lleva su propio RSS -t/<tema>/feed.xml, escrito por cron/publicar.php-
+ * porque a quien solo le interesa Pagos y fraude o Revenue y RMS suscribirse
+ * al feed general es suscribirse a diez temas para leer uno.
  */
 
 declare(strict_types=1);
@@ -22,7 +26,8 @@ $otros         = $otros ?? [];
 
 require_once __DIR__ . '/iconos.php';
 
-$url = web_url_tema($base, (string) $tema['slug']);
+$url      = web_url_tema($base, (string) $tema['slug']);
+$url_feed = rtrim($url, '/') . '/feed.xml';
 
 ?><!doctype html>
 <html lang="es">
@@ -32,7 +37,7 @@ $url = web_url_tema($base, (string) $tema['slug']);
 <title><?= web_e($tema['nombre']) ?> · Bit &amp; Breakfast</title>
 <meta name="description" content="Todo lo que ha publicado Bit &amp; Breakfast sobre <?= web_e($tema['nombre']) ?> en tecnología hotelera.">
 <link rel="canonical" href="<?= web_e($url) ?>">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast · <?= web_e($tema['nombre']) ?>" href="<?= web_e($url_feed) ?>">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#060a18">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
@@ -57,6 +62,8 @@ $url = web_url_tema($base, (string) $tema['slug']);
 
     <p class="datos">
       <?= (int) $tema['bits'] ?> bit<?= (int) $tema['bits'] === 1 ? '' : 's' ?> publicado<?= (int) $tema['bits'] === 1 ? '' : 's' ?>
+      <span class="punto">·</span>
+      <a href="<?= web_e($url_feed) ?>">RSS de este tema</a>
     </p>
   </header>
 

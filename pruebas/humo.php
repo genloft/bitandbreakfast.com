@@ -441,6 +441,30 @@ comprobar(
     )
 );
 
+comprobar(
+    'y escribe el feed de ese tema',
+    true,
+    is_file($publico . '/t/pms-crs/feed.xml')
+);
+
+comprobar(
+    'con el bit dentro',
+    true,
+    str_contains(
+        (string) file_get_contents($publico . '/t/pms-crs/feed.xml'),
+        'Oracle OPERA Cloud se cae durante cuatro horas'
+    )
+);
+
+comprobar(
+    'y la ficha del tema enlaza a su propio feed, no al general',
+    true,
+    str_contains(
+        (string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs')),
+        '/t/pms-crs/feed.xml'
+    )
+);
+
 comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
 comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
 
