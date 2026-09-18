@@ -24,6 +24,7 @@
  *   buscar.html         el explorador, mas indice.json
  *   estilo.css          la hoja del sitio
  *   robots.txt
+ *   sitemap.xml         direcciones para Google, con lastmod por dia
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
  * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
@@ -76,6 +77,7 @@ function publicar_pendiente(float $limite): array
     $temas  = publicar_temas();
     $medios = publicar_medios();
     $resumen_dias = publicar_resumen_dias();
+    $mas_leidos   = publicar_mas_leidos();
 
     $publicados = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'")->fetchColumn();
     $aviso      = publicar_aviso($publicados, $tope_portada);
@@ -105,6 +107,7 @@ function publicar_pendiente(float $limite): array
         'temas'        => $temas,
         'medios'       => $medios,
         'resumen'      => $resumen_dias,
+        'mas_leidos'   => $mas_leidos,
         'panel'        => $panel,
         'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
     ];
@@ -251,6 +254,16 @@ function publicar_pendiente(float $limite): array
         publicar_plantilla('feed', [
             'rio'  => $rio,
             'base' => $base,
+        ])
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/sitemap.xml',
+        publicar_plantilla('sitemap', [
+            'base'   => $base,
+            'dias'   => $dias,
+            'temas'  => $temas,
+            'medios' => $medios,
         ])
     ) ? 1 : 0;
 
@@ -513,6 +526,53 @@ function publicar_resumen_dias(): array
     }
 
     return $resumen;
+}
+
+/**
+ * Los bits mas leidos de los ultimos siete dias, contando solo clics que no
+ * parecen de un rastreador de correo (api/ir.php ya los marca al guardarlos).
+ *
+ * Es una foto, no un dato en vivo, igual que el resto de la web: se calcula
+ * aqui y se congela hasta la proxima vez que haya algo nuevo que publicar, no
+ * en cada clic. Meterla en publicar_firma() habria significado regenerar el
+ * sitio entero cada vez que alguien pulsara un enlace, que es exactamente lo
+ * que esa firma existe para evitar.
+ *
+ * Por debajo de tres bits con al menos dos clics cada uno no hay ranking, hay
+ * ruido: hasta que el sitio tenga trafico de sobra, la caja simplemente no se
+ * pinta ese dia. Es preferible no enseñar nada a enseñar "lo mas leido" con
+ * una sola entrada.
+ *
+ * @return array Filas con 'id', 'titular', 'categoria', 'dia', 'fuente', 'url' y 'clics'.
+ */
+function publicar_mas_leidos(int $dias = 7, int $tope = 6): array
+{
+    $sql = "SELECT b.id, b.titular, b.categoria, b.dia, COUNT(*) AS clics,
+                   (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                   (SELECT i.url FROM items i
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS url
+              FROM clics c
+              JOIN bits b ON b.id = c.bit_id
+             WHERE c.sospechoso = 0
+               AND c.creado >= (NOW() - INTERVAL ? DAY)
+               AND b.estado = 'publicado'
+             GROUP BY b.id
+            HAVING clics >= 2
+             ORDER BY clics DESC, b.id DESC
+             LIMIT ?";
+
+    $st = bd()->prepare($sql);
+    $st->bindValue(1, max(1, $dias), PDO::PARAM_INT);
+    $st->bindValue(2, max(1, $tope), PDO::PARAM_INT);
+    $st->execute();
+
+    $filas = $st->fetchAll();
+
+    return count($filas) >= 3 ? $filas : [];
 }
 
 /**

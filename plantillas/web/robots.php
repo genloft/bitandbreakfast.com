@@ -16,6 +16,4 @@ Allow: /
 Disallow: /panel/
 Disallow: /api/
 
-# No hay directiva Sitemap porque no hay sitemap: el archivo enlaza a todas
-# las ediciones y el sitio cabe entero en dos saltos desde la portada.
-# <?= $base ?>/archivo.html
+Sitemap: <?= $base ?>/sitemap.xml

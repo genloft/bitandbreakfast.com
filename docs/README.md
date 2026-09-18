@@ -318,3 +318,24 @@ un MariaDB 10.6 para la de humo.
 - **El User-Agent lleva prefijo `Mozilla/5.0 (compatible; …)`** porque varias
   fuentes devuelven 403 a cualquier cosa que no lo tenga. El nombre del bot y
   la URL de contacto siguen siendo visibles.
+- **Los datos de schema.org van en microdatos, no en JSON-LD.** Un `<script
+  type="application/ld+json">`, aunque no ejecute nada, sigue siendo un
+  `<script>`: cae bajo el mismo `script-src 'self'` que el resto de la
+  página, y esta web no lleva ni uno en línea a propósito. Los atributos
+  `itemscope`/`itemprop` describen lo mismo -titular, fecha, fuente original,
+  editor- sin abrir esa puerta.
+- **`sitemap.xml` solo lista lo que sigue vivo.** Los mismos `$dias`, `$temas`
+  y `$medios` que ya calcula `publicar_pendiente()` para el resto de páginas,
+  no una consulta aparte. Un día que `publicar_barrer()` ya ha borrado de
+  `publico/d/` no puede aparecer aquí: un sitemap con enlaces a 404 le dice a
+  Google que el sitio no se cuida.
+- **"Lo más leído" no entra en `publicar_firma()`.** Esa firma decide si se
+  regenera el sitio entero, y los clics cambian constantemente mientras que
+  las noticias no. Metería el contador ahí habría significado reescribir
+  todo cada vez que alguien pulsara un enlace, justo lo que la firma existe
+  para evitar. El ranking se congela hasta la siguiente vez que haya algo
+  nuevo que publicar, como el resto de cifras de la cabecera: es una foto, no
+  un dato en vivo.
+- **Por debajo de tres bits con dos clics cada uno, "lo más leído" no se
+  pinta.** Una caja de "lo más leído" con una sola entrada no informa,
+  delata que casi no hay tráfico. Mejor no enseñar nada.

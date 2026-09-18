@@ -10,6 +10,11 @@
  *
  * Recibe $bit, $indice -su posicion, que decide cual va destacada-, $base,
  * $fuentes, $categorias, $idiomas, $ambitos y $secreto.
+ *
+ * Lleva microdatos de schema.org (NewsArticle), no JSON-LD: un <script> en
+ * linea -aunque sea de puros datos- cae bajo el mismo script-src 'self' que
+ * el resto de la pagina, y esta pagina no lleva ni uno a proposito. Los
+ * atributos itemprop no son <script> y no necesitan ese permiso.
  */
 
 declare(strict_types=1);
@@ -19,10 +24,26 @@ $fuentes  = $fuentes ?? [];
 $secreto  = $secreto ?? '';
 
 ?>
-  <?php $tema = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general'; ?>
+  <?php
+    $tema      = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general';
+    $permalink = web_url_dia($base, (string) ($bit['dia'] ?? '')) . '#bit-' . (int) $bit['id'];
+  ?>
   <section class="bit<?= $indice === 0 ? ' bit-lead' : '' ?>" id="bit-<?= (int) $bit['id'] ?>"
            data-tema="<?= web_e($tema) ?>"
-           aria-labelledby="titular-<?= (int) $bit['id'] ?>">
+           aria-labelledby="titular-<?= (int) $bit['id'] ?>"
+           itemscope itemtype="https://schema.org/NewsArticle">
+    <link itemprop="mainEntityOfPage" href="<?= web_e($permalink) ?>">
+    <meta itemprop="datePublished" content="<?= web_e(substr((string) ($bit['dia'] ?? ''), 0, 10)) ?>">
+    <?php if (!empty($bit['url'])): ?>
+      <link itemprop="isBasedOn" href="<?= web_e((string) $bit['url']) ?>">
+    <?php endif; ?>
+    <span itemprop="author" itemscope itemtype="https://schema.org/Organization" hidden>
+      <meta itemprop="name" content="Bit &amp; Breakfast">
+    </span>
+    <span itemprop="publisher" itemscope itemtype="https://schema.org/Organization" hidden>
+      <meta itemprop="name" content="Bit &amp; Breakfast">
+      <meta itemprop="url" content="<?= web_e($base) ?>">
+    </span>
     <div class="bit-carril" aria-hidden="true">
       <p class="numero"><?= str_pad((string) ($indice + 1), 2, '0', STR_PAD_LEFT) ?></p>
       <span class="bit-icono"><?= web_icono($tema) ?></span>
@@ -43,7 +64,7 @@ $secreto  = $secreto ?? '';
             ? web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])
             : '';
       ?>
-      <h2 id="titular-<?= (int) $bit['id'] ?>">
+      <h2 id="titular-<?= (int) $bit['id'] ?>" itemprop="headline">
         <?php if ($enlace !== ''): ?>
           <a href="<?= web_e($enlace) ?>" rel="nofollow noopener"><?= web_e($bit['titular']) ?></a>
         <?php else: ?>
@@ -69,7 +90,7 @@ $secreto  = $secreto ?? '';
         <?php endif; ?>
       </p>
 
-      <div class="texto"><?= web_parrafos((string) $bit['cuerpo']) ?></div>
+      <div class="texto" itemprop="articleBody"><?= web_parrafos((string) $bit['cuerpo']) ?></div>
 
       <?php if (trim((string) $bit['por_que']) !== ''): ?>
         <p class="por-que"><strong>Por qué importa.</strong> <?= web_e($bit['por_que']) ?></p>
