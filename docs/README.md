@@ -423,3 +423,14 @@ un MariaDB 10.6 para la de humo.
   pero es la misma pregunta que el resto de esta página contesta para todo
   lo demás: se puede comprobar desde fuera sin esperar a que llegue un
   correo.
+- **Cifras, Tendencias y Glosario viven bajo un "Recursos" en el menú.**
+  Cada una llegó a la barra al día siguiente de nacer y, sumadas a
+  Portada, Temas, Medios, Archivo y Qué es, la dejaron en diez enlaces:
+  demasiados para leerse de un vistazo, que es justo lo que una cabecera
+  tiene que permitir. Las tres comparten una naturaleza -son consulta, no
+  la lectura diaria de lo que ha entrado hoy- y por eso se agrupan bajo un
+  `<details>`/`<summary>` nativo en `cabecera.php`: sin una línea de
+  JavaScript, porque abrir y cerrar un desplegable es exactamente lo que
+  el navegador ya sabe hacer solo. El resto del menú no se toca: Portada,
+  Temas, Medios, Archivo y Qué es siguen siendo la lectura de todos los
+  días y se quedan al primer nivel.
