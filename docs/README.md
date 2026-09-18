@@ -390,3 +390,12 @@ un MariaDB 10.6 para la de humo.
   sale sola del primer resultado de `publicar_tendencias()`, la misma
   regla que ya tenía el teaser; la de Cifras sigue fija porque esa página
   la revisa una persona.
+- **`/glosario.html` es un diccionario, no una cifra.** Un bit menciona
+  "NDC" o "RevPAR" sin explicarlo -explicarlo en cada noticia sería
+  repetirse-, y hasta ahora quien no conocía la sigla tenía que buscarla
+  fuera. Vive en un array escrito a mano, como `/estadisticas.html`, pero a
+  diferencia de esa página no lleva fecha de revisión ni aviso de
+  mantenimiento: un PMS sigue siendo un PMS el año que viene, así que no
+  hay nada que pueda caducar aquí. Cada término enlaza opcionalmente a un
+  tema del catálogo de `bits_categorias()`, para quien ya sabe qué
+  significa la sigla y quiere ver qué se ha publicado sobre ello.

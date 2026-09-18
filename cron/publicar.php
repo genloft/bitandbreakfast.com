@@ -27,6 +27,7 @@
  *   sitemap.xml         direcciones para Google, con lastmod por dia
  *   estadisticas.html   cuadro de mandos con cifras externas -no de esta base-
  *   tendencias.html     que tema sube y cual baja, con los datos propios
+ *   glosario.html       las siglas del sector, explicadas una vez
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
  * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
@@ -262,6 +263,11 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/tendencias.html',
         publicar_plantilla('tendencias', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/glosario.html',
+        publicar_plantilla('glosario', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(

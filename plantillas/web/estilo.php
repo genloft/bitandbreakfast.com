@@ -1033,6 +1033,52 @@ h1 {
 
 .fuentes-fila dd { margin: .25rem 0 0; font-size: .85rem; color: var(--apagado); }
 
+/* --- Glosario -------------------------------------------------------------------------
+   Un diccionario, no una ficha: la sigla manda, la definicion es una frase
+   y el enlace al tema es lo ultimo, para quien ya sabe que significa y
+   quiere ver que se ha publicado sobre ello. */
+
+.glosario-lista { margin: 1.5rem 0 0; padding: 0; border-top: 1px solid var(--filete); }
+
+.glosario-fila { padding: 1rem 0; border-bottom: 1px solid var(--filete-fino); scroll-margin-top: 5rem; }
+
+.glosario-fila dt {
+  margin: 0 0 .3rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.glosario-nombre {
+  margin-left: .5rem;
+  font-family: var(--ui);
+  font-size: .72rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--suave);
+}
+
+.glosario-fila dd { margin: 0; font-size: .92rem; color: var(--texto); line-height: 1.55; }
+
+.glosario-tema {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  margin-left: .4rem;
+  font-family: var(--ui);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--suave);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.glosario-tema:hover { color: var(--acento); }
+
 /* --- Alta en el boletin ---------------------------------------------------------------- */
 
 .alta { margin: 2.5rem 0 0; padding: 1.8rem; border: 3px solid var(--filete); background: var(--tinta); color: var(--papel); }
