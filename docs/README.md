@@ -473,3 +473,10 @@ un MariaDB 10.6 para la de humo.
   este proyecto, se verificó a mano con un guion de Node de usar y tirar
   -no vive en el repositorio- antes de escribir esto: las facetas
   existentes (escalares) se comportan byte a byte igual que antes.
+- **Todas las páginas enlazan el RSS general para autodescubrimiento,
+  menos la que no tiene nada que ofrecer todavía.** `temas.html` y
+  `medios.html` eran las únicas páginas completas del sitio sin
+  `<link rel="alternate">`: un lector de feeds que llegara ahí no
+  encontraba el camino de vuelta al feed. `provisional.php` -la portada de
+  antes del primer bit- sigue sin él a propósito: nada que enlazar cuando
+  todavía no hay ni una noticia.
