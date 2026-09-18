@@ -31,6 +31,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
   <url><loc><?= web_e($base) ?>/medios.html</loc></url>
   <url><loc><?= web_e($base) ?>/sobre.html</loc></url>
   <url><loc><?= web_e($base) ?>/estadisticas.html</loc></url>
+  <url><loc><?= web_e($base) ?>/tendencias.html</loc></url>
 
   <?php foreach ($dias as $dia): ?>
   <url>

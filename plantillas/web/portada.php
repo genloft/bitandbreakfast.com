@@ -14,8 +14,8 @@
  * promesa que se puede cumplir; "esto es todo lo que se ha publicado hoy en el
  * mundo" no.
  *
- * Recibe $rio -tramos con 'dia' y 'bits'-, $dias, $fuentes, $mas_leidos y
- * $base.
+ * Recibe $rio -tramos con 'dia' y 'bits'-, $dias, $fuentes, $mas_leidos,
+ * $tendencias y $base.
  *
  * HTML estatico: ni script, ni estilo en linea, ni una peticion a terceros.
  * La politica de seguridad del sitio es 'self' y esta pagina es la razon de
@@ -32,8 +32,25 @@ $fuentes    = $fuentes ?? [];
 $temas      = $temas ?? [];
 $medios     = $medios ?? [];
 $mas_leidos = $mas_leidos ?? [];
+$tendencias = $tendencias ?? [];
 $secreto    = $secreto ?? '';
 $alta_abierta = $alta_abierta ?? false;
+
+// El segundo destacado cuenta lo que ha subido mas, si hay algo que contar
+// todavia: es mejor teaser que uno generico, y sale del mismo dato que ya
+// calcula publicar_pendiente() para tendencias.html, no de una consulta mas.
+$tendencia_top = $tendencias[0] ?? null;
+
+if ($tendencia_top === null) {
+    $teaser_tendencias = 'Qué sube y qué baja este trimestre, tema a tema.';
+} elseif ($tendencia_top['nuevo']) {
+    $teaser_tendencias = $tendencia_top['nombre'] . ' aparece como tema nuevo este trimestre.';
+} elseif ($tendencia_top['porcentaje'] !== null) {
+    $teaser_tendencias = $tendencia_top['nombre'] . ' ' . ($tendencia_top['delta'] > 0 ? 'sube' : 'baja')
+        . ' un ' . abs($tendencia_top['porcentaje']) . '% este trimestre.';
+} else {
+    $teaser_tendencias = $tendencia_top['nombre'] . ' ' . ($tendencia_top['delta'] > 0 ? 'sube' : 'baja') . ' este trimestre.';
+}
 
 $categorias = bits_categorias();
 $ambitos    = web_ambitos();
@@ -82,6 +99,20 @@ require_once __DIR__ . '/iconos.php';
 <?php require __DIR__ . '/cabecera.php'; ?>
 
 <main id="contenido">
+
+  <section class="destacados" aria-label="Destacados">
+    <a class="destacado" href="<?= web_e($base) ?>/estadisticas.html">
+      <span class="destacado-rotulo">Cifras del sector</span>
+      <span class="destacado-titulo">España frente al mundo</span>
+      <span class="destacado-teaser">IA y ciberseguridad, con fuente y fecha en cada dato</span>
+    </a>
+    <a class="destacado" href="<?= web_e($base) ?>/tendencias.html">
+      <span class="destacado-rotulo">Tendencias</span>
+      <span class="destacado-titulo">Qué sube y qué baja</span>
+      <span class="destacado-teaser"><?= web_e($teaser_tendencias) ?></span>
+    </a>
+  </section>
+
   <article class="edicion">
 
     <?php foreach ($rio as $tramo_i => $tramo): ?>

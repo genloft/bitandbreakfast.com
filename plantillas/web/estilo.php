@@ -345,6 +345,56 @@ img { max-width: 100%; height: auto; }
 
 main { max-width: var(--ancho); margin: 0 auto; padding: 0 var(--gutter) 3rem; }
 
+/* --- Destacados: los dos avisos de arriba de la portada --------------------------
+   Solo en la portada, y solo dos: Cifras y Tendencias. Mas de dos habria sido
+   un menu escondido dentro de otro menu. Mismo gesto que las fichas de tema y
+   medio -caja con filete, invierte a negro al pasar por encima-, para que se
+   lean como "aqui hay mas" y no como publicidad. */
+
+.destacados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0;
+  margin-top: 1.6rem;
+  border-top: 3px solid var(--filete);
+  border-left: 1px solid var(--filete);
+}
+
+.destacado {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  padding: 1.1rem 1.2rem 1.3rem;
+  border-right: 1px solid var(--filete);
+  border-bottom: 1px solid var(--filete);
+  background: var(--tarjeta);
+  color: inherit;
+  text-decoration: none;
+}
+
+.destacado:hover { background: var(--tinta); color: var(--papel); }
+.destacado:hover .destacado-rotulo { color: var(--acento); }
+.destacado:hover .destacado-teaser { color: #cfc9c0; }
+
+.destacado-rotulo {
+  font-family: var(--ui);
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--acento);
+}
+
+.destacado-titulo {
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.destacado-teaser { font-size: .85rem; color: var(--apagado); }
+
 .edicion-cabecera {
   display: flex;
   flex-wrap: wrap;

@@ -794,4 +794,66 @@ $horas = (int) bd()->query(
 
 comprobar('robots.txt duerme una semana a la primera', true, $horas >= 167 && $horas <= 168);
 
+// -----------------------------------------------------------------------------
+// Tendencias
+//
+// publicar_tendencias() solo lee categoria, dia y estado de bits, asi que no
+// hace falta un racimo de verdad para probarla: basta con filas propias, con
+// racimo_id a NULL. La categoria es una que ningun otro fixture de este
+// fichero usa, para que el recuento no se mezcle con nada de lo de arriba.
+// -----------------------------------------------------------------------------
+
+function humo_bit_tendencia(string $categoria, string $dia): void
+{
+    bd()->prepare(
+        "INSERT INTO bits (titular, cuerpo, por_que, categoria, estado, dia)
+         VALUES ('Bit de prueba de tendencia', 'Cuerpo de prueba con palabras de sobra.', '', ?, 'publicado', ?)"
+    )->execute([$categoria, $dia]);
+}
+
+$humo_tema_tendencia = 'sostenibilidad-energia';
+$humo_hoy            = gmdate('Y-m-d');
+$humo_hace_45        = gmdate('Y-m-d', strtotime('-45 days'));
+$humo_hace_120       = gmdate('Y-m-d', strtotime('-120 days'));
+
+// Dos en el periodo anterior (91-180 dias) y cuatro en el actual (0-90 dias):
+// tiene que verse como una subida del cien por cien, no como tema nuevo.
+humo_bit_tendencia($humo_tema_tendencia, $humo_hace_120);
+humo_bit_tendencia($humo_tema_tendencia, $humo_hace_120);
+humo_bit_tendencia($humo_tema_tendencia, $humo_hace_45);
+humo_bit_tendencia($humo_tema_tendencia, $humo_hace_45);
+humo_bit_tendencia($humo_tema_tendencia, $humo_hoy);
+humo_bit_tendencia($humo_tema_tendencia, $humo_hoy);
+
+$tendencias    = publicar_tendencias();
+$suya          = null;
+
+foreach ($tendencias as $t) {
+    if ($t['slug'] === $humo_tema_tendencia) {
+        $suya = $t;
+        break;
+    }
+}
+
+comprobar('la tendencia aparece en el recuento', true, $suya !== null);
+comprobar('cuenta bien el periodo actual', 4, $suya['actual'] ?? null);
+comprobar('cuenta bien el periodo anterior', 2, $suya['anterior'] ?? null);
+comprobar('calcula el porcentaje de subida', 100, $suya['porcentaje'] ?? null);
+comprobar('no la marca como tema nuevo', false, $suya['nuevo'] ?? null);
+
+// Y que todo eso llegue de verdad a la web generada, no solo a la funcion.
+publicar_pendiente(microtime(true) + 10);
+
+comprobar('escribe la pagina de tendencias', true, is_file($publico . '/tendencias.html'));
+comprobar(
+    'y habla del tema que ha subido',
+    true,
+    str_contains((string) file_get_contents($publico . '/tendencias.html'), 'Sostenibilidad y energía')
+);
+
+$portada_final = (string) file_get_contents($publico . '/index.html');
+
+comprobar('la portada destaca las cifras del sector', true, str_contains($portada_final, '/estadisticas.html'));
+comprobar('y las tendencias', true, str_contains($portada_final, '/tendencias.html'));
+
 resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');
