@@ -29,7 +29,27 @@ $secreto  = $secreto ?? '';
     </div>
 
     <div class="bit-cuerpo">
-      <h2 id="titular-<?= (int) $bit['id'] ?>"><?= web_e($bit['titular']) ?></h2>
+      <?php
+        // El titular lleva al articulo original. Es lo que hace un agregador:
+        // lo que hay aqui es una ficha -de que va, quien lo cuenta, cuantos lo
+        // cuentan- y el articulo es del medio. Obligar a bajar la vista hasta
+        // el pie para encontrar el enlace es poner un peaje al gesto que todo
+        // el mundo va a hacer de todas formas.
+        //
+        // Pasa por el contador propio, que redirige al original: asi se sabe
+        // que se lee de verdad sin mandar a nadie a un tercero por el camino.
+        // Sin secreto configurado, el enlace es directo.
+        $enlace = !empty($bit['url'])
+            ? web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])
+            : '';
+      ?>
+      <h2 id="titular-<?= (int) $bit['id'] ?>">
+        <?php if ($enlace !== ''): ?>
+          <a href="<?= web_e($enlace) ?>" rel="nofollow noopener"><?= web_e($bit['titular']) ?></a>
+        <?php else: ?>
+          <?= web_e($bit['titular']) ?>
+        <?php endif; ?>
+      </h2>
 
       <p class="etiquetas">
         <a class="etiqueta etiqueta-categoria" href="<?= web_e(web_url_tema($base, $tema)) ?>"><?= web_e($categorias[$tema] ?? $bit['categoria']) ?></a>
@@ -74,9 +94,11 @@ $secreto  = $secreto ?? '';
       ?>
 
       <p class="pie-bit">
-        <?php if (!empty($bit['url'])): ?>
-          <a class="fuente" href="<?= web_e(web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])) ?>" rel="nofollow noopener">
-            <?= web_e($bit['fuente'] ?? 'Leer la fuente') ?> →
+        <?php if ($enlace !== ''): ?>
+          <?php // El mismo enlace, dicho con todas las letras. Arriba se
+                // adivina; aqui no hace falta adivinar nada. ?>
+          <a class="fuente" href="<?= web_e($enlace) ?>" rel="nofollow noopener">
+            Leer el original en <?= web_e($bit['fuente'] ?? 'la fuente') ?> →
           </a>
           <?php if (!empty($bit['fuente'])): ?>
             <a class="ficha-medio" href="<?= web_e(web_url_medio($base, web_slug_medio((string) $bit['fuente']))) ?>">ficha</a>

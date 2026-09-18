@@ -397,6 +397,9 @@ h1 {
 
 .bit-cuerpo { min-width: 0; }
 
+.bit h2 a { color: inherit; text-decoration: none; }
+.bit h2 a:hover { color: var(--acento); }
+
 .bit h2 {
   margin: 0 0 .5rem;
   font-family: var(--ui);

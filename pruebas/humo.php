@@ -486,6 +486,21 @@ comprobar(
 // porque quien llega por un enlace a una ficha tambien quiere saber si esto
 // esta vivo.
 comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, 'class="panel"'));
+
+// Cada noticia enlaza a su articulo original, y lo enlaza dos veces: desde el
+// titular, que es donde todo el mundo pincha, y al pie con todas las letras.
+// Un agregador que no lleva a la fuente no es un agregador.
+comprobar(
+    'el titular lleva al original',
+    true,
+    (bool) preg_match('~<h2 id="titular-\d+">\s*<a href="[^"]+"~', $portada)
+);
+
+comprobar(
+    'y el pie lo dice con todas las letras',
+    true,
+    str_contains($portada, 'Leer el original en')
+);
 comprobar('con las tres cuentas', 3, substr_count($portada, 'class="panel-cifra"'));
 comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));
 

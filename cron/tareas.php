@@ -100,7 +100,18 @@ $presupuesto = (float) ($config['presupuesto_cron'] ?? 25);
 // Y un techo para la ejecucion completa, para no dejar corriendo media hora
 // un cron que se haya atascado.
 $techo   = (float) ($config['presupuesto_cron_total'] ?? $presupuesto * 3);
-$forzada = $argv[1] ?? '';
+
+// Escribir un bit ya no es solo escribirlo: si viene en otro idioma hay que
+// traducirlo, y eso es esperar a un servicio de fuera. Con veinticinco
+// segundos entran cuatro o cinco por pasada, y hay cuatrocientas noticias
+// esperando a que alguien las cuente en espanol: a ese ritmo son semanas.
+//
+// Asi que la escritura tiene su propio presupuesto, mas largo, y el techo de
+// la pasada sube con el. Es tiempo esperando a la red, no quemando procesador,
+// que es justo lo que un alojamiento compartido puede permitirse.
+$presupuesto_auto = (float) ajuste('presupuesto_auto', (string) $presupuesto);
+$techo            = max($techo, (float) ajuste('presupuesto_cron_total', (string) $techo));
+$forzada          = $argv[1] ?? '';
 
 /**
  * Escribe una linea con marca de tiempo. La salida la recoge el cron y la
@@ -337,9 +348,11 @@ foreach ($tareas as $nombre => $fichero) {
         // Cada tarea empieza a contar su presupuesto cuando le toca, sin
         // pasarse nunca del techo de la ejecucion entera. El generador y el
         // envio son la excepcion, por lo dicho arriba: su presupuesto es suyo.
+        $suyo = $nombre === 'auto' ? $presupuesto_auto : $presupuesto;
+
         $limite = $imprescindible
-            ? microtime(true) + $presupuesto
-            : min($arranque + $techo, microtime(true) + $presupuesto);
+            ? microtime(true) + $suyo
+            : min($arranque + $techo, microtime(true) + $suyo);
         $resumen = $funcion($limite);
         $resumenes[$nombre] = is_array($resumen) ? $resumen : [];
 
