@@ -306,6 +306,24 @@ function web_fecha_hora(string $utc): string
 }
 
 /**
+ * Solo la hora, en la zona del lector: "23:05".
+ *
+ * Para la proxima actualizacion no hace falta la fecha: o es dentro de un rato
+ * o el cron esta parado, y las dos cosas se ven igual de bien con la hora
+ * sola. Una fecha completa al lado de otra fecha completa es ruido.
+ */
+function web_hora(string $utc): string
+{
+    try {
+        $momento = new DateTimeImmutable($utc, new DateTimeZone('UTC'));
+
+        return $momento->setTimezone(new DateTimeZone('Europe/Madrid'))->format('H:i');
+    } catch (Throwable $e) {
+        return '';
+    }
+}
+
+/**
  * Rutas y direcciones de las fichas de tema y de medio.
  *
  * Una letra por tipo -t de tema, m de medio- y el slug. Cortas a proposito:

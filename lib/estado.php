@@ -106,6 +106,43 @@ function estado_edad_texto(?int $segundos): string
 }
 
 /**
+ * Cada cuantos minutos pasa el cron, deducido de lo que tarda en volver.
+ *
+ * Nadie se lo dice: la frecuencia vive en el panel del alojamiento, fuera del
+ * repositorio y fuera de la base de datos. Pero la web quiere contarle al
+ * lector cuando sera la proxima actualizacion, y para eso hay que saberlo.
+ *
+ * Se mide, entonces. Cada pasada mira cuanto hace de la anterior y se queda
+ * con ese numero si es creible. Lo de "creible" no es pereza: la primera
+ * pasada despues de un rato parado daria horas, y un reintento pisando a otro
+ * daria cero. Fuera de ese rango se conserva lo que ya se sabia, que es mejor
+ * dato que una medicion tomada en un mal momento.
+ *
+ * @param int $anterior Marca de la pasada anterior, o 0 si no habia.
+ * @param int $sabido   Lo que se creia hasta ahora, en minutos.
+ *
+ * @return int Minutos, siempre entre 1 y 180.
+ */
+function estado_cadencia(int $anterior, int $ahora, int $sabido = 60): int
+{
+    $sabido = max(1, min(180, $sabido));
+
+    if ($anterior <= 0 || $ahora <= $anterior) {
+        return $sabido;
+    }
+
+    $minutos = (int) round(($ahora - $anterior) / 60);
+
+    // Menos de un minuto no es una cadencia, es un reintento. Y mas de tres
+    // horas no es una cadencia, es que el cron estuvo parado.
+    if ($minutos < 1 || $minutos > 180) {
+        return $sabido;
+    }
+
+    return $minutos;
+}
+
+/**
  * El motivo de un fallo de ingesta, en cuatro palabras.
  *
  * Casi siempre es una de cinco cosas -contesta 403, tarda demasiado, el

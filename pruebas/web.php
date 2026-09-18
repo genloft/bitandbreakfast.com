@@ -352,4 +352,13 @@ foreach (glob(dirname(__DIR__) . '/plantillas/**/*.php') ?: [] as $plantilla) {
 
 comprobar('todas las plantillas abren PHP en la primera linea', [], $sin_abrir);
 
+// --- La hora del panel ------------------------------------------------------
+//
+// El panel de la cabecera dice cuando sera la siguiente actualizacion, y para
+// eso basta la hora: o es dentro de un rato o el cron esta parado, y las dos
+// cosas se ven igual de bien sin la fecha.
+
+comprobar('la hora sale en la zona del lector', '01:05', web_hora('2026-09-17 23:05:00'));
+comprobar('y una hora invalida no rompe nada', '', web_hora('esto no es una fecha'));
+
 resumen_pruebas('Pruebas de la fase 4: la web generada');

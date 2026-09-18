@@ -105,7 +105,7 @@ img { max-width: 100%; height: auto; }
 
 .datos, .menu, .etiqueta, .letra-pequena, .cuenta, .menciona, .pie-bit,
 .buscador label, .alta-formulario label, .opcion, .limpiar, .numero,
-.nube a, .rejilla-cuenta, .cuenta-opcion, .aviso-texto, .promesa,
+.nube a, .rejilla-cuenta, .cuenta-opcion, .promesa,
 .fuentes-bit summary, .sumario-etiqueta {
   font-family: var(--ui);
 }
@@ -118,43 +118,6 @@ img { max-width: 100%; height: auto; }
   border: 1px solid var(--tinta);
 }
 .saltar:focus { left: 1rem; top: 1rem; z-index: 10; }
-
-/* --- La tira de ultima hora -------------------------------------------------
-   Una banda con filete arriba y abajo: lo que ha cambiado desde la ultima vez
-   y los titulares de la edicion pasando de largo. Es lo primero que se ve. */
-
-.aviso-barra {
-  border-bottom: 1px solid var(--filete);
-  background: var(--tinta);
-  color: var(--papel);
-}
-
-.aviso-texto {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: .2rem .7rem;
-  max-width: var(--ancho);
-  margin: 0 auto;
-  padding: .45rem var(--gutter);
-  font-size: .68rem;
-  letter-spacing: .06em;
-}
-
-.aviso-punto {
-  width: .45rem;
-  height: .45rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--acento);
-}
-
-.aviso-cuando { text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
-.aviso-dato { color: #b9b4ac; }
-.aviso-dato::before { content: "·"; margin-right: .7rem; color: #5a5651; }
-.aviso-nuevos strong, .aviso-archivo strong { color: #fff; }
-.aviso-archivo a { color: #b9b4ac; }
-.aviso-quieto { color: #918c85; }
 
 /* --- Cabecera ---------------------------------------------------------------
    Barra de navegacion con el sello a la izquierda, y debajo el nombre a todo
@@ -205,20 +168,97 @@ img { max-width: 100%; height: auto; }
 
 .menu-fin { margin-left: auto; }
 
-.logo { display: block; text-decoration: none; padding: clamp(1rem, 3.5vw, 2rem) 0 .7rem; }
+/* El nombre y las cifras, en la misma fila. En el movil se apilan: el panel
+   debajo del nombre y a todo lo ancho, que es lo unico que cabe. */
+.cabecera-marca { display: block; }
+
+.logo { display: block; text-decoration: none; padding: clamp(.9rem, 3vw, 1.6rem) 0 .7rem; }
 .logo:hover { text-decoration: none; }
 
-/* El nombre ocupa el ancho entero. Es la pieza mas grande de la pagina y no
-   compite con nada porque encima solo hay filetes. */
+/* El nombre sigue siendo la pieza mas grande de la pagina. Encoge para dejar
+   sitio a las cifras, pero no tanto como para dejar de mandar. */
 .logo-bloque {
   display: block;
   font-family: var(--titular);
   font-weight: 700;
-  font-size: clamp(2.6rem, 12.5vw, 8rem);
+  font-size: clamp(2.4rem, 11vw, 5.6rem);
   line-height: .86;
   letter-spacing: -.02em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* --- El panel de cifras ------------------------------------------------------
+   Las cuentas del radar: cuando fue, cuando sera y cuanto ha crecido cada
+   cosa. Numeros tabulares para que las columnas cuadren aunque cambien las
+   cifras, y el rojo solo en lo que ha entrado desde la ultima vez. */
+
+.panel {
+  margin: 0 0 .9rem;
+  border-top: 1px solid var(--filete);
+  padding-top: .6rem;
+  font-family: var(--ui);
+}
+
+.panel dl { margin: 0; }
+.panel dt, .panel dd { margin: 0; }
+
+.panel dt {
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.panel-relojes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .2rem 1.6rem;
+  padding-bottom: .55rem;
+  border-bottom: 1px solid var(--filete-fino);
+}
+
+.panel-reloj dd {
+  font-family: var(--titular);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: .55rem;
+}
+
+.panel-cifra { padding-right: .9rem; }
+.panel-cifra + .panel-cifra { padding-left: .9rem; border-left: 1px solid var(--filete-fino); }
+
+.panel-cifra dd {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-nuevas {
+  font-family: var(--titular);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--suave);
+}
+
+.panel-nuevas-hay { color: var(--acento); }
+
+.panel-total {
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--apagado);
 }
 
 .logo-amp { color: var(--acento); }
@@ -712,6 +752,24 @@ h1 {
 @media (min-width: 46rem) {
   .bits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bit-lead { grid-column: 1 / -1; }
+}
+
+@media (min-width: 52rem) {
+  .cabecera-marca {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
+    align-items: end;
+    gap: 0 2.5rem;
+  }
+
+  /* El nombre baja de tamaño al compartir fila, y no por gusto: va en una sola
+     linea, asi que si no cabe no parte, se sale. El tope se calcula contra el
+     hueco que le queda, no contra la ventana, porque la letra condensada no
+     mide lo mismo en todos los sistemas y aqui no hay fuente incrustada que
+     garantice el ancho. */
+  .logo-bloque { font-size: clamp(2.2rem, 7.4vw, 5rem); }
+
+  .panel { margin-bottom: 1.1rem; }
 }
 
 @media (min-width: 46rem) {

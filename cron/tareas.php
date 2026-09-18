@@ -43,6 +43,13 @@ require_once dirname(__DIR__) . '/lib/migrar.php';
 // de que el cron esta vivo. La portada mira esta marca para decidir si tiene
 // que mantener el sitio ella sola, y para eso le vale saber que el cron llego
 // a arrancar, aunque despues fallara.
+//
+// Antes de pisarla, se mide: cuanto hace de la pasada anterior es la unica
+// forma que tiene este sitio de saber cada cuanto corre su propio cron -la
+// frecuencia vive en el panel del alojamiento- y con eso la web puede decirle
+// al lector cuando sera la siguiente actualizacion.
+$latido_anterior = estado_ultimo_cron(dirname(__DIR__));
+
 estado_latir(dirname(__DIR__));
 
 // Y acto seguido, el cerrojo. Si la pasada anterior sigue viva, esta se va por
@@ -59,6 +66,19 @@ if ($cerrojo === null) {
 }
 
 $config = config();
+
+// Con la configuracion ya leida -y por tanto con base de datos-, se guarda la
+// cadencia medida arriba. Es un numero que solo sirve para contarselo al
+// lector, asi que no puede tumbar nada: si falla, se calla.
+try {
+    ajuste_guardar('cron_cada_minutos', (string) estado_cadencia(
+        $latido_anterior,
+        time(),
+        (int) ajuste('cron_cada_minutos', '60')
+    ));
+} catch (Throwable $e) {
+    error_log('Bit & Breakfast, no se pudo anotar la cadencia: ' . $e->getMessage());
+}
 
 date_default_timezone_set('UTC');
 error_reporting(E_ALL);

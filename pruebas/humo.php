@@ -482,6 +482,19 @@ comprobar(
     str_contains($portada, '<script')
 );
 
+// Las cifras de la cabecera: van en todas las paginas, no solo en la portada,
+// porque quien llega por un enlace a una ficha tambien quiere saber si esto
+// esta vivo.
+comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, 'class="panel"'));
+comprobar('con las tres cuentas', 3, substr_count($portada, 'class="panel-cifra"'));
+comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));
+
+comprobar(
+    'y tambien lo lleva una ficha de tema',
+    true,
+    str_contains((string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs')), 'class="panel"')
+);
+
 $feed = (string) file_get_contents($publico . '/feed.xml');
 
 comprobar('el feed declara el canal', true, str_contains($feed, '<rss version="2.0"'));

@@ -11,7 +11,13 @@
  * cabecera que quiere parecer la de una publicacion. Una letra dentro de un
  * circulo no ilustra nada, y por eso funciona.
  *
- * Recibe $base y, opcionalmente, $enlace_activo.
+ * A la derecha del nombre van las cifras del radar. Estaban antes en una tira
+ * negra encima de todo, y se han traido aqui: decian lo mismo -cuando se
+ * actualizo esto y que ha entrado- pero lo decian de pasada, como un aviso, y
+ * es de las primeras cosas que se preguntan al volver a un agregador. Al lado
+ * del nombre son parte de la cabecera, no un mensaje.
+ *
+ * Recibe $base, $panel y, opcionalmente, $enlace_activo.
  */
 
 declare(strict_types=1);
@@ -19,8 +25,6 @@ declare(strict_types=1);
 $enlace_activo = $enlace_activo ?? '';
 
 ?>
-<?php require __DIR__ . '/aviso.php'; ?>
-
 <header class="cabecera">
   <div class="cabecera-barra">
     <a class="sello-marca" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">B</a>
@@ -37,9 +41,13 @@ $enlace_activo = $enlace_activo ?? '';
     </nav>
   </div>
 
-  <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
-    <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
-  </a>
+  <div class="cabecera-marca">
+    <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
+      <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
+    </a>
+
+    <?php require __DIR__ . '/panel.php'; ?>
+  </div>
 
   <div class="cabecera-pie">
     <p class="promesa">Agregador de tecnología hotelera <span class="promesa-punto">·</span> en español</p>

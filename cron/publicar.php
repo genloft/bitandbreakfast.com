@@ -80,6 +80,11 @@ function publicar_pendiente(float $limite): array
     $publicados = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'")->fetchColumn();
     $aviso      = publicar_aviso($publicados, $tope_portada);
 
+    // Las cifras de la cabecera. Se calculan antes de escribir nada porque van
+    // en todas las paginas, no solo en la portada: quien llega por un enlace a
+    // la ficha de un tema tambien quiere saber si esto esta vivo.
+    $panel = publicar_panel($publicados, count($medios), count($temas), (string) $aviso['cuando']);
+
     // La hoja de estilo, el guion y robots.txt no dependen de lo publicado,
     // pero se escriben aqui: son parte de la salida y no tienen otro sitio
     // donde vivir. Van los primeros porque de su contenido sale la version que
@@ -100,7 +105,7 @@ function publicar_pendiente(float $limite): array
         'temas'        => $temas,
         'medios'       => $medios,
         'resumen'      => $resumen_dias,
-        'aviso'        => $aviso,
+        'panel'        => $panel,
         'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
     ];
 
@@ -263,7 +268,7 @@ function publicar_pendiente(float $limite): array
     // sintoma de que algo ha ido mal.
     $barridos += publicar_barrer($publico . '/p', [], true);
 
-    publicar_recordar($publicados, $aviso);
+    publicar_recordar($publicados, count($medios), count($temas), $aviso);
 
     ajuste_guardar('publicar_firma', $firma);
 
@@ -412,16 +417,56 @@ function publicar_aviso(int $publicados, int $tope): array
 }
 
 /**
+ * Las cifras de la cabecera: cuando fue esto, cuando sera lo siguiente y
+ * cuanto ha crecido cada cosa desde la vez anterior.
+ *
+ * Las tres parejas -noticias, medios, temas- se cuentan igual: lo que hay
+ * ahora, y lo que hay ahora menos lo que habia cuando se genero la web la vez
+ * anterior. No hay historico: tres numeros guardados contestan la pregunta, y
+ * un diario de operaciones seria otra tabla que mantener.
+ *
+ * Lo de "cuando sera la siguiente" no es una promesa, es una estimacion: sale
+ * de la cadencia que el propio cron mide al pasar. Si alguien cambia la
+ * frecuencia en el panel del alojamiento, esto se entera solo a la siguiente
+ * pasada, sin que nadie toque nada.
+ */
+function publicar_panel(int $bits, int $medios, int $temas, string $cuando): array
+{
+    $cadencia = max(1, (int) ajuste('cron_cada_minutos', '60'));
+    $momento  = strtotime($cuando . ' UTC') ?: time();
+
+    return [
+        'cuando'    => $cuando,
+        'siguiente' => gmdate('Y-m-d H:i:s', $momento + $cadencia * 60),
+        'cadencia'  => $cadencia,
+        'noticias'  => [
+            'total'  => $bits,
+            'nuevas' => max(0, $bits - (int) ajuste('web_bits_frente', '0')),
+        ],
+        'medios'    => [
+            'total'  => $medios,
+            'nuevas' => max(0, $medios - (int) ajuste('web_medios_frente', '0')),
+        ],
+        'temas'     => [
+            'total'  => $temas,
+            'nuevas' => max(0, $temas - (int) ajuste('web_temas_frente', '0')),
+        ],
+    ];
+}
+
+/**
  * Guarda el estado con el que se compara la proxima vez.
  *
  * Se llama al final y solo si la generacion ha terminado: si se guardara antes
  * y el proceso muriera a la mitad, el cambio se habria dado por contado sin
  * que nadie lo hubiera visto publicado.
  */
-function publicar_recordar(int $publicados, array $aviso): void
+function publicar_recordar(int $publicados, int $medios, int $temas, array $aviso): void
 {
     ajuste_guardar('web_actualizada_en', (string) $aviso['cuando']);
     ajuste_guardar('web_bits_frente', (string) $publicados);
+    ajuste_guardar('web_medios_frente', (string) $medios);
+    ajuste_guardar('web_temas_frente', (string) $temas);
 }
 
 /**

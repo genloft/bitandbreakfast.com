@@ -188,4 +188,26 @@ comprobar(
     })()
 );
 
+// --- Cada cuanto pasa el cron -----------------------------------------------
+//
+// Nadie se lo dice a este sitio: la frecuencia vive en el panel del
+// alojamiento. Se mide, y por eso hay que descartar las mediciones tomadas en
+// mal momento, que es justo cuando mas ganas dan de creerselas.
+
+comprobar('cinco minutos se miden bien', 5, estado_cadencia($ahora - 300, $ahora, 60));
+comprobar('y una hora tambien', 60, estado_cadencia($ahora - 3600, $ahora, 5));
+
+// La primera pasada despues de un paron daria horas: se conserva lo sabido.
+comprobar('un paron no cuenta como cadencia', 5, estado_cadencia($ahora - 86400, $ahora, 5));
+
+// Y dos pasadas pisandose darian cero.
+comprobar('ni dos pasadas seguidas', 15, estado_cadencia($ahora - 20, $ahora, 15));
+
+// Sin marca anterior no hay nada que medir.
+comprobar('sin anterior, lo que ya se sabia', 60, estado_cadencia(0, $ahora, 60));
+
+// Y lo sabido tampoco puede ser cualquier cosa.
+comprobar('lo sabido se acota por arriba', 180, estado_cadencia(0, $ahora, 99999));
+comprobar('y por abajo', 1, estado_cadencia(0, $ahora, 0));
+
 resumen_pruebas('Pruebas del estado del sitio');
