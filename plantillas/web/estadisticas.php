@@ -41,7 +41,8 @@ $alta_abierta  = $alta_abierta ?? false;
 // diria "revisado hoy" sin que nadie hubiera mirado esto hoy. Vive en
 // lib/cifras.php para que cron/mantenimiento.php pueda leerla sin ejecutar
 // esta pagina.
-$revisado = cifras_revisado();
+$revisado         = cifras_revisado();
+$limite_revision  = cifras_limite_revision($revisado);
 
 // Quien esta detras de cada cifra. No es un adorno: es la seccion que este
 // array hace posible que exista, y por eso cada fuente que se cite arriba
@@ -307,7 +308,7 @@ $descripcion = 'IA, cloud, comercio electrónico y ciberseguridad en tecnología
     </dl>
   </section>
 
-  <p class="letra-pequena cuadro-revision">Datos revisados el <?= web_e(web_fecha_larga($revisado)) ?>. Un informe anual se sustituye por el siguiente en cuanto sale; si una cifra de aquí ya tiene más de un año, avísanos.</p>
+  <p class="letra-pequena cuadro-revision">Datos revisados el <?= web_e(web_fecha_larga($revisado)) ?>, con revisión antes del <?= web_e(web_fecha_larga($limite_revision)) ?> como muy tarde —o en cuanto salga un informe nuevo, lo que llegue primero—. Si una cifra de aquí ya tiene más de un año, avísanos.</p>
 
   <?php require __DIR__ . '/suscribir.php'; ?>
 </main>

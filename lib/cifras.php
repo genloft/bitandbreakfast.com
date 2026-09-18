@@ -35,6 +35,26 @@ function cifras_revisado(): string
 }
 
 /**
+ * Hasta cuando "revisado el $revisado" sigue siendo una promesa vigente.
+ *
+ * Mismo umbral que decide si el mantenimiento avisa por correo
+ * (CIFRAS_CADUCIDAD_DIAS), pero contado hacia delante: no es "cuanto lleva
+ * caducado", es "cuando caduca". /estadisticas.html lo ensena para que quien
+ * lee la pagina no tenga que confiar a ciegas en una fecha de revision sin
+ * saber cuanto dura esa promesa.
+ */
+function cifras_limite_revision(string $revisado): string
+{
+    $revisado_ts = strtotime($revisado . ' UTC');
+
+    if ($revisado_ts === false) {
+        return $revisado;
+    }
+
+    return gmdate('Y-m-d', $revisado_ts + CIFRAS_CADUCIDAD_DIAS * 86400);
+}
+
+/**
  * Si toca avisar de que /estadisticas.html lleva demasiado sin revisarse.
  *
  * Pura -ni correo ni base de datos-, para poder probarla sin montar nada.
