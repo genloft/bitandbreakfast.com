@@ -26,6 +26,7 @@
  *   robots.txt
  *   sitemap.xml         direcciones para Google, con lastmod por dia
  *   estadisticas.html   cuadro de mandos con cifras externas -no de esta base-
+ *   tendencias.html     que tema sube y cual baja, con los datos propios
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
  * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
@@ -79,6 +80,7 @@ function publicar_pendiente(float $limite): array
     $medios = publicar_medios();
     $resumen_dias = publicar_resumen_dias();
     $mas_leidos   = publicar_mas_leidos();
+    $tendencias   = publicar_tendencias();
 
     $publicados = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'")->fetchColumn();
     $aviso      = publicar_aviso($publicados, $tope_portada);
@@ -109,6 +111,7 @@ function publicar_pendiente(float $limite): array
         'medios'       => $medios,
         'resumen'      => $resumen_dias,
         'mas_leidos'   => $mas_leidos,
+        'tendencias'   => $tendencias,
         'panel'        => $panel,
         'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
     ];
@@ -253,6 +256,11 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/estadisticas.html',
         publicar_plantilla('estadisticas', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/tendencias.html',
+        publicar_plantilla('tendencias', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
@@ -579,6 +587,92 @@ function publicar_mas_leidos(int $dias = 7, int $tope = 6): array
     $filas = $st->fetchAll();
 
     return count($filas) >= 3 ? $filas : [];
+}
+
+/**
+ * Que tema sube y cual baja: los ultimos 90 dias frente a los 90 anteriores.
+ *
+ * Trimestre natural no, a proposito: comparar el trimestre en curso -a medio
+ * llenar- contra uno cerrado siempre da una caida falsa, porque el que
+ * empieza tiene menos dias para acumular bits que el que ya termino. Dos
+ * ventanas iguales de 90 dias, las dos completas, es la unica comparacion
+ * que no miente por el calendario. Es la misma logica que ya usa
+ * publicar_mas_leidos() con sus siete dias: una ventana que rueda, no una
+ * casilla del calendario.
+ *
+ * Con menos de cuatro bits entre los dos periodos, el porcentaje es ruido: un
+ * tema que pasa de un bit a tres "sube un 200 %" y no ha pasado nada digno de
+ * ese numero. Esos temas no aparecen, igual que "lo mas leido" no aparece por
+ * debajo de tres bits.
+ *
+ * No dice si subir es bueno o bajar es malo -eso es un juicio, y el modo
+ * automático no inventa juicios-, solo cuenta. Ordenado por el movimiento
+ * mas grande primero, suba o baje, porque eso es lo que hace que esta pagina
+ * merezca una segunda mirada.
+ *
+ * @return array Filas con 'slug', 'nombre', 'actual', 'anterior', 'delta',
+ *               'porcentaje' (null si el periodo anterior estaba a cero) y
+ *               'nuevo' (bool: no habia nada de este tema hace un trimestre).
+ */
+function publicar_tendencias(int $dias_periodo = 90): array
+{
+    $hoy            = gmdate('Y-m-d');
+    $actual_desde   = gmdate('Y-m-d', strtotime($hoy . " -$dias_periodo days"));
+    $anterior_desde = gmdate('Y-m-d', strtotime($hoy . ' -' . ($dias_periodo * 2) . ' days'));
+
+    $sql = "SELECT categoria,
+                   SUM(dia >= ?) AS actual,
+                   SUM(dia >= ? AND dia < ?) AS anterior
+              FROM bits
+             WHERE estado = 'publicado' AND dia >= ?
+             GROUP BY categoria";
+
+    $st = bd()->prepare($sql);
+    $st->execute([$actual_desde, $anterior_desde, $actual_desde, $anterior_desde]);
+
+    $catalogo = bits_categorias();
+    $cuenta   = [];
+
+    foreach ($st->fetchAll() as $fila) {
+        // Los bits viejos llevan el nombre viejo de su categoria: se suman al
+        // que corresponde, como en publicar_temas().
+        $slug = bits_categoria_canonica((string) $fila['categoria']);
+
+        if ($slug === '') {
+            continue;
+        }
+
+        $cuenta[$slug]['actual']   = ($cuenta[$slug]['actual']   ?? 0) + (int) $fila['actual'];
+        $cuenta[$slug]['anterior'] = ($cuenta[$slug]['anterior'] ?? 0) + (int) $fila['anterior'];
+    }
+
+    $tendencias = [];
+
+    foreach ($cuenta as $slug => $datos) {
+        $actual   = $datos['actual'];
+        $anterior = $datos['anterior'];
+
+        if ($actual + $anterior < 4) {
+            continue;
+        }
+
+        $tendencias[] = [
+            'slug'       => $slug,
+            'nombre'     => $catalogo[$slug] ?? $slug,
+            'actual'     => $actual,
+            'anterior'   => $anterior,
+            'delta'      => $actual - $anterior,
+            'porcentaje' => $anterior > 0 ? (int) round((($actual - $anterior) / $anterior) * 100) : null,
+            'nuevo'      => $anterior === 0 && $actual > 0,
+        ];
+    }
+
+    usort(
+        $tendencias,
+        static fn (array $a, array $b): int => abs($b['delta']) <=> abs($a['delta'])
+    );
+
+    return $tendencias;
 }
 
 /**

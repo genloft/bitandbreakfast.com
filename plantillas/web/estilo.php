@@ -204,10 +204,12 @@ img { max-width: 100%; height: auto; }
   50%      { opacity: 1;  transform: scale(1); }
 }
 
-/* Quien pide menos movimiento no tiene por que verlo: el barrido y el pulso
-   se paran y dejan sitio a la version quieta de siempre. */
+/* Quien pide menos movimiento no tiene por que verlo: el barrido, el pulso,
+   el sello de imprenta y el giro del ampersand se paran y dejan sitio a la
+   version quieta de siempre. */
 @media (prefers-reduced-motion: reduce) {
-  .sello-marca, .pulso { animation: none; }
+  .sello-marca, .pulso, .logo-bloque { animation: none; }
+  .logo-amp { transition: none; }
 }
 
 .menu {
@@ -235,7 +237,13 @@ img { max-width: 100%; height: auto; }
 .logo:hover { text-decoration: none; }
 
 /* El nombre sigue siendo la pieza mas grande de la pagina. Encoge para dejar
-   sitio a las cifras, pero no tanto como para dejar de mandar. */
+   sitio a las cifras, pero no tanto como para dejar de mandar.
+
+   Entra una vez por pagina, como un sello de imprenta: llega un poco ancho y
+   aplastado -el golpe-, rebota un pelo hacia el lado contrario y se asienta.
+   Nada en bucle: es el unico gesto de la cabecera que no vuelve a repetirse
+   solo, para que siga leyendose como la marca y no como una animacion de
+   aplicacion. */
 .logo-bloque {
   display: block;
   font-family: var(--titular);
@@ -245,6 +253,28 @@ img { max-width: 100%; height: auto; }
   letter-spacing: -.02em;
   text-transform: uppercase;
   white-space: nowrap;
+  transform-origin: left center;
+  animation: sello-imprenta .55s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes sello-imprenta {
+  0%   { opacity: 0; transform: scale(1.05, .92); filter: blur(3px); }
+  55%  { opacity: 1; transform: scale(.99, 1.02); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1, 1); }
+}
+
+/* El ampersand es el unico caracter de la marca con el acento de color, asi
+   que es el que contesta al gesto de volver a portada: un giro pequeño y
+   con rebote, no una vuelta entera. */
+.logo-amp {
+  display: inline-block;
+  color: var(--acento);
+  transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.logo:hover .logo-amp,
+.logo:focus-visible .logo-amp {
+  transform: rotate(-14deg) scale(1.15);
 }
 
 /* --- El panel de cifras ------------------------------------------------------
@@ -320,8 +350,6 @@ img { max-width: 100%; height: auto; }
   color: var(--apagado);
 }
 
-.logo-amp { color: var(--acento); }
-
 .cabecera-pie {
   display: flex;
   flex-wrap: wrap;
@@ -344,6 +372,56 @@ img { max-width: 100%; height: auto; }
 /* --- Estructura -------------------------------------------------------------- */
 
 main { max-width: var(--ancho); margin: 0 auto; padding: 0 var(--gutter) 3rem; }
+
+/* --- Destacados: los dos avisos de arriba de la portada --------------------------
+   Solo en la portada, y solo dos: Cifras y Tendencias. Mas de dos habria sido
+   un menu escondido dentro de otro menu. Mismo gesto que las fichas de tema y
+   medio -caja con filete, invierte a negro al pasar por encima-, para que se
+   lean como "aqui hay mas" y no como publicidad. */
+
+.destacados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0;
+  margin-top: 1.6rem;
+  border-top: 3px solid var(--filete);
+  border-left: 1px solid var(--filete);
+}
+
+.destacado {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  padding: 1.1rem 1.2rem 1.3rem;
+  border-right: 1px solid var(--filete);
+  border-bottom: 1px solid var(--filete);
+  background: var(--tarjeta);
+  color: inherit;
+  text-decoration: none;
+}
+
+.destacado:hover { background: var(--tinta); color: var(--papel); }
+.destacado:hover .destacado-rotulo { color: var(--acento); }
+.destacado:hover .destacado-teaser { color: #cfc9c0; }
+
+.destacado-rotulo {
+  font-family: var(--ui);
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--acento);
+}
+
+.destacado-titulo {
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.destacado-teaser { font-size: .85rem; color: var(--apagado); }
 
 .edicion-cabecera {
   display: flex;

@@ -349,3 +349,20 @@ un MariaDB 10.6 para la de humo.
   se pone al día sola cuando el cron regenera el sitio por cualquier otro
   motivo: alguien tiene que volver a mirarla, y hay que poder saber cuándo lo
   hizo por última vez.
+- **`/tendencias.html` es lo contrario: se regenera sola.** Compara los
+  últimos 90 días con los 90 anteriores, tema a tema, con los propios bits
+  publicados. Dos ventanas iguales y no un trimestre natural -enero a
+  marzo-, porque comparar un trimestre a medio llenar contra uno ya cerrado
+  siempre da una caída falsa: el que empieza ha tenido menos días para
+  acumular bits. Por debajo de cuatro bits entre los dos periodos no se
+  enseña nada, la misma regla que "lo más leído": un tema que pasa de uno a
+  tres bits "sube un 200 %" y no ha pasado nada. Y no dice si subir es bueno
+  ni si bajar es malo -eso es un juicio, y el modo automático no inventa
+  juicios-, solo cuenta y ordena por el movimiento más grande.
+- **Los destacados de la portada son dos, y solo en la portada.** Cifras y
+  Tendencias, arriba del río de noticias. Más de dos habría sido un menú
+  escondido dentro de otro menú, y ponerlos en cada página del sitio los
+  convertiría en ruido de fondo en vez de en un aviso. El de Tendencias
+  cambia solo -toma el primer resultado de `publicar_tendencias()`, el mismo
+  dato que ya calcula la página-; el de Cifras es un texto fijo porque esa
+  página la revisa una persona, no el cron.
