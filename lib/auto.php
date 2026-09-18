@@ -306,6 +306,45 @@ function auto_es_promocional(string $texto): bool
 }
 
 /**
+ * ¿Ya hemos contado esto?
+ *
+ * El agrupador junta las noticias que cuentan lo mismo, y lo hace bien, pero
+ * trabaja por lotes: dos versiones de la misma nota que entran con horas de
+ * diferencia pueden acabar en racimos distintos y salir las dos a la portada.
+ * Paso una vez y se ve a la legua -el mismo titular, dos veces, una debajo de
+ * otra-, que es la peor manera que tiene un agregador de decir que no se
+ * entera de lo que publica.
+ *
+ * La comparacion es la misma que usa el agrupador, asi que lo que aqui se
+ * considere repetido es lo mismo que alli: un titular normalizado identico, o
+ * un parecido muy alto. El listón esta alto a proposito -0.85- porque dos
+ * noticias distintas del mismo dia sobre la misma empresa se parecen mucho y
+ * tirar una de las dos seria peor que repetir.
+ *
+ * @param string[] $publicados Titulares ya publicados con los que comparar.
+ */
+function auto_ya_contado(string $titular, array $publicados, float $liston = 0.85): bool
+{
+    $norma = texto_titulo_norm($titular);
+
+    if ($norma === '') {
+        return false;
+    }
+
+    foreach ($publicados as $otro) {
+        if (texto_titulo_norm((string) $otro) === $norma) {
+            return true;
+        }
+
+        if (texto_similitud($titular, (string) $otro) >= $liston) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * ¿Es esto demasiado viejo para publicarlo hoy?
  *
  * Nace de una fuente nueva: al anadirla, su archivo entero entra de golpe y

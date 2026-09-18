@@ -716,4 +716,38 @@ comprobar(
     auto_es_promocional('El PMS de Oracle se cae durante cuatro horas en toda Europa')
 );
 
+// --- No contar dos veces lo mismo -------------------------------------------
+//
+// El agrupador junta lo que cuenta lo mismo, pero trabaja por lotes: dos
+// versiones de la misma nota que entran con horas de diferencia pueden acabar
+// en racimos distintos. Paso una vez y se ve a la legua.
+
+$publicados = [
+    'Turismo inteligente, competir en excelencia con los mismos recursos',
+    'Cloudbeds lanza un RMS con inteligencia hotelera basada en datos unificados',
+];
+
+comprobar(
+    'el mismo titular no se cuenta dos veces',
+    true,
+    auto_ya_contado('Turismo inteligente, competir en excelencia con los mismos recursos', $publicados)
+);
+
+comprobar(
+    'ni con otra puntuacion o mayusculas',
+    true,
+    auto_ya_contado('TURISMO INTELIGENTE: competir en excelencia con los mismos recursos.', $publicados)
+);
+
+// Y dos noticias distintas del mismo dia sobre la misma empresa se parecen
+// mucho: tirar una de las dos seria peor que repetir.
+comprobar(
+    'pero una noticia distinta si pasa',
+    false,
+    auto_ya_contado('Cloudbeds compra una empresa de pagos para cerrar el circulo', $publicados)
+);
+
+comprobar('sin nada publicado, todo pasa', false, auto_ya_contado('Lo que sea', []));
+comprobar('y un titular vacio no casa con nada', false, auto_ya_contado('', $publicados));
+
 resumen_pruebas('Pruebas de la publicacion automatica');

@@ -368,6 +368,7 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         auto_es_didactico($titular)                       => 'automatico: guia, no noticia',
         auto_es_entrevista($titular)                      => 'automatico: entrevista',
         auto_es_viejo($items, $frescura)                  => 'automatico: demasiado viejo',
+        auto_ya_contado($titular, auto_titulares_recientes()) => 'automatico: ya lo hemos contado',
         $del_medio >= $tope_medio                         => 'automatico: ya hay bastante de ese medio hoy',
         !auto_es_del_sector($texto)                       => 'automatico: no habla de hoteles',
         default                                           => '',
@@ -493,6 +494,38 @@ function auto_solo_espanol(): bool
     }
 
     return (string) ajuste('auto_solo_espanol', '1') === '1';
+}
+
+/**
+ * Los titulares publicados hace poco, para no repetirse.
+ *
+ * Una semana y doscientos como mucho: mas atras no hace falta mirar -si algo
+ * vuelve a ser noticia ocho dias despues, es que ha pasado algo nuevo- y
+ * doscientos titulares son cuatro kilobytes, que se traen una vez por pasada.
+ *
+ * @return string[]
+ */
+function auto_titulares_recientes(): array
+{
+    static $titulares = null;
+
+    if ($titulares !== null) {
+        return $titulares;
+    }
+
+    $sql = "SELECT titular FROM bits
+             WHERE estado = 'publicado'
+               AND dia > DATE_SUB(UTC_DATE(), INTERVAL 7 DAY)
+             ORDER BY id DESC
+             LIMIT 200";
+
+    try {
+        $titulares = array_column(bd()->query($sql)->fetchAll(), 'titular');
+    } catch (Throwable $e) {
+        $titulares = [];
+    }
+
+    return $titulares;
 }
 
 /**
