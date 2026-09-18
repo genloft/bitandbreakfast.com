@@ -74,8 +74,14 @@ es deliberado:
 ```
 
 **La puerta del idioma era la que más apretaba.** Con `auto_solo_espanol` en 1,
-de setenta fuentes publicaban ocho. Con traductor configurado pasa a 0 y lo
-extranjero se publica traducido, etiquetado y con enlace al original.
+de cien fuentes publicaban ocho. Con traductor pasa a 0 y lo extranjero se
+publica traducido, etiquetado y con enlace al original.
+
+Hay dos traductores y entran por orden: **DeepL** si hay clave —medio millón de
+caracteres al mes— y, si no, un **respaldo sin clave** que traduce algo peor y
+tiene cuota diaria (unas 35 noticias, o 350 poniendo un correo de contacto). Si
+los dos fallan o se agotan, la noticia se publica en su idioma con la etiqueta
+«Titular en inglés»: aparecer sin traducir es mejor que no aparecer.
 
 Cuando la portada trae poco, **el embudo dice dónde se cae**: `/salud.php`
 tiene `cola.racimos_candidatos` (lo que espera) y `cola.racimos_descartados`
@@ -114,8 +120,10 @@ de un vistazo:
 | `cola.items_sin_agrupar` creciendo | `procesar` no da abasto | Subir `presupuesto_cron` |
 | `criterios.codigo` ≠ `criterios.aplicados` | Hay criterios nuevos sin aplicar a lo ya publicado | Se aplica solo en las siguientes pasadas |
 | `contenido.hoy` en 0 a media tarde | Hoy no ha pasado nada las puertas | Mirar `cola.racimos_descartados` y los motivos |
-| `traductor.estado: sin configurar` | Solo se publica lo que venga en español | Poner la clave de DeepL en `/panel` → Correo |
-| `traductor.queda` cerca de 0 | Se acaba la cuota del mes | Sube el plan o baja el número de fuentes en inglés |
+| `traductor.proveedor: mymemory` | Traduciendo con el respaldo, sin clave | Normal; con la clave de DeepL traduce mejor y mucho más |
+| `traductor.proveedor: ninguno` | Solo se publica lo que venga en español | Poner la clave, o encender el respaldo en `/panel` → Correo |
+| `traductor.palabras_libres` en 0 | El respaldo agotó su cuota del día | Poner un correo de contacto (×10) o la clave de DeepL |
+| `traductor.queda` cerca de 0 | Se acaba la cuota mensual de DeepL | Sube el plan o baja el número de fuentes en inglés |
 
 **Los ajustes que gobiernan el ritmo** (tabla `ajustes` en la base de datos):
 
