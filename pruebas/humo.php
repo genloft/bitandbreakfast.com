@@ -388,6 +388,11 @@ comprobar('escribe el dia en su carpeta', true, is_file($publico . '/' . web_rut
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
 comprobar('escribe el cuadro de cifras', true, is_file($publico . '/estadisticas.html'));
+comprobar(
+    'y dice hasta cuando vale esa revision',
+    true,
+    str_contains((string) file_get_contents($publico . '/estadisticas.html'), 'con revisión antes del')
+);
 comprobar('escribe el sitemap', true, is_file($publico . '/sitemap.xml'));
 comprobar('escribe el glosario', true, is_file($publico . '/glosario.html'));
 comprobar(

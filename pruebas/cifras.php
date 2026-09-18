@@ -70,4 +70,22 @@ comprobar(
     (int) preg_match('/^\d{4}-\d{2}-\d{2}$/', cifras_revisado())
 );
 
+comprobar(
+    'el limite de revision cae justo CIFRAS_CADUCIDAD_DIAS despues',
+    '2026-05-01',
+    cifras_limite_revision('2026-01-01')
+);
+
+comprobar(
+    'el limite de revision cruza de mes y de anio sin problema',
+    '2027-01-30',
+    cifras_limite_revision('2026-10-02')
+);
+
+comprobar(
+    'una fecha de revision ilegible no rompe nada, se devuelve tal cual',
+    'esto no es una fecha',
+    cifras_limite_revision('esto no es una fecha')
+);
+
 resumen_pruebas('Pruebas de lib/cifras.php');

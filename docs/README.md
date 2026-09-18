@@ -434,3 +434,12 @@ un MariaDB 10.6 para la de humo.
   el navegador ya sabe hacer solo. El resto del menú no se toca: Portada,
   Temas, Medios, Archivo y Qué es siguen siendo la lectura de todos los
   días y se quedan al primer nivel.
+- **`/estadisticas.html` dice hasta cuándo vale su "revisado el".** La
+  fecha de revisión sin más era una promesa sin plazo: quien la leía no
+  tenía forma de saber si "revisado el" seguía significando algo hoy o si
+  llevaba diez meses caducada. `cifras_limite_revision()`, en
+  `lib/cifras.php`, suma `CIFRAS_CADUCIDAD_DIAS` a la fecha de revisión -el
+  mismo umbral que ya usa `cron/mantenimiento.php` para avisar por
+  correo, contado hacia delante en vez de hacia atrás- y la página lo
+  enseña como "con revisión antes del…". No es una promesa nueva, es la
+  misma que ya existía hecha visible.
