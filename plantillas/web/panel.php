@@ -16,7 +16,9 @@
  * dar una hora exacta que puede no cumplirse es peor que no darla.
  *
  * Es una foto del momento en que se genero la pagina. El sitio es HTML
- * estatico y esa es justamente la razon de que aguante.
+ * estatico y esa es justamente la razon de que aguante. El punto que
+ * pulsa junto a "Actualizado" no lo desmiente -sigue siendo una foto-, solo
+ * dice que detras hay un radar que no se ha parado, no un volcado suelto.
  *
  * Recibe $panel.
  */
@@ -43,7 +45,7 @@ $filas = [
   <dl class="panel-relojes">
     <div class="panel-reloj">
       <dt>Actualizado</dt>
-      <dd><time datetime="<?= web_e(str_replace(' ', 'T', (string) $panel['cuando']) . 'Z') ?>"><?= web_e($cuando) ?></time></dd>
+      <dd><span class="pulso" aria-hidden="true"></span> <time datetime="<?= web_e(str_replace(' ', 'T', (string) $panel['cuando']) . 'Z') ?>"><?= web_e($cuando) ?></time></dd>
     </div>
 
     <?php if ($siguiente !== ''): ?>

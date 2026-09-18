@@ -145,7 +145,21 @@ img { max-width: 100%; height: auto; }
 }
 
 /* El sello: un circulo negro con la inicial. No es un icono ilustrativo -de
-   esos ya hubo uno y sobraba-, es la marca reducida a una letra. */
+   esos ya hubo uno y sobraba-, es la marca reducida a una letra.
+
+   El unico gesto de movimiento que se permite el sitio: un barrido de radar
+   -mas oscuro que claro- girando muy despacio detras de la letra. No es un
+   icono nuevo, es la misma letra de siempre con una prueba de vida detras, y
+   dice sin palabras lo que la copia del sitio repite todo el rato: esto es
+   un radar, no una foto fija. Se pinta con una variable de angulo animada
+   -@property, sin ella el navegador se queda con el circulo liso de
+   siempre-, nunca con un <script> que la CSP del sitio no deja entrar. */
+@property --angulo-sello {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 .sello-marca {
   display: grid;
   place-items: center;
@@ -153,13 +167,47 @@ img { max-width: 100%; height: auto; }
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: var(--tinta);
+  --angulo-sello: 0deg;
+  background: conic-gradient(from var(--angulo-sello),
+              var(--tinta) 0deg, var(--tinta) 300deg, #302d28 330deg, var(--tinta) 360deg);
   color: var(--papel);
   font-family: var(--titular);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: .02em;
   text-decoration: none;
+  animation: barrido-sello 9s linear infinite;
+}
+
+@keyframes barrido-sello {
+  to { --angulo-sello: 360deg; }
+}
+
+/* El mismo gesto, en forma de punto: dice "esto sigue latiendo" junto a un
+   dato que de verdad viene de una medicion -la hora de la ultima generacion,
+   el titulo de "lo mas leido"-, nunca junto a algo decorativo. Un pulso
+   suave y no un parpadeo, porque parpadear pide atencion y esto solo la
+   ofrece. */
+.pulso {
+  display: inline-block;
+  vertical-align: middle;
+  flex: none;
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background: var(--acento);
+  animation: pulso 2.4s ease-in-out infinite;
+}
+
+@keyframes pulso {
+  0%, 100% { opacity: .4; transform: scale(.8); }
+  50%      { opacity: 1;  transform: scale(1); }
+}
+
+/* Quien pide menos movimiento no tiene por que verlo: el barrido y el pulso
+   se paran y dejan sitio a la version quieta de siempre. */
+@media (prefers-reduced-motion: reduce) {
+  .sello-marca, .pulso { animation: none; }
 }
 
 .menu {
@@ -503,6 +551,50 @@ h1 {
 
 .vacio { margin: 2rem 0; color: var(--apagado); }
 
+/* --- Lo mas leido ---------------------------------------------------------------
+   Entre el rio del dia y "seguir tirando del hilo": ya se ha leido lo de hoy,
+   esto es la version corta de "que me he perdido esta semana". Ranking de
+   verdad, sacado de clics, por eso el numero va en el mismo rojo que el de
+   cada bit y no en un color nuevo. */
+
+.masleido { margin: 2.5rem 0 0; padding: 1.5rem 0 0; border-top: 3px solid var(--filete); }
+
+.masleido h2 {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: 0 0 1rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.masleido-lista { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filete); }
+
+.masleido-lista li {
+  display: flex;
+  align-items: baseline;
+  gap: .8rem;
+  padding: .7rem 0;
+  border-bottom: 1px solid var(--filete-fino);
+}
+
+.masleido-numero {
+  flex: none;
+  font-family: var(--titular);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+}
+
+.masleido-cuerpo { min-width: 0; font-family: var(--ui); font-weight: 700; }
+.masleido-cuerpo a { text-decoration: none; }
+.masleido-cuerpo a:hover { color: var(--acento); }
+.masleido-cuerpo .datos { display: block; margin-top: .15rem; font-weight: 600; }
+
 /* --- Temas y medios ----------------------------------------------------------- */
 
 .explorar { margin: 2.5rem 0 0; padding: 1.5rem 0 0; border-top: 3px solid var(--filete); }
@@ -704,6 +796,79 @@ h1 {
 .pagina li { margin-bottom: .4rem; }
 .letra-pequena { font-size: .74rem; color: var(--apagado); }
 .alta-respuesta { max-width: var(--lectura); }
+
+/* --- Cifras: cuadro de mandos --------------------------------------------------------
+   La unica pagina que no sale de la base propia. Cada tarjeta es un tema y
+   dentro, una cifra por ambito -España, Global, Union Europea-, para que
+   comparar sea leer, no calcular. Movil primero: en una columna hasta que
+   hay sitio para dos cifras o dos tarjetas en la misma fila. */
+
+.cuadro {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0;
+  margin: 2rem 0;
+  border-top: 3px solid var(--filete);
+  border-left: 1px solid var(--filete);
+}
+
+.cuadro-tarjeta {
+  padding: 1.3rem 1.3rem 1.5rem;
+  border-right: 1px solid var(--filete);
+  border-bottom: 1px solid var(--filete);
+  background: var(--tarjeta);
+}
+
+.cuadro-tema {
+  margin: 0 0 .5rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+}
+
+.cuadro-nota { margin: 0 0 .9rem; font-size: .82rem; color: var(--apagado); }
+
+.cuadro-cifras { display: flex; flex-wrap: wrap; gap: .8rem 0; margin: .4rem 0; }
+
+.cuadro-cifra { flex: 1 1 9rem; padding-right: .9rem; }
+.cuadro-cifra + .cuadro-cifra { padding-left: .9rem; border-left: 1px solid var(--filete-fino); }
+
+.cuadro-ambito {
+  margin: 0;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.cuadro-valor {
+  margin: .2rem 0 .3rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 6vw, 2.3rem);
+  line-height: 1;
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+}
+
+.cuadro-detalle { margin: 0; font-size: .85rem; color: var(--texto); line-height: 1.45; }
+
+.cuadro-fuente { margin: .55rem 0 0; font-size: .64rem; letter-spacing: .02em; color: var(--suave); }
+.cuadro-fuente a { color: var(--suave); text-decoration-color: var(--filete-fino); }
+.cuadro-fuente a:hover { color: var(--tinta); text-decoration-color: var(--acento); }
+
+.cuadro-destacado {
+  margin: 1rem 0 0;
+  padding-top: .8rem;
+  border-top: 1px solid var(--filete-fino);
+  font-size: .88rem;
+  font-weight: 700;
+}
+
+.cuadro-revision { margin: 1rem 0 0; }
 
 /* --- Alta en el boletin ---------------------------------------------------------------- */
 

@@ -387,6 +387,8 @@ comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe el dia en su carpeta', true, is_file($publico . '/' . web_ruta_dia($dia)));
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
+comprobar('escribe el cuadro de cifras', true, is_file($publico . '/estadisticas.html'));
+comprobar('escribe el sitemap', true, is_file($publico . '/sitemap.xml'));
 comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
 comprobar('y el de medios', true, is_file($publico . '/medios.html'));
 comprobar('escribe el buscador', true, is_file($publico . '/buscar.html'));
@@ -493,7 +495,10 @@ comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, '
 comprobar(
     'el titular lleva al original',
     true,
-    (bool) preg_match('~<h2 id="titular-\d+">\s*<a href="[^"]+"~', $portada)
+    // [^>]* porque el h2 puede llevar mas atributos -itemprop="headline" de
+    // los microdatos, por ejemplo- sin que eso cambie lo que aqui importa:
+    // que justo detras venga un enlace.
+    (bool) preg_match('~<h2 id="titular-\d+"[^>]*>\s*<a href="[^"]+"~', $portada)
 );
 
 comprobar(

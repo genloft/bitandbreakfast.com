@@ -14,7 +14,8 @@
  * promesa que se puede cumplir; "esto es todo lo que se ha publicado hoy en el
  * mundo" no.
  *
- * Recibe $rio -tramos con 'dia' y 'bits'-, $dias, $fuentes y $base.
+ * Recibe $rio -tramos con 'dia' y 'bits'-, $dias, $fuentes, $mas_leidos y
+ * $base.
  *
  * HTML estatico: ni script, ni estilo en linea, ni una peticion a terceros.
  * La politica de seguridad del sitio es 'self' y esta pagina es la razon de
@@ -30,6 +31,7 @@ $dias       = $dias ?? [];
 $fuentes    = $fuentes ?? [];
 $temas      = $temas ?? [];
 $medios     = $medios ?? [];
+$mas_leidos = $mas_leidos ?? [];
 $secreto    = $secreto ?? '';
 $alta_abierta = $alta_abierta ?? false;
 
@@ -118,6 +120,8 @@ require_once __DIR__ . '/iconos.php';
     <?php endif; ?>
 
   </article>
+
+  <?php require __DIR__ . '/mas_leido.php'; ?>
 
   <?php require __DIR__ . '/explorar.php'; ?>
 

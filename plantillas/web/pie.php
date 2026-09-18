@@ -13,6 +13,7 @@ declare(strict_types=1);
     <a href="<?= web_e($base) ?>/buscar.html">Buscar</a>
     <a href="<?= web_e($base) ?>/temas.html">Temas</a>
     <a href="<?= web_e($base) ?>/medios.html">Medios</a>
+    <a href="<?= web_e($base) ?>/estadisticas.html">Cifras</a>
     <a href="<?= web_e($base) ?>/sobre.html">Qué es</a>
     <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
   </nav>
