@@ -18,7 +18,7 @@
  *   index.html          la portada: el rio de los ultimos dias
  *   d/<AAAA-MM-DD>/     cada dia, entero
  *   archivo.html        la lista de dias
- *   t/<tema>/           una ficha por tema
+ *   t/<tema>/           una ficha por tema, con su propio feed.xml
  *   m/<medio>/          una ficha por medio
  *   feed.xml            RSS de lo ultimo
  *   buscar.html         el explorador, mas indice.json
@@ -195,15 +195,26 @@ function publicar_pendiente(float $limite): array
             return ['dias' => $hechas, 'ficheros' => $ficheros, 'estado' => 'a medias'];
         }
 
+        $bits_tema = publicar_bits_tema((string) $tema['slug']);
+
         $ficheros += publicar_escribir(
             $publico . '/' . web_ruta_tema((string) $tema['slug']),
             publicar_plantilla('tema', $comunes + [
                 'tema'  => $tema,
-                'bits'  => publicar_bits_tema((string) $tema['slug']),
+                'bits'  => $bits_tema,
                 'otros' => array_values(array_filter(
                     $temas,
                     static fn (array $otro): bool => $otro['slug'] !== $tema['slug']
                 )),
+            ])
+        ) ? 1 : 0;
+
+        $ficheros += publicar_escribir(
+            $publico . '/t/' . web_slug_seguro((string) $tema['slug']) . '/feed.xml',
+            publicar_plantilla('feed_tema', [
+                'tema' => $tema,
+                'bits' => $bits_tema,
+                'base' => $base,
             ])
         ) ? 1 : 0;
     }
@@ -364,6 +375,10 @@ function publicar_barrer(string $carpeta, array $vivos, bool $vaciar = false): i
         }
 
         @unlink($ruta . '/index.html');
+        // Las fichas de tema llevan tambien su feed.xml: sin borrarlo, rmdir()
+        // se niega a vaciar la carpeta -no esta vacia- y la carpeta retirada
+        // se queda huerfana para siempre.
+        @unlink($ruta . '/feed.xml');
 
         if (@rmdir($ruta)) {
             $borradas++;
@@ -684,6 +699,9 @@ function publicar_tendencias(int $dias_periodo = 90): array
 
 /**
  * Los bits publicados de un tema, del mas reciente al mas antiguo.
+ *
+ * Lleva el cuerpo -tema.php no lo pinta, pero t/<tema>/feed.xml si- para no
+ * repetir esta consulta con una columna mas cuando el feed la necesita.
  */
 function publicar_bits_tema(string $tema): array
 {
@@ -697,7 +715,7 @@ function publicar_bits_tema(string $tema): array
     $formas = array_merge([$tema], $viejas);
     $marcas = implode(',', array_fill(0, count($formas), '?'));
 
-    $sql = "SELECT b.id, b.titular, b.por_que, b.categoria, b.dia,
+    $sql = "SELECT b.id, b.titular, b.cuerpo, b.por_que, b.categoria, b.dia,
                    (SELECT f.nombre FROM items i
                       JOIN fuentes f ON f.id = i.fuente_id
                      WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
