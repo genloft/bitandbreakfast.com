@@ -366,3 +366,19 @@ un MariaDB 10.6 para la de humo.
   cambia solo -toma el primer resultado de `publicar_tendencias()`, el mismo
   dato que ya calcula la página-; el de Cifras es un texto fijo porque esa
   página la revisa una persona, no el cron.
+- **El cron no trae las cifras solas, avisa cuando hay que traerlas.** INE y
+  Eurostat tienen una API abierta y estable; RateGain, IBM, AEPD y las
+  encuestas de viajeros no -son informes y notas de prensa, no un servicio
+  que se pueda leer sin vigilancia-, y un cron que las raspara se rompería
+  con el primer cambio de maquetación de cualquiera de ellas, en silencio.
+  Como no se puede automatizar todo sin inventar una parte, no se automatiza
+  ninguna: `cron/mantenimiento.php` -la tarea que estaba anunciada en el
+  despachador desde el principio y nunca había tenido fichero- comprueba
+  cada día si `/estadisticas.html` lleva más de `CIFRAS_CADUCIDAD_DIAS`
+  (120, unos cuatro meses) sin que una persona la revise, y si es así manda
+  un aviso por el mismo buzón que ya usa el cron para su propio parte. Un
+  aviso por revisión, no uno por día: `ajustes.cifras_aviso_revisado` guarda
+  para qué fecha de revisión ya se avisó, así que actualizar la página
+  también apaga el aviso. La fecha de revisión y el umbral viven en
+  `lib/cifras.php`, no dentro de la plantilla, para que el mantenimiento
+  pueda leerlos sin ejecutar la página entera.

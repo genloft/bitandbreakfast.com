@@ -47,7 +47,7 @@ reparte en más pasadas, porque todas llevan puntero.
 | 3 | **auto** | Aplica las puertas y **escribe los bits** que las pasan | siempre |
 | 4 | **publicar** | Regenera el HTML estático si algo ha cambiado | siempre |
 | 5 | **enviar** | Manda una tanda del boletín | siempre |
-| 6 | **mantenimiento** | Limpieza diaria | 1 vez al día, a partir de las 05:00 UTC |
+| 6 | **mantenimiento** | Avisa si `/estadisticas.html` lleva más de 120 días sin revisarse a mano | 1 vez al día, a partir de las 05:00 UTC |
 
 Las tareas 4 y 5 no entran en el reparto de tiempo: son lo único que el lector
 llega a ver, y una pasada que rastrea y escribe pero no genera la web no ha

@@ -856,4 +856,25 @@ $portada_final = (string) file_get_contents($publico . '/index.html');
 comprobar('la portada destaca las cifras del sector', true, str_contains($portada_final, '/estadisticas.html'));
 comprobar('y las tendencias', true, str_contains($portada_final, '/tendencias.html'));
 
+// -----------------------------------------------------------------------------
+// Mantenimiento diario
+//
+// Sin buzon propio configurado en esta base de prueba, tiene que salir sin
+// tocar nada ni intentar conectar a ningun SMTP: eso ya lo prueba
+// pruebas/cifras.php contra la logica pura. Aqui solo se comprueba que el
+// fichero existe, engancha con cron/tareas.php y corre de principio a fin
+// contra la base real sin lanzar nada.
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/cron/mantenimiento.php';
+
+$mantenimiento = mantenimiento_diario(microtime(true) + 5);
+
+comprobar('el mantenimiento corre y devuelve su resumen', true, is_array($mantenimiento));
+comprobar(
+    'y no manda nada sin un buzon propio configurado',
+    false,
+    $mantenimiento['cifras_aviso'] ?? null
+);
+
 resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');

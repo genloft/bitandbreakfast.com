@@ -208,7 +208,7 @@ img { max-width: 100%; height: auto; }
    el sello de imprenta y el giro del ampersand se paran y dejan sitio a la
    version quieta de siempre. */
 @media (prefers-reduced-motion: reduce) {
-  .sello-marca, .pulso, .logo-bloque { animation: none; }
+  .sello-marca, .pulso, .logo-bloque, .logo-amp { animation: none; }
   .logo-amp { transition: none; }
 }
 
@@ -265,15 +265,27 @@ img { max-width: 100%; height: auto; }
 
 /* El ampersand es el unico caracter de la marca con el acento de color, asi
    que es el que contesta al gesto de volver a portada: un giro pequeño y
-   con rebote, no una vuelta entera. */
+   con rebote, no una vuelta entera. Y no espera a que alguien pase por
+   encima: cada pocos segundos se guiña solo, el mismo gesto pero sin que
+   nadie lo pida, para que la marca de señales de vida aunque nadie toque
+   nada. Al pasar el raton o el foco, el guiño automatico se para y manda
+   el gesto deliberado, para que las dos animaciones no se pisen. */
 .logo-amp {
   display: inline-block;
   color: var(--acento);
   transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
+  animation: guino-amp 9s ease-in-out infinite;
+}
+
+@keyframes guino-amp {
+  0%, 90%, 100% { transform: rotate(0deg) scale(1); }
+  94%           { transform: rotate(-14deg) scale(1.15); }
+  97%           { transform: rotate(6deg) scale(1.05); }
 }
 
 .logo:hover .logo-amp,
 .logo:focus-visible .logo-amp {
+  animation-play-state: paused;
   transform: rotate(-14deg) scale(1.15);
 }
 
@@ -934,9 +946,35 @@ h1 {
 
 .cuadro-detalle { margin: 0; font-size: .85rem; color: var(--texto); line-height: 1.45; }
 
-.cuadro-fuente { margin: .55rem 0 0; font-size: .64rem; letter-spacing: .02em; color: var(--suave); }
-.cuadro-fuente a { color: var(--suave); text-decoration-color: var(--filete-fino); }
-.cuadro-fuente a:hover { color: var(--tinta); text-decoration-color: var(--acento); }
+/* La fuente no es la letra pequeña de la cifra, es la otra mitad: por eso
+   lleva su propia etiqueta en rojo y el nombre va en negro y en negrita, no
+   apagado como el resto de metadatos de la tarjeta. */
+.cuadro-fuente {
+  margin: .6rem 0 0;
+  padding-top: .5rem;
+  border-top: 1px dotted var(--filete-fino);
+  font-size: .72rem;
+  letter-spacing: .01em;
+  color: var(--suave);
+}
+
+.cuadro-fuente-etiqueta {
+  margin-right: .3rem;
+  font-family: var(--ui);
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--acento);
+}
+
+.cuadro-fuente a,
+.cuadro-fuente strong {
+  color: var(--tinta);
+  font-weight: 700;
+  text-decoration-color: var(--filete-fino);
+}
+.cuadro-fuente a:hover { color: var(--acento); text-decoration-color: var(--acento); }
 
 .cuadro-destacado {
   margin: 1rem 0 0;
@@ -947,6 +985,38 @@ h1 {
 }
 
 .cuadro-revision { margin: 1rem 0 0; }
+
+/* --- Fuentes de Cifras --------------------------------------------------------------
+   La bibliografia de la pagina de arriba, con el mismo peso que las cifras
+   que sostiene: un nombre grande que enlaza, y debajo quien es. */
+
+.fuentes { margin: 2.5rem 0 0; padding-top: 1.5rem; border-top: 3px solid var(--filete); }
+
+.fuentes h2 {
+  margin: 0 0 .5rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.fuentes-lista { margin: 1.2rem 0 0; padding: 0; border-top: 1px solid var(--filete); }
+
+.fuentes-fila { padding: .9rem 0; border-bottom: 1px solid var(--filete-fino); }
+
+.fuentes-fila dt {
+  margin: 0;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+}
+.fuentes-fila dt a { text-decoration: none; }
+.fuentes-fila dt a:hover { color: var(--acento); }
+
+.fuentes-fila dd { margin: .25rem 0 0; font-size: .85rem; color: var(--apagado); }
 
 /* --- Alta en el boletin ---------------------------------------------------------------- */
 
