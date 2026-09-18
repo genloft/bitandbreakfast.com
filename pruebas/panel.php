@@ -8,10 +8,14 @@
  *
  * Sin base de datos: la sesion y las consultas viven en lib/panel.php y
  * panel/datos.php, y aqui solo entra lo que se puede probar sin servidor.
+ * La unica excepcion es datos_formatear_candidato(), que vive en
+ * panel/datos.php pero no toca la base: solo da forma a lo que ya
+ * devuelven datos_cola() y datos_items_racimo(), asi que se prueba aqui.
  */
 
 require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
+require_once dirname(__DIR__) . '/panel/datos.php';
 
 /**
  * Un cuerpo de las palabras que se pidan, para no contarlas a mano.
@@ -185,6 +189,31 @@ comprobar(
     'la semana va con dos cifras',
     '2026-w02-002',
     bits_slug_edicion(2, '2026-01-05')
+);
+
+// --- El candidato tal como lo manda api/candidatos.php -----------------------
+
+$racimo_candidato = [
+    'id' => 9, 'titulo_representativo' => 'Oracle OPERA Cloud se cae en Europa',
+    'puntuacion' => 42, 'fuentes' => 2,
+    'primer_visto' => '2026-09-18 08:00:00', 'ultimo_visto' => '2026-09-18 10:00:00',
+];
+
+$items_candidato = [
+    ['titulo' => 'Caida global', 'url' => 'https://a.test/x', 'fuente' => 'Skift', 'idioma' => 'en', 'resumen_origen' => 'x', 'publicado' => '2026-09-18 07:50:00'],
+];
+
+$candidato_formateado = datos_formatear_candidato($racimo_candidato, $items_candidato);
+
+comprobar('el candidato lleva su id como entero', 9, $candidato_formateado['id']);
+comprobar('y el titulo', 'Oracle OPERA Cloud se cae en Europa', $candidato_formateado['titulo']);
+comprobar('y sus items, en la misma forma', 1, count($candidato_formateado['items']));
+comprobar('con la fuente de cada item', 'Skift', $candidato_formateado['items'][0]['fuente']);
+
+comprobar(
+    'sin items, la lista sale vacia, no ausente',
+    [],
+    datos_formatear_candidato($racimo_candidato, [])['items']
 );
 
 resumen_pruebas('Pruebas de la fase 3: reglas del bit y de la edicion');

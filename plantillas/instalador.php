@@ -200,7 +200,9 @@ declare(strict_types=1);
 
   <h2>3. Token de la API</h2>
 
-  <p>Lo necesitarás en la fase 6, para la redacción asistida. Queda guardado en
+  <p>Autoriza <code>/api/candidatos.php</code>: la cola de curación en JSON,
+  para revisarla desde fuera del panel sin iniciar sesión. Cabecera
+  <code>Authorization: Bearer &lt;token&gt;</code>. Queda guardado en
   <code>config/config.php</code>, así que no hace falta que lo copies:</p>
 
   <pre><?= inst_e($token) ?></pre>

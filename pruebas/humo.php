@@ -377,6 +377,21 @@ comprobar(
 
 comprobar('y la cola de candidatos se queda con el otro racimo', 1, count(datos_cola()));
 
+// El mismo camino que recorre api/candidatos.php: la cola de verdad, con
+// items de verdad, dando la forma que se manda por la API.
+$cola_candidatos = datos_cola();
+$candidato_api   = datos_formatear_candidato(
+    $cola_candidatos[0],
+    datos_items_racimo((int) $cola_candidatos[0]['id'])
+);
+
+comprobar('el candidato de la API lleva items de verdad', true, count($candidato_api['items']) > 0);
+comprobar(
+    'y el titulo del item viene de la base, no inventado',
+    $titulo_c,
+    $candidato_api['items'][0]['titulo']
+);
+
 $resumen_web = publicar_pendiente(microtime(true) + 30);
 
 comprobar('el generador publica un dia', 1, $resumen_web['dias']);
