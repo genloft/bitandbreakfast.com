@@ -389,6 +389,12 @@ comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
 comprobar('escribe el cuadro de cifras', true, is_file($publico . '/estadisticas.html'));
 comprobar('escribe el sitemap', true, is_file($publico . '/sitemap.xml'));
+comprobar('escribe el glosario', true, is_file($publico . '/glosario.html'));
+comprobar(
+    'y enlaza un termino con el tema que le corresponde',
+    true,
+    str_contains((string) file_get_contents($publico . '/glosario.html'), web_url_tema('https://ejemplo.test', 'pms-crs'))
+);
 comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
 comprobar('y el de medios', true, is_file($publico . '/medios.html'));
 comprobar('escribe el buscador', true, is_file($publico . '/buscar.html'));

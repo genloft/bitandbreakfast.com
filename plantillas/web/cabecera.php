@@ -37,6 +37,7 @@ $enlace_activo = $enlace_activo ?? '';
       <a href="<?= web_e($base) ?>/sobre.html"<?= $enlace_activo === 'sobre' ? ' aria-current="page"' : '' ?>>Qué es</a>
       <a href="<?= web_e($base) ?>/estadisticas.html"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>>Cifras</a>
       <a href="<?= web_e($base) ?>/tendencias.html"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>>Tendencias</a>
+      <a href="<?= web_e($base) ?>/glosario.html"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>>Glosario</a>
       <span class="menu-fin"></span>
       <a href="<?= web_e($base) ?>/buscar.html"<?= $enlace_activo === 'buscar' ? ' aria-current="page"' : '' ?>>Buscar</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
