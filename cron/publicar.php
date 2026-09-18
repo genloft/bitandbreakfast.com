@@ -39,6 +39,7 @@ require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/web.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
+require_once dirname(__DIR__) . '/lib/cifras.php';
 
 /**
  * Publica lo que haya pendiente.

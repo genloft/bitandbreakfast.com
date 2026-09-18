@@ -14,7 +14,15 @@
  * distintos, y forzarla habria sido peor que admitir que esto se actualiza a
  * mano. La fecha de "Datos revisados el" de mas abajo es la unica promesa que
  * hace esta pagina; todas las cifras llevan su propia fecha y su propio
- * enlace para que se pueda comprobar cada una por separado.
+ * enlace para que se pueda comprobar cada una por separado. La misma fecha,
+ * y el umbral a partir del cual esta caducada, viven en lib/cifras.php:
+ * cron/mantenimiento.php la lee de ahi cada dia para avisar por correo si
+ * esto lleva demasiado sin que alguien lo revise.
+ *
+ * "Quien firma cada cifra" tiene aqui el mismo peso que la cifra misma: la
+ * seccion de fuentes de mas abajo no es una bibliografia de cortesia, es la
+ * unica razon por la que esta pagina puede decir algo que un agregador de
+ * titulares no podria.
  *
  * Recibe $base y $alta_abierta.
  */
@@ -30,8 +38,51 @@ $alta_abierta  = $alta_abierta ?? false;
 // Fija, no gmdate('Y-m-d'): esta pagina no la genera el radar a partir de su
 // propia base, alguien la revisa a mano. Si fuera la fecha del momento en
 // que el cron regenera el sitio -que puede ser por cualquier otro bit-,
-// diria "revisado hoy" sin que nadie hubiera mirado esto hoy.
-$revisado = '2026-09-18';
+// diria "revisado hoy" sin que nadie hubiera mirado esto hoy. Vive en
+// lib/cifras.php para que cron/mantenimiento.php pueda leerla sin ejecutar
+// esta pagina.
+$revisado = cifras_revisado();
+
+// Quien esta detras de cada cifra. No es un adorno: es la seccion que este
+// array hace posible que exista, y por eso cada fuente que se cite arriba
+// tiene que tener su entrada aqui debajo.
+$fuentes = [
+    [
+        'nombre'  => 'INE — Instituto Nacional de Estadística',
+        'detalle' => 'Organismo oficial de estadística del Gobierno de España.',
+        'url'     => 'https://www.ine.es/',
+    ],
+    [
+        'nombre'  => 'Eurostat',
+        'detalle' => 'Oficina de estadística de la Comisión Europea.',
+        'url'     => 'https://ec.europa.eu/eurostat',
+    ],
+    [
+        'nombre'  => 'IBM — Cost of a Data Breach Report',
+        'detalle' => 'Informe anual de referencia del sector sobre el coste de las brechas de seguridad.',
+        'url'     => 'https://www.ibm.com/reports/data-breach',
+    ],
+    [
+        'nombre'  => 'AEPD — Agencia Española de Protección de Datos',
+        'detalle' => 'Autoridad española de protección de datos.',
+        'url'     => 'https://www.aepd.es/',
+    ],
+    [
+        'nombre'  => 'RateGain, NYU SPS y HEDNA',
+        'detalle' => 'Informe anual «State of Distribution» sobre comercialización hotelera.',
+        'url'     => 'https://rategain.com/press-release/state-of-distribution-2026-launch/',
+    ],
+    [
+        'nombre'  => 'Simon-Kucher y Allianz Partners',
+        'detalle' => 'Consultora y asegurador de viajes; encuestas propias sobre comportamiento del viajero.',
+        'url'     => 'https://www.allianz-partners.com/es_ES/sala-de-prensa/notas-de-prensa/noticias-2026/el-45-de-los-vajeros-recurre-a-la-ia-para-planificar-sus-vacaciones.html',
+    ],
+    [
+        'nombre'  => 'Statista y Skyscanner',
+        'detalle' => 'Plataforma de datos de mercado y buscador de viajes; encuestas propias.',
+        'url'     => 'https://www.statista.com/topics/10887/artificial-intelligence-ai-use-in-travel-and-tourism/',
+    ],
+];
 
 // Cada grupo compara Espana con la referencia que exista -Union Europea o
 // el dato global del sector-, nunca dos cosas que no se puedan comparar. Si
@@ -40,7 +91,7 @@ $revisado = '2026-09-18';
 $grupos = [
     [
         'tema' => 'IA en la empresa, en general',
-        'nota' => 'No es un dato del sector hotelero: es la vara de medir de fondo, la misma para cualquier sector.',
+        'nota' => 'Esta y las dos siguientes -cloud y comercio electrónico- no son datos del sector hotelero: son la vara de medir de fondo, la misma para cualquier sector.',
         'cifras' => [
             [
                 'ambito'  => 'España',
@@ -60,6 +111,50 @@ $grupos = [
             ],
         ],
         'destacado' => 'Por primera vez, España supera la media europea.',
+    ],
+    [
+        'tema' => 'Cloud computing en la empresa',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '44,3%',
+                'detalle' => 'de las empresas usa servicios de computación en la nube de pago',
+                'fuente'  => 'INE, Encuesta sobre el uso de TIC y comercio electrónico en las empresas',
+                'fecha'   => 'dato de 2024/2025 · publicado en octubre de 2025',
+                'url'     => 'https://www.ine.es/dyngs/Prensa/ETICCE20241T2025.htm',
+            ],
+            [
+                'ambito'  => 'Unión Europea',
+                'valor'   => '52,7%',
+                'detalle' => 'de las empresas usa servicios de computación en la nube de pago (media UE)',
+                'fuente'  => 'Eurostat',
+                'fecha'   => '2025 · publicado en febrero de 2026',
+                'url'     => 'https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20260203-1',
+            ],
+        ],
+        'destacado' => 'Aquí España va por detrás: casi ocho puntos por debajo de la media europea.',
+    ],
+    [
+        'tema' => 'Comercio electrónico',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '26,6%',
+                'detalle' => 'de las empresas vendió por comercio electrónico en 2024',
+                'fuente'  => 'INE, Encuesta sobre el uso de TIC y comercio electrónico en las empresas',
+                'fecha'   => 'dato de 2024 · publicado en octubre de 2025',
+                'url'     => 'https://www.ine.es/dyngs/Prensa/ETICCE20241T2025.htm',
+            ],
+            [
+                'ambito'  => 'Unión Europea',
+                'valor'   => '23,6%',
+                'detalle' => 'de las empresas vendió por comercio electrónico en 2024 (media UE)',
+                'fuente'  => 'Eurostat',
+                'fecha'   => 'dato de 2024 · publicado en junio de 2026',
+                'url'     => 'https://ec.europa.eu/eurostat/statistics-explained/index.php?title=E-commerce_statistics',
+            ],
+        ],
+        'destacado' => 'Y aquí al revés: España supera la media europea en comercio electrónico.',
     ],
     [
         'tema' => 'IA en los hoteles',
@@ -129,7 +224,7 @@ $grupos = [
     ],
 ];
 
-$descripcion = 'Adopción de IA y ciberseguridad en tecnología hotelera: España frente al dato global, con fuente y fecha en cada cifra.';
+$descripcion = 'IA, cloud, comercio electrónico y ciberseguridad en tecnología hotelera: España frente al dato global, con fuente y fecha en cada cifra.';
 
 ?><!doctype html>
 <html lang="es">
@@ -158,10 +253,10 @@ $descripcion = 'Adopción de IA y ciberseguridad en tecnología hotelera: Españ
   <header class="edicion-cabecera">
     <p class="sello">Cifras</p>
     <h1>España frente al mundo</h1>
-    <p class="datos">Adopción de IA y ciberseguridad en tecnología hotelera, con fuente y fecha en cada cifra</p>
+    <p class="datos">IA, cloud, comercio electrónico y ciberseguridad, con fuente y fecha en cada cifra</p>
   </header>
 
-  <p class="intro">Ninguna de estas cifras la ha medido este radar: son de organismos y estudios ajenos, puestos aquí uno junto a otro para poder comparar. Cada una lleva su fuente y su fecha porque el criterio del resto del sitio también vale aquí: si no se puede comprobar, no se publica. Todas son del último año.</p>
+  <p class="intro">Ninguna de estas cifras la ha medido este radar: son de organismos y estudios ajenos, puestos aquí uno junto a otro para poder comparar. Cada una lleva su fuente y su fecha porque el criterio del resto del sitio también vale aquí: si no se puede comprobar, no se publica. Todas son del último año. Quién firma cada cifra importa tanto como la cifra misma, así que las fuentes están otra vez todas juntas al final, con quiénes son y un enlace.</p>
 
   <section class="cuadro" aria-label="Cuadro de mandos">
     <?php foreach ($grupos as $grupo): ?>
@@ -179,10 +274,11 @@ $descripcion = 'Adopción de IA y ciberseguridad en tecnología hotelera: Españ
               <p class="cuadro-valor"><?= web_e($cifra['valor']) ?></p>
               <p class="cuadro-detalle"><?= web_e($cifra['detalle']) ?></p>
               <p class="cuadro-fuente">
+                <span class="cuadro-fuente-etiqueta">Fuente</span>
                 <?php if (!empty($cifra['url'])): ?>
                   <a href="<?= web_e($cifra['url']) ?>" rel="nofollow noopener"><?= web_e($cifra['fuente']) ?></a>
                 <?php else: ?>
-                  <?= web_e($cifra['fuente']) ?>
+                  <strong><?= web_e($cifra['fuente']) ?></strong>
                 <?php endif; ?>
                 <span class="punto">·</span><?= web_e($cifra['fecha']) ?>
               </p>
@@ -195,6 +291,20 @@ $descripcion = 'Adopción de IA y ciberseguridad en tecnología hotelera: Españ
         <?php endif; ?>
       </article>
     <?php endforeach; ?>
+  </section>
+
+  <section class="fuentes" aria-labelledby="fuentes-titulo">
+    <h2 id="fuentes-titulo">Quién firma estas cifras</h2>
+    <p class="cuadro-nota">Siete organismos y estudios, ninguno de este sitio. Cuanto más se sabe de quién mide algo, mejor se sabe cuánto fiarse de lo que mide.</p>
+
+    <dl class="fuentes-lista">
+      <?php foreach ($fuentes as $fuente): ?>
+        <div class="fuentes-fila">
+          <dt><a href="<?= web_e($fuente['url']) ?>" rel="nofollow noopener"><?= web_e($fuente['nombre']) ?></a></dt>
+          <dd><?= web_e($fuente['detalle']) ?></dd>
+        </div>
+      <?php endforeach; ?>
+    </dl>
   </section>
 
   <p class="letra-pequena cuadro-revision">Datos revisados el <?= web_e(web_fecha_larga($revisado)) ?>. Un informe anual se sustituye por el siguiente en cuanto sale; si una cifra de aquí ya tiene más de un año, avísanos.</p>
