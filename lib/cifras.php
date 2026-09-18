@@ -35,6 +35,22 @@ function cifras_revisado(): string
 }
 
 /**
+ * El porcentaje de empresas españolas que usa IA -la primera cifra de
+ * $grupos en estadisticas.php, la de "España supera la media europea"- que
+ * portada.php repite en el banner de Cifras.
+ *
+ * Vive aqui, no como dos literales sueltos en dos plantillas: antes de esto
+ * portada.php citaba el numero a mano, sin nada que avisara si alguien
+ * actualizaba estadisticas.php sin tocar el banner, y el titular de portada
+ * se habria quedado citando un dato que la propia pagina de Cifras ya no
+ * dice.
+ */
+function cifras_valor_ia_espana(): string
+{
+    return '21,1';
+}
+
+/**
  * Hasta cuando "revisado el $revisado" sigue siendo una promesa vigente.
  *
  * Mismo umbral que decide si el mantenimiento avisa por correo

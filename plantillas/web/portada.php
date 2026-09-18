@@ -40,10 +40,12 @@ $alta_abierta = $alta_abierta ?? false;
 // grande y una linea de que va. La de Tendencias sale sola del mismo dato
 // que ya calcula publicar_pendiente() para tendencias.html -el movimiento
 // mas grande del trimestre-, asi que cambia cuando cambia el trimestre. La
-// de Cifras es fija a proposito: esa pagina la revisa una persona, y
-// "España supera la media europea en IA" es el titular mientras eso siga
-// siendo cierto en lib/cifras.php.
-$cifra_cifras = '21,1 %';
+// de Cifras es fija a proposito -esa pagina la revisa una persona, no el
+// radar-, pero el numero mismo sale de cifras_valor_ia_espana(), la misma
+// funcion que usa el primer grupo de estadisticas.php: citarlo aqui a mano,
+// por su cuenta, habria dejado que este titular seguiera diciendo un dato
+// que la propia pagina de Cifras ya hubiera dejado atras.
+$cifra_cifras = cifras_valor_ia_espana() . ' %';
 $pie_cifras   = 'España ya supera la media de la UE en adopción de IA';
 
 $tendencia_top = $tendencias[0] ?? null;
