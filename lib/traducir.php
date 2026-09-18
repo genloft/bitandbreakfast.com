@@ -62,15 +62,17 @@ const TRADUCIR_PALABRAS_DIA = 4000;
  */
 function traducir_conf(): array
 {
-    static $conf = null;
+    // Se cachea el fichero, no la configuracion entera: la clave no cambia en
+    // mitad de una ejecucion, pero los ajustes si -el panel los guarda, las
+    // pruebas los cambian a proposito- y una configuracion cacheada hacia que
+    // apagar el respaldo no surtiera efecto hasta la peticion siguiente.
+    static $datos = null;
 
-    if ($conf !== null) {
-        return $conf;
+    if ($datos === null) {
+        $ruta  = dirname(__DIR__) . '/config/traductor.php';
+        $leido = is_readable($ruta) ? @require $ruta : [];
+        $datos = is_array($leido) ? $leido : [];
     }
-
-    $ruta  = dirname(__DIR__) . '/config/traductor.php';
-    $datos = is_readable($ruta) ? @require $ruta : [];
-    $datos = is_array($datos) ? $datos : [];
 
     $conf = [
         'clave'      => (string) ($datos['clave'] ?? ''),

@@ -524,6 +524,13 @@ ajuste_guardar('auto_umbral', '10');
 // se comprueba es que la cadena entera funciona.
 ajuste_guardar('auto_min_diccionario', '0');
 
+// El traductor de respaldo, apagado para toda la prueba. No es un detalle de
+// la prueba: es que traducir significa salir a la red de un tercero, y una
+// prueba que sale a internet no comprueba este codigo, comprueba el wifi. Lo
+// que se mira aqui son las puertas, y para eso hace falta que no haya
+// traductor ninguno.
+ajuste_guardar('traductor_respaldo', '0');
+
 // Con la puerta del idioma puesta, este racimo -que solo lo cuenta un medio en
 // ingles- no puede entrar. Se comprueba antes de apagarla, porque es la regla
 // que decide que se publica en un radar que se lee en espanol.
@@ -552,6 +559,13 @@ bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHE
 $sin_traductor = auto_publicar_lote(microtime(true) + 20);
 
 comprobar('sin traductor, apagar la puerta no la abre', 0, $sin_traductor['bits']);
+
+// Y encender el respaldo si la abre: es lo que decide si este sitio publica
+// lo que pasa en el mundo o solo lo que pasa en Espana.
+ajuste_guardar('traductor_respaldo', '1');
+comprobar('con respaldo, hay traductor', true, traducir_configurado());
+ajuste_guardar('traductor_respaldo', '0');
+comprobar('y sin el, no', false, traducir_configurado());
 
 // El resto de la cadena se prueba con el racimo ya en espanol: lo que se mira
 // aqui es que el engranaje gira, no la politica editorial.
