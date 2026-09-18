@@ -204,10 +204,12 @@ img { max-width: 100%; height: auto; }
   50%      { opacity: 1;  transform: scale(1); }
 }
 
-/* Quien pide menos movimiento no tiene por que verlo: el barrido y el pulso
-   se paran y dejan sitio a la version quieta de siempre. */
+/* Quien pide menos movimiento no tiene por que verlo: el barrido, el pulso,
+   el sello de imprenta y el giro del ampersand se paran y dejan sitio a la
+   version quieta de siempre. */
 @media (prefers-reduced-motion: reduce) {
-  .sello-marca, .pulso { animation: none; }
+  .sello-marca, .pulso, .logo-bloque { animation: none; }
+  .logo-amp { transition: none; }
 }
 
 .menu {
@@ -235,7 +237,13 @@ img { max-width: 100%; height: auto; }
 .logo:hover { text-decoration: none; }
 
 /* El nombre sigue siendo la pieza mas grande de la pagina. Encoge para dejar
-   sitio a las cifras, pero no tanto como para dejar de mandar. */
+   sitio a las cifras, pero no tanto como para dejar de mandar.
+
+   Entra una vez por pagina, como un sello de imprenta: llega un poco ancho y
+   aplastado -el golpe-, rebota un pelo hacia el lado contrario y se asienta.
+   Nada en bucle: es el unico gesto de la cabecera que no vuelve a repetirse
+   solo, para que siga leyendose como la marca y no como una animacion de
+   aplicacion. */
 .logo-bloque {
   display: block;
   font-family: var(--titular);
@@ -245,6 +253,28 @@ img { max-width: 100%; height: auto; }
   letter-spacing: -.02em;
   text-transform: uppercase;
   white-space: nowrap;
+  transform-origin: left center;
+  animation: sello-imprenta .55s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes sello-imprenta {
+  0%   { opacity: 0; transform: scale(1.05, .92); filter: blur(3px); }
+  55%  { opacity: 1; transform: scale(.99, 1.02); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1, 1); }
+}
+
+/* El ampersand es el unico caracter de la marca con el acento de color, asi
+   que es el que contesta al gesto de volver a portada: un giro pequeño y
+   con rebote, no una vuelta entera. */
+.logo-amp {
+  display: inline-block;
+  color: var(--acento);
+  transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.logo:hover .logo-amp,
+.logo:focus-visible .logo-amp {
+  transform: rotate(-14deg) scale(1.15);
 }
 
 /* --- El panel de cifras ------------------------------------------------------
@@ -319,8 +349,6 @@ img { max-width: 100%; height: auto; }
   letter-spacing: .04em;
   color: var(--apagado);
 }
-
-.logo-amp { color: var(--acento); }
 
 .cabecera-pie {
   display: flex;
