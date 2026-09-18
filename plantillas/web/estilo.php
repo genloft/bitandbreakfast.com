@@ -797,6 +797,79 @@ h1 {
 .letra-pequena { font-size: .74rem; color: var(--apagado); }
 .alta-respuesta { max-width: var(--lectura); }
 
+/* --- Cifras: cuadro de mandos --------------------------------------------------------
+   La unica pagina que no sale de la base propia. Cada tarjeta es un tema y
+   dentro, una cifra por ambito -España, Global, Union Europea-, para que
+   comparar sea leer, no calcular. Movil primero: en una columna hasta que
+   hay sitio para dos cifras o dos tarjetas en la misma fila. */
+
+.cuadro {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0;
+  margin: 2rem 0;
+  border-top: 3px solid var(--filete);
+  border-left: 1px solid var(--filete);
+}
+
+.cuadro-tarjeta {
+  padding: 1.3rem 1.3rem 1.5rem;
+  border-right: 1px solid var(--filete);
+  border-bottom: 1px solid var(--filete);
+  background: var(--tarjeta);
+}
+
+.cuadro-tema {
+  margin: 0 0 .5rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+}
+
+.cuadro-nota { margin: 0 0 .9rem; font-size: .82rem; color: var(--apagado); }
+
+.cuadro-cifras { display: flex; flex-wrap: wrap; gap: .8rem 0; margin: .4rem 0; }
+
+.cuadro-cifra { flex: 1 1 9rem; padding-right: .9rem; }
+.cuadro-cifra + .cuadro-cifra { padding-left: .9rem; border-left: 1px solid var(--filete-fino); }
+
+.cuadro-ambito {
+  margin: 0;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.cuadro-valor {
+  margin: .2rem 0 .3rem;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 6vw, 2.3rem);
+  line-height: 1;
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+}
+
+.cuadro-detalle { margin: 0; font-size: .85rem; color: var(--texto); line-height: 1.45; }
+
+.cuadro-fuente { margin: .55rem 0 0; font-size: .64rem; letter-spacing: .02em; color: var(--suave); }
+.cuadro-fuente a { color: var(--suave); text-decoration-color: var(--filete-fino); }
+.cuadro-fuente a:hover { color: var(--tinta); text-decoration-color: var(--acento); }
+
+.cuadro-destacado {
+  margin: 1rem 0 0;
+  padding-top: .8rem;
+  border-top: 1px solid var(--filete-fino);
+  font-size: .88rem;
+  font-weight: 700;
+}
+
+.cuadro-revision { margin: 1rem 0 0; }
+
 /* --- Alta en el boletin ---------------------------------------------------------------- */
 
 .alta { margin: 2.5rem 0 0; padding: 1.8rem; border: 3px solid var(--filete); background: var(--tinta); color: var(--papel); }

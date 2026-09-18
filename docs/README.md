@@ -339,3 +339,13 @@ un MariaDB 10.6 para la de humo.
 - **Por debajo de tres bits con dos clics cada uno, "lo más leído" no se
   pinta.** Una caja de "lo más leído" con una sola entrada no informa,
   delata que casi no hay tráfico. Mejor no enseñar nada.
+- **`/estadisticas.html` es la única página que no sale de la base propia.**
+  Todo lo demás se genera a partir de lo que el radar ha rastreado; esta
+  compara cifras de organismos ajenos -INE, Eurostat, IBM, AEPD, informes del
+  sector- que no hay forma de convertir en una consulta porque son media
+  docena de fuentes distintas, con metodologías distintas. Vive en un array
+  escrito a mano en `plantillas/web/estadisticas.php`, con su fecha de
+  revisión también escrita a mano -nunca `gmdate()`- porque esta página no
+  se pone al día sola cuando el cron regenera el sitio por cualquier otro
+  motivo: alguien tiene que volver a mirarla, y hay que poder saber cuándo lo
+  hizo por última vez.

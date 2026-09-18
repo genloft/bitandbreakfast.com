@@ -25,6 +25,7 @@
  *   estilo.css          la hoja del sitio
  *   robots.txt
  *   sitemap.xml         direcciones para Google, con lastmod por dia
+ *   estadisticas.html   cuadro de mandos con cifras externas -no de esta base-
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
  * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
@@ -247,6 +248,11 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/sobre.html',
         publicar_plantilla('sobre', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/estadisticas.html',
+        publicar_plantilla('estadisticas', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
