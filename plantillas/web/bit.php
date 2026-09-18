@@ -15,6 +15,12 @@
  * linea -aunque sea de puros datos- cae bajo el mismo script-src 'self' que
  * el resto de la pagina, y esta pagina no lleva ni uno a proposito. Los
  * atributos itemprop no son <script> y no necesitan ese permiso.
+ *
+ * Los enlaces de "compartir" son intents por URL -wa.me, linkedin.com/
+ * sharing-, no un widget de terceros: ni script, ni pixel, ni peticion
+ * hasta que alguien pulsa. Apuntan siempre al permalink del bit, nunca a la
+ * fuente, porque es lo unico de los dos que este sitio puede prometer que
+ * sigue existiendo.
  */
 
 declare(strict_types=1);
@@ -27,6 +33,15 @@ $secreto  = $secreto ?? '';
   <?php
     $tema      = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general';
     $permalink = web_url_dia($base, (string) ($bit['dia'] ?? '')) . '#bit-' . (int) $bit['id'];
+
+    // Compartir apunta siempre al permalink del bit, nunca a la fuente: es lo
+    // que este sitio puede prometer que sigue existiendo -la fuente puede
+    // mover o borrar el articulo- y es donde vive el contexto: las demas
+    // fuentes que lo cuentan, el tema, el "por que importa". Vale con
+    // rawurlencode y sin secreto: no hace falta contar cuantas veces se
+    // comparte, solo que el enlace funcione.
+    $compartir_whatsapp = 'https://wa.me/?text=' . rawurlencode($bit['titular'] . ' — ' . $permalink);
+    $compartir_linkedin = 'https://www.linkedin.com/sharing/share-offsite/?url=' . rawurlencode($permalink);
   ?>
   <section class="bit<?= $indice === 0 ? ' bit-lead' : '' ?>" id="bit-<?= (int) $bit['id'] ?>"
            data-tema="<?= web_e($tema) ?>"
@@ -125,6 +140,9 @@ $secreto  = $secreto ?? '';
             <a class="ficha-medio" href="<?= web_e(web_url_medio($base, web_slug_medio((string) $bit['fuente']))) ?>">ficha</a>
           <?php endif; ?>
         <?php endif; ?>
+
+        <a class="ficha-medio" href="<?= web_e($compartir_whatsapp) ?>" rel="nofollow noopener" target="_blank">compartir en WhatsApp</a>
+        <a class="ficha-medio" href="<?= web_e($compartir_linkedin) ?>" rel="nofollow noopener" target="_blank">compartir en LinkedIn</a>
 
         <?php if ($unica !== null): ?>
           <?php // Con una sola fuente no hay desplegable que abrir, asi que
