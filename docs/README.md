@@ -408,3 +408,11 @@ un MariaDB 10.6 para la de humo.
   `feed.xml` antes de intentar `rmdir()` la carpeta de un tema retirado:
   sin eso, la carpeta se queda huérfana para siempre porque `rmdir()` se
   niega a vaciar algo que no está vacío.
+- **Compartir apunta al permalink del bit, nunca a la fuente.** Cada bit
+  lleva "compartir en WhatsApp" y "compartir en LinkedIn", con `wa.me` y
+  `linkedin.com/sharing/share-offsite` -intents por URL, ni script ni
+  píxel de terceros, nada que pese o que llame a nadie hasta que alguien
+  pulsa-. El enlace compartido es siempre `/d/<día>/#bit-<id>`, no la URL
+  de la fuente: es lo único de los dos que este sitio puede prometer que
+  sigue existiendo, y es donde vive el contexto -las demás fuentes que lo
+  cuentan, el tema, el «por qué importa»- que la fuente sola no tiene.

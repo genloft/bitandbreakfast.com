@@ -536,6 +536,10 @@ comprobar(
     true,
     str_contains($portada, 'Leer el original en')
 );
+
+comprobar('cada bit se puede compartir por WhatsApp', true, str_contains($portada, 'https://wa.me/?text='));
+comprobar('y por LinkedIn', true, str_contains($portada, 'https://www.linkedin.com/sharing/share-offsite/?url='));
+
 comprobar('con las tres cuentas', 3, substr_count($portada, 'class="panel-cifra"'));
 comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));
 
