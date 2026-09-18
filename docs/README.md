@@ -522,3 +522,8 @@ un MariaDB 10.6 para la de humo.
   no una función más, y es exactamente el tipo de decisión que este sitio
   reserva para quien lo lleva, no para quien programa. "Redacción
   asistida" se queda como la única pieza de la fase 6 sin resolver.
+- **`/salud.php` también cuenta los votos.** Total, positivos y negativos,
+  nada más -ni por bit, ni por destinatario: la tabla `votos` no guarda esa
+  identidad, y esta página tampoco la reconstruye cruzando datos-. Mismo
+  motivo que el resto de la página: poder comprobar desde fuera si algo se
+  mueve, sin entrar a la base.

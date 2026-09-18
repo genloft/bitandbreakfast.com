@@ -485,6 +485,13 @@ comprobar(
     (int) bd()->query('SELECT COUNT(*) FROM votos WHERE bit_id = ' . (int) $bit_id)->fetchColumn()
 );
 
+// Las mismas cuentas que ensena /salud.php, con el unico bit que se vota en
+// esta prueba: si esa pagina cambiara la condicion (por ejemplo, de "valor >
+// 0" a "valor = 1"), esto lo notaria sin tener que leer salud.php a mano.
+comprobar('y /salud.php contaria el total igual', 2, (int) bd()->query('SELECT COUNT(*) FROM votos')->fetchColumn());
+comprobar('y los positivos', 1, (int) bd()->query('SELECT COUNT(*) FROM votos WHERE valor > 0')->fetchColumn());
+comprobar('y los negativos', 1, (int) bd()->query('SELECT COUNT(*) FROM votos WHERE valor < 0')->fetchColumn());
+
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 $bits_indice = $indice['bits'] ?? [];
 

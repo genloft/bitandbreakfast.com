@@ -335,6 +335,15 @@ $informe = [
         'traducidos'  => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE estado = 'publicado' AND traducido_de IS NOT NULL", 0),
         'sin_revisar' => (int) salud_valor("SELECT COUNT(*) FROM bits WHERE redactado_por = 'ia' AND revisado = 0", 0),
     ],
+    // Cuentas, nunca quien vota ni qué bit en concreto: la tabla votos no
+    // guarda la identidad de quien pulsa, y esta pagina tampoco la inventa
+    // cruzando datos. Sirve para lo mismo que el resto de /salud.php: saber
+    // si algo se esta moviendo sin entrar a la base.
+    'votos' => [
+        'total'     => (int) salud_valor('SELECT COUNT(*) FROM votos', 0),
+        'positivos' => (int) salud_valor('SELECT COUNT(*) FROM votos WHERE valor > 0', 0),
+        'negativos' => (int) salud_valor('SELECT COUNT(*) FROM votos WHERE valor < 0', 0),
+    ],
 ];
 
 $json = json_encode($informe, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
