@@ -452,3 +452,12 @@ un MariaDB 10.6 para la de humo.
   en `lib/cifras.php`: cambiar el número una vez lo cambia en las dos
   páginas a la vez, en vez de dejar que portada.html siga citando un dato
   que la propia página de Cifras ya haya dejado atrás.
+- **`/sobre.html` menciona Cifras, Tendencias, Glosario y Medios.** La
+  página que explica qué es el sitio solo hablaba del río de bits: nada
+  decía que también hay un cuadro de mandos comparando España con el
+  mundo, un termómetro de qué tema sube y cuál baja, un glosario de siglas
+  o una ficha por medio. Para un directivo que llega por un enlace suelto
+  y quiere saber en veinte segundos qué puede sacar de este sitio, callarse
+  la mitad de lo que ofrece es la misma clase de fallo que un `<details>`
+  que nunca se abre. Añadido un párrafo "Más que el día a día" con enlace
+  a las cuatro.
