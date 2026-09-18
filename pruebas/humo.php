@@ -493,7 +493,10 @@ comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, '
 comprobar(
     'el titular lleva al original',
     true,
-    (bool) preg_match('~<h2 id="titular-\d+">\s*<a href="[^"]+"~', $portada)
+    // [^>]* porque el h2 puede llevar mas atributos -itemprop="headline" de
+    // los microdatos, por ejemplo- sin que eso cambie lo que aqui importa:
+    // que justo detras venga un enlace.
+    (bool) preg_match('~<h2 id="titular-\d+"[^>]*>\s*<a href="[^"]+"~', $portada)
 );
 
 comprobar(
