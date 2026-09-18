@@ -94,7 +94,7 @@ un MariaDB 10.6 para la de humo.
 | 3 | Panel de curación | completada |
 | 4 | Generador estático, archivo, RSS | completada |
 | 5 | Correo: buzón propio, alta con doble confirmación, baja y envío | completada |
-| 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador y clics hechos |
+| 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador, clics y votos hechos |
 
 ## Decisiones que conviene no olvidar
 
@@ -480,3 +480,26 @@ un MariaDB 10.6 para la de humo.
   encontraba el camino de vuelta al feed. `provisional.php` -la portada de
   antes del primer bit- sigue sin él a propósito: nada que enlazar cuando
   todavía no hay ni una noticia.
+- **Los votos, la pieza que quedaba pendiente de la fase 6, ya escriben en
+  la tabla `votos`.** Cada bit del correo lleva ahora "¿te ha servido esta
+  noticia? Sí / No" -dos enlaces de un clic, igual que la baja-, en
+  `lib/votos.php` y `api/votar.php`. El token que exige la clave única
+  `(bit_id, token)` es el propio HMAC de bit y destinatario a la vez, no
+  solo de bit: así dos destinatarios nunca chocan entre sí y el mismo
+  destinatario pulsando el mismo enlace dos veces cuenta un solo voto, sin
+  guardar su identidad en la tabla. `envio_texto()` y `envio_html()` siguen
+  siendo puras -reciben los enlaces ya hechos en `$votos_urls`, no llaman a
+  nada que firme ni que toque la base-, y `cron/enviar.php` es el único
+  sitio que construye esos enlaces, porque es el único que sabe a quién le
+  toca cada correo. El mismo riesgo que ya acepta `api/baja.php` sin
+  evitarlo -un escáner de correo que abra los enlaces del cuerpo antes de
+  que el destinatario lo lea- se documenta en `api/votar.php`, no se
+  resuelve con máquinaria nueva: aquí la clave única es la protección real,
+  no falta nada más. El voto se queda sin mostrar en ningún sitio público
+  por ahora, igual que los clics: es una señal para quien escribe, no un
+  contador de cara al lector. El `Content-Security-Policy` de `.htaccess`
+  menciona "los votos" junto al buscador como los dos sitios donde
+  cualquier script iría en su propio `.js`, nunca en línea; esta pieza no
+  añade ningún script -son enlaces `<a href>`, como los de compartir-, así
+  que esa política sigue intacta, y un futuro widget en la propia web,
+  si algún día se quiere, seguiría esa misma regla.
