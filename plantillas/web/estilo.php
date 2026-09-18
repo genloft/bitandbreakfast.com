@@ -229,6 +229,46 @@ img { max-width: 100%; height: auto; }
 
 .menu-fin { margin-left: auto; }
 
+/* Cifras, Tendencias y Glosario, agrupadas: son paginas de consulta, no de
+   lectura diaria, y no merecen el mismo peso que Portada o Temas en la
+   barra. <details> nativo, sin JS: se abre y cierra solo. */
+.menu-recursos { position: relative; }
+
+.menu-recursos summary {
+  display: inline-block;
+  padding: .3rem 0;
+  color: var(--apagado);
+  cursor: pointer;
+  list-style: none;
+}
+
+.menu-recursos summary::-webkit-details-marker { display: none; }
+.menu-recursos summary::after { content: ' \25BE'; font-size: .85em; }
+.menu-recursos summary:hover { color: var(--tinta); }
+
+.menu-recursos[open] summary,
+.menu-recursos summary[aria-current="page"] {
+  color: var(--tinta);
+  border-bottom: 2px solid var(--acento);
+}
+
+.menu-recursos-lista {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  min-width: 9rem;
+  margin-top: .5rem;
+  padding: .9rem 1.1rem;
+  background: var(--tarjeta);
+  border: 1px solid var(--filete);
+}
+
+.menu-recursos-lista a { white-space: nowrap; }
+
 /* El nombre y las cifras, en la misma fila. En el movil se apilan: el panel
    debajo del nombre y a todo lo ancho, que es lo unico que cabe. */
 .cabecera-marca { display: block; }

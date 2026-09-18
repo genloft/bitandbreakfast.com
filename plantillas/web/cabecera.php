@@ -17,12 +17,19 @@
  * es de las primeras cosas que se preguntan al volver a un agregador. Al lado
  * del nombre son parte de la cabecera, no un mensaje.
  *
+ * El menu agrupa Cifras, Tendencias y Glosario bajo un desplegable
+ * ("Recursos"): son paginas de consulta, no de lectura diaria, y puestas al
+ * mismo nivel que Portada o Temas la barra crecio a diez enlaces. Un
+ * <details> nativo -sin una linea de JS- porque no hay nada que un script
+ * haga aqui mejor que el navegador solo.
+ *
  * Recibe $base, $panel y, opcionalmente, $enlace_activo.
  */
 
 declare(strict_types=1);
 
 $enlace_activo = $enlace_activo ?? '';
+$en_recursos   = in_array($enlace_activo, ['cifras', 'tendencias', 'glosario'], true);
 
 ?>
 <header class="cabecera">
@@ -35,9 +42,14 @@ $enlace_activo = $enlace_activo ?? '';
       <a href="<?= web_e($base) ?>/medios.html"<?= $enlace_activo === 'medios' ? ' aria-current="page"' : '' ?>>Medios</a>
       <a href="<?= web_e($base) ?>/archivo.html"<?= $enlace_activo === 'archivo' ? ' aria-current="page"' : '' ?>>Archivo</a>
       <a href="<?= web_e($base) ?>/sobre.html"<?= $enlace_activo === 'sobre' ? ' aria-current="page"' : '' ?>>Qué es</a>
-      <a href="<?= web_e($base) ?>/estadisticas.html"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>>Cifras</a>
-      <a href="<?= web_e($base) ?>/tendencias.html"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>>Tendencias</a>
-      <a href="<?= web_e($base) ?>/glosario.html"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>>Glosario</a>
+      <details class="menu-recursos">
+        <summary<?= $en_recursos ? ' aria-current="page"' : '' ?>>Recursos</summary>
+        <div class="menu-recursos-lista">
+          <a href="<?= web_e($base) ?>/estadisticas.html"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>>Cifras</a>
+          <a href="<?= web_e($base) ?>/tendencias.html"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>>Tendencias</a>
+          <a href="<?= web_e($base) ?>/glosario.html"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>>Glosario</a>
+        </div>
+      </details>
       <span class="menu-fin"></span>
       <a href="<?= web_e($base) ?>/buscar.html"<?= $enlace_activo === 'buscar' ? ' aria-current="page"' : '' ?>>Buscar</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
