@@ -53,8 +53,13 @@ function envio_asunto(array $edicion, array $bits): string
  * No es el premio de consolacion para quien no ve HTML: es lo que leen los
  * filtros antispam para decidir si esto es un correo o un folleto, y lo que
  * se ve en la vista previa de muchos clientes.
+ *
+ * $votos_urls, opcional, lleva un par ['si' => url, 'no' => url] por cada id
+ * de bit que pueda votarse. Sin el -el valor por defecto-, la edicion se
+ * manda igual, solo que sin la pregunta: asi las pruebas y cualquier llamada
+ * antigua siguen valiendo sin tocarlas.
  */
-function envio_texto(array $edicion, array $bits, string $base, string $url_baja): string
+function envio_texto(array $edicion, array $bits, string $base, string $url_baja, array $votos_urls = []): string
 {
     $categorias = bits_categorias();
     $lineas     = [];
@@ -71,6 +76,7 @@ function envio_texto(array $edicion, array $bits, string $base, string $url_baja
 
     foreach ($bits as $indice => $bit) {
         $tema = bits_categoria_canonica((string) $bit['categoria']);
+        $voto = $votos_urls[(int) $bit['id']] ?? null;
 
         $lineas[] = str_repeat('-', 60);
         $lineas[] = ($indice + 1) . '. ' . (string) $bit['titular'];
@@ -88,6 +94,11 @@ function envio_texto(array $edicion, array $bits, string $base, string $url_baja
             $lineas[] = trim((string) ($bit['fuente'] ?? 'Fuente')) . ': ' . (string) $bit['url'];
         }
 
+        if ($voto !== null) {
+            $lineas[] = '';
+            $lineas[] = '¿Te ha servido esta noticia? Sí: ' . $voto['si'] . ' · No: ' . $voto['no'];
+        }
+
         $lineas[] = '';
     }
 
@@ -103,8 +114,11 @@ function envio_texto(array $edicion, array $bits, string $base, string $url_baja
  *
  * Mismo orden y mismo contenido que el texto. Los colores van escritos a mano
  * y no con variables: en el correo no hay hoja de estilo que las declare.
+ *
+ * $votos_urls, igual que en envio_texto(): un par ['si' => url, 'no' => url]
+ * por id de bit, opcional.
  */
-function envio_html(array $edicion, array $bits, string $base, string $url_baja): string
+function envio_html(array $edicion, array $bits, string $base, string $url_baja, array $votos_urls = []): string
 {
     $categorias = bits_categorias();
     $e = static fn (string $t): string => htmlspecialchars($t, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -146,6 +160,7 @@ function envio_html(array $edicion, array $bits, string $base, string $url_baja)
 
     foreach ($bits as $indice => $bit) {
         $tema = bits_categoria_canonica((string) $bit['categoria']);
+        $voto = $votos_urls[(int) $bit['id']] ?? null;
 
         $h .= '<div style="border-top:1px solid ' . $borde . ';padding:24px 0 4px;">'
             . '<p style="margin:0 0 8px;font-family:' . $sans . ';font-size:11px;'
@@ -168,6 +183,14 @@ function envio_html(array $edicion, array $bits, string $base, string $url_baja)
                 . '<a href="' . $e((string) $bit['url']) . '" style="color:' . $laton . ';'
                 . 'text-decoration:none;">' . $e(trim((string) ($bit['fuente'] ?? 'Leer la fuente')))
                 . ' &rarr;</a></p>';
+        }
+
+        if ($voto !== null) {
+            $h .= '<p style="margin:6px 0 0;font-family:' . $sans . ';font-size:12px;color:' . $suave . ';">'
+                . '¿Te ha servido esta noticia? '
+                . '<a href="' . $e((string) $voto['si']) . '" style="color:' . $suave . ';">Sí</a>'
+                . ' &middot; '
+                . '<a href="' . $e((string) $voto['no']) . '" style="color:' . $suave . ';">No</a></p>';
         }
 
         $h .= '</div>';

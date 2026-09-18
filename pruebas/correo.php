@@ -21,6 +21,7 @@ require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/migrar.php';
 require_once dirname(__DIR__) . '/lib/envio.php';
 require_once dirname(__DIR__) . '/lib/traducir.php';
+require_once dirname(__DIR__) . '/lib/votos.php';
 
 // --- Normalizacion ----------------------------------------------------------
 
@@ -357,6 +358,62 @@ comprobar('el html escapa lo que pinta', true, str_contains(
 // El correo no carga nada de fuera: ni imagenes, ni tipografias, ni pixeles.
 comprobar('el html no trae imagenes', false, str_contains($html_ed, '<img'));
 comprobar('ni hojas de estilo externas', false, str_contains($html_ed, '<link'));
+
+// Sin $votos_urls, la edicion se manda igual que siempre: la pregunta no
+// aparece si nadie la ha construido. Ya comprobado arriba con $texto_ed y
+// $html_ed, que se generaron sin ese argumento.
+comprobar('sin votos, no aparece la pregunta en el texto', false, str_contains($texto_ed, 'servido esta noticia'));
+comprobar('ni en el html', false, str_contains($html_ed, 'servido esta noticia'));
+
+$votos_urls = [1 => ['si' => 'https://ejemplo.com/api/votar.php?b=1&s=3&v=1&t=aaa', 'no' => 'https://ejemplo.com/api/votar.php?b=1&s=3&v=-1&t=bbb']];
+
+$texto_voto = envio_texto($edicion_correo, $bits_correo, 'https://ejemplo.com', $baja_url, $votos_urls);
+$html_voto  = envio_html($edicion_correo, $bits_correo, 'https://ejemplo.com', $baja_url, $votos_urls);
+
+comprobar('con votos, el texto lleva los dos enlaces', true, str_contains($texto_voto, 'v=1') && str_contains($texto_voto, 'v=-1'));
+comprobar(
+    'y el html tambien, escapados',
+    true,
+    str_contains($html_voto, htmlspecialchars($votos_urls[1]['si'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
+);
+
+// Un bit sin entrada en $votos_urls no lleva pregunta: no todos los envios
+// tienen por que llevarla (una edicion antigua reenviada a mano, por ejemplo).
+comprobar(
+    'un bit sin voto asignado no lleva la pregunta',
+    false,
+    str_contains(envio_texto($edicion_correo, $bits_correo, 'https://ejemplo.com', $baja_url, [99 => $votos_urls[1]]), 'servido esta noticia')
+);
+
+// --- Los votos: "¿te ha servido esta noticia?", desde el correo ------------
+//
+// El token tiene que depender del destinatario, no solo del bit: sin eso, un
+// solo voto por bit valdria para toda la lista y el primero en pulsar
+// decidiria por el resto.
+
+comprobar(
+    'la firma depende del destinatario, no solo del bit',
+    false,
+    votos_firma(1, 3, 'secreto') === votos_firma(1, 4, 'secreto')
+);
+
+comprobar(
+    'y depende del bit, no solo del destinatario',
+    false,
+    votos_firma(1, 3, 'secreto') === votos_firma(2, 3, 'secreto')
+);
+
+comprobar('un voto bien firmado es valido', true, votos_valido(1, 3, 1, votos_firma(1, 3, 'secreto'), 'secreto'));
+comprobar('el mismo voto con otro secreto no lo es', false, votos_valido(1, 3, 1, votos_firma(1, 3, 'secreto'), 'otro'));
+comprobar('un valor que no es 1 ni -1 no es valido', false, votos_valido(1, 3, 0, votos_firma(1, 3, 'secreto'), 'secreto'));
+comprobar('un bit_id de cero no es valido', false, votos_valido(0, 3, 1, votos_firma(0, 3, 'secreto'), 'secreto'));
+comprobar('una firma vacia no es valida', false, votos_valido(1, 3, 1, '', 'secreto'));
+
+comprobar(
+    'la url de voto lleva bit, destinatario, valor y firma',
+    'https://ejemplo.com/api/votar.php?b=1&s=3&v=1&t=' . votos_firma(1, 3, 'secreto'),
+    votos_url('https://ejemplo.com', 1, 3, 1, 'secreto')
+);
 
 // --- El aviso del cron ------------------------------------------------------
 //

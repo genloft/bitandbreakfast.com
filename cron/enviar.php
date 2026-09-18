@@ -29,6 +29,7 @@ require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/lista.php';
 require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/envio.php';
+require_once dirname(__DIR__) . '/lib/votos.php';
 require_once dirname(__DIR__) . '/cron/publicar.php';
 
 /**
@@ -78,22 +79,36 @@ function enviar_lote(float $limite): array
         return $resumen;
     }
 
-    $base   = rtrim((string) config_opcional('sitio.url', ''), '/');
-    $tanda  = max(1, (int) ajuste('envio_por_pasada', '25'));
-    $asunto = envio_asunto($edicion, $bits);
+    $base    = rtrim((string) config_opcional('sitio.url', ''), '/');
+    $tanda   = max(1, (int) ajuste('envio_por_pasada', '25'));
+    $asunto  = envio_asunto($edicion, $bits);
+    $secreto = (string) config('secretos.secreto_hmac');
 
     foreach (enviar_pendientes((int) $edicion['id'], $tanda) as $quien) {
         if (microtime(true) >= $limite) {
             break;
         }
 
-        $baja = $base . '/api/baja.php?s=' . (int) $quien['id'] . '&t=' . lista_firma_baja((int) $quien['id']);
+        $suscriptor_id = (int) $quien['id'];
+        $baja = $base . '/api/baja.php?s=' . $suscriptor_id . '&t=' . lista_firma_baja($suscriptor_id);
+
+        // Un enlace de voto por bit, firmado para este destinatario: sin esto,
+        // el mismo enlace serviria para cualquiera que lo copiara del correo
+        // de otra persona.
+        $votos_urls = [];
+
+        foreach ($bits as $bit) {
+            $votos_urls[(int) $bit['id']] = [
+                'si' => votos_url($base, (int) $bit['id'], $suscriptor_id, 1, $secreto),
+                'no' => votos_url($base, (int) $bit['id'], $suscriptor_id, -1, $secreto),
+            ];
+        }
 
         $envio = smtp_enviar($conf, [
             'para'   => (string) $quien['email'],
             'asunto' => $asunto,
-            'texto'  => envio_texto($edicion, $bits, $base, $baja),
-            'html'   => envio_html($edicion, $bits, $base, $baja),
+            'texto'  => envio_texto($edicion, $bits, $base, $baja, $votos_urls),
+            'html'   => envio_html($edicion, $bits, $base, $baja, $votos_urls),
             'cabeceras' => [
                 // Con esto, el cliente de correo ensena su propio boton de baja
                 // arriba del mensaje. Quien se quiere ir lo usa en vez de

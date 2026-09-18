@@ -427,6 +427,49 @@ comprobar('escribe el buscador', true, is_file($publico . '/buscar.html'));
 comprobar('escribe el guion del buscador', true, is_file($publico . '/buscar.js'));
 comprobar('escribe el indice de busqueda', true, is_file($publico . '/indice.json'));
 
+// -----------------------------------------------------------------------------
+// Votos: "te ha servido esta noticia?", desde el correo
+//
+// Lo que no se puede probar sin base de datos: que el mismo enlace pulsado
+// dos veces cuente un solo voto, y que dos destinatarios distintos puedan
+// votar el mismo bit sin chocar entre ellos.
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/lib/votos.php';
+
+$votos_secreto = (string) config('secretos.secreto_hmac');
+$voto_firma    = votos_firma($bit_id, 501, $votos_secreto);
+
+comprobar(
+    'un voto bien firmado se registra',
+    'ok',
+    votos_registrar($bit_id, 501, 1, $voto_firma, $votos_secreto, 'hash-de-prueba')
+);
+
+comprobar(
+    'pulsar el mismo enlace otra vez no cuenta un segundo voto',
+    'repetido',
+    votos_registrar($bit_id, 501, 1, $voto_firma, $votos_secreto, 'hash-de-prueba')
+);
+
+comprobar(
+    'otro destinatario puede votar el mismo bit sin chocar con el primero',
+    'ok',
+    votos_registrar($bit_id, 502, -1, votos_firma($bit_id, 502, $votos_secreto), $votos_secreto, 'hash-de-prueba')
+);
+
+comprobar(
+    'una firma que no cuadra no llega a escribirse',
+    'invalido',
+    votos_registrar($bit_id, 503, 1, 'firma-inventada', $votos_secreto, 'hash-de-prueba')
+);
+
+comprobar(
+    'quedan exactamente los dos votos validos, no el invalido',
+    2,
+    (int) bd()->query('SELECT COUNT(*) FROM votos WHERE bit_id = ' . (int) $bit_id)->fetchColumn()
+);
+
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 $bits_indice = $indice['bits'] ?? [];
 
