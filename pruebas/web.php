@@ -204,12 +204,21 @@ comprobar('la fila lleva el identificador del bit', 7, $fila['i']);
 comprobar('y el titular sin tocar', 'Oracle OPERA Cloud se cae durante cuatro horas', $fila['t']);
 comprobar('y el dia en que se descubrio', '2026-09-22', $fila['w']);
 comprobar('y los proveedores en texto plano', 'Oracle Hospitality', $fila['v']);
+comprobar('y tambien en una lista, para poder filtrar por uno', ['Oracle Hospitality'], $fila['pv']);
 comprobar('y la fecha ya escrita en espanol', '22 de septiembre de 2026', $fila['d']);
 
-// Las tres facetas que se pueden filtrar, ademas de la categoria.
+// Las demas facetas que se pueden filtrar, ademas de la categoria.
 comprobar('y la fuente', 'Skift', $fila['fu']);
 comprobar('y el ambito', 'global', $fila['a']);
 comprobar('y el idioma', 'en', $fila['l']);
+
+comprobar(
+    'sin proveedores, la lista para filtrar sale vacia, no ausente',
+    [],
+    web_fila_indice([
+        'id' => 8, 'titular' => 't', 'categoria' => 'pms-crs', 'dia' => '2026-09-22',
+    ])['pv']
+);
 
 // La fuente tambien se puede buscar por texto: "skift" tiene que encontrar
 // sus noticias.
