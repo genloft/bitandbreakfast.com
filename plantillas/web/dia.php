@@ -73,6 +73,15 @@ require_once __DIR__ . '/iconos.php';
 
 <?php require __DIR__ . '/cabecera.php'; ?>
 
+<?php
+  $migas = [
+      ['nombre' => 'Portada', 'url' => $base . '/'],
+      ['nombre' => 'Archivo', 'url' => $base . '/archivo.html'],
+      ['nombre' => $titulo, 'url' => $url],
+  ];
+  require __DIR__ . '/migas.php';
+?>
+
 <main id="contenido">
   <article class="edicion">
 

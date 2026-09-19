@@ -567,3 +567,16 @@ un MariaDB 10.6 para la de humo.
   2018-2021, no del último año que esta página se exige a sí misma-: mejor
   no meter un grupo que no que meter uno con la fecha caducada desde el
   primer día.
+- **Las migas de pan son invisibles a propósito.** `plantillas/web/migas.php`
+  añade el `BreadcrumbList` de schema.org a las fichas de día, tema y medio,
+  pero sin ningún `<ol>` visible: esas páginas ya tienen menú y enlaces de
+  "volver", y una fila más de navegación no le dice nada nuevo a quien lee.
+  Lo que sí necesitaba decirse es la jerarquía -que una ficha de tema cuelga
+  de Temas, y Temas de la portada- a quien no lee la página como una
+  persona: un buscador, o una IA que la resuma. Mismo criterio que el resto
+  del sitio, `itemprop` y no JSON-LD.
+  Descartado sin llegar a escribir código: "seguimiento silencioso de un
+  proveedor" -una de las ideas de la lista original-, porque choca de
+  frente con la razón de ser de `tema.php`, ya escrita en su propio
+  comentario: una ficha de proveedor contesta "qué se ha dicho de Mews",
+  que es la pregunta de Mews, no la del hotel al que sirve este radar.

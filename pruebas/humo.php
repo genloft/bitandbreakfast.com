@@ -400,6 +400,16 @@ $dia = substr((string) $edicion['fecha_prevista'], 0, 10);
 
 comprobar('escribe la portada', true, is_file($publico . '/index.html'));
 comprobar('escribe el dia en su carpeta', true, is_file($publico . '/' . web_ruta_dia($dia)));
+
+comprobar(
+    'y lleva sus migas de pan en schema.org',
+    true,
+    str_contains(
+        (string) file_get_contents($publico . '/' . web_ruta_dia($dia)),
+        'itemtype="https://schema.org/BreadcrumbList"'
+    )
+);
+
 comprobar('escribe el archivo', true, is_file($publico . '/archivo.html'));
 comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.html'));
 
@@ -534,6 +544,15 @@ comprobar(
 );
 
 comprobar(
+    'y lleva sus migas de pan en schema.org',
+    true,
+    str_contains(
+        (string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs')),
+        'itemtype="https://schema.org/BreadcrumbList"'
+    )
+);
+
+comprobar(
     'y escribe el feed de ese tema',
     true,
     is_file($publico . '/t/pms-crs/feed.xml')
@@ -598,6 +617,16 @@ comprobar(
     'la portada enlaza la ficha del medio',
     true,
     str_contains($portada, '/m/humo-uno/') || str_contains($portada, '/m/humo-dos/')
+);
+
+$medio_ficha = is_file($publico . '/' . web_ruta_medio('humo-uno'))
+    ? $publico . '/' . web_ruta_medio('humo-uno')
+    : $publico . '/' . web_ruta_medio('humo-dos');
+
+comprobar(
+    'y la ficha del medio lleva sus migas de pan en schema.org',
+    true,
+    str_contains((string) file_get_contents($medio_ficha), 'itemtype="https://schema.org/BreadcrumbList"')
 );
 
 comprobar(

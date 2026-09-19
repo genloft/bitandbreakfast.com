@@ -51,6 +51,15 @@ $url_feed = rtrim($url, '/') . '/feed.xml';
 
 <?php require __DIR__ . '/cabecera.php'; ?>
 
+<?php
+  $migas = [
+      ['nombre' => 'Portada', 'url' => $base . '/'],
+      ['nombre' => 'Temas', 'url' => $base . '/temas.html'],
+      ['nombre' => (string) $tema['nombre'], 'url' => $url],
+  ];
+  require __DIR__ . '/migas.php';
+?>
+
 <main id="contenido">
   <header class="edicion-cabecera ficha-cabecera" data-tema="<?= web_e($tema['slug']) ?>">
     <p class="sello">Tema</p>
