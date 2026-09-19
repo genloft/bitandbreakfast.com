@@ -266,14 +266,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $recuperados = 0;
 
                 if (traducir_configurado()) {
-                    $st = bd()->prepare(
-                        "UPDATE racimos
-                            SET estado = 'candidato', motivo_descarte = ''
+                    $st = bd()->query(
+                        "SELECT id FROM racimos
                           WHERE estado = 'descartado'
                             AND motivo_descarte LIKE '%espanol%'"
                     );
-                    $st->execute();
-                    $recuperados = $st->rowCount();
+                    $ids = array_map('intval', $st->fetchAll(PDO::FETCH_COLUMN));
+
+                    if ($ids) {
+                        $marcas = implode(',', array_fill(0, count($ids), '?'));
+
+                        bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE id IN ($marcas)")
+                            ->execute($ids);
+
+                        // Los items tambien: el modo automatico los descarta a la
+                        // vez que el racimo, y si solo vuelve el racimo a la cola,
+                        // auto_items() los sigue dejando fuera para siempre.
+                        bd()->prepare("UPDATE items SET estado = 'agrupado' WHERE racimo_id IN ($marcas) AND estado = 'descartado'")
+                            ->execute($ids);
+
+                        $recuperados = count($ids);
+                    }
                 }
 
                 panel_avisar($guardado['mensaje'] . ($recuperados > 0

@@ -700,6 +700,7 @@ comprobar(
 // no significa publicarlo en espanol, significa llenar la portada de titulares
 // en ingles. Se cumple la intencion, no la letra.
 ajuste_guardar('auto_solo_espanol', '0');
+bd()->prepare("UPDATE items SET estado = 'agrupado' WHERE estado = 'descartado' AND racimo_id IN (SELECT id FROM racimos WHERE estado = 'descartado')")->execute();
 bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
 
 $sin_traductor = auto_publicar_lote(microtime(true) + 20);
@@ -715,6 +716,7 @@ comprobar('y sin el, no', false, traducir_configurado());
 
 // El resto de la cadena se prueba con el racimo ya en espanol: lo que se mira
 // aqui es que el engranaje gira, no la politica editorial.
+bd()->prepare("UPDATE items SET estado = 'agrupado' WHERE estado = 'descartado' AND racimo_id IN (SELECT id FROM racimos WHERE estado = 'descartado')")->execute();
 bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
 bd()->prepare("UPDATE items SET idioma = 'es' WHERE id = ?")->execute([$item_c]);
 
