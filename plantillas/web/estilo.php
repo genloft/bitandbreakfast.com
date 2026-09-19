@@ -73,7 +73,13 @@ declare(strict_types=1);
   --lectura-serif: Georgia, Charter, "Iowan Old Style", "Times New Roman", serif;
 
   --ancho:   80rem;
-  --lectura: 38rem;
+  /* Subido de 38rem: en un monitor ancho una columna de lectura tan
+     estrecha se quedaba a media pagina, con todo el hueco de al lado vacio
+     -en la pagina de "Que es" sobre todo, que es texto de principio a fin y
+     no tiene ninguna cuadricula al lado que justifique el corte-. Sigue
+     siendo mas estrecha que --ancho: no es "sin limite", es un limite mas
+     generoso. */
+  --lectura: 46rem;
   --gutter:  clamp(.9rem, 3vw, 1.6rem);
 }
 
@@ -510,7 +516,11 @@ h1 {
 .datos { margin: 0; color: var(--apagado); font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; }
 .punto { padding: 0 .35rem; color: var(--filete-fino); }
 
-.intro { margin: 1rem 0 0; max-width: var(--lectura); font-size: 1.05em; color: var(--apagado); }
+/* Sin max-width a proposito: es una sola frase de aviso, no una lectura
+   larga, y capada a --lectura se quedaba a media pantalla en un monitor
+   ancho, con todo el hueco de al lado vacio -justo lo que la cuadricula o
+   la lista que viene despues, a todo lo ancho, no hacen-. */
+.intro { margin: 1rem 0 0; font-size: 1.05em; color: var(--apagado); }
 .intro p { margin: 0 0 .7rem; }
 
 .edicion-numero { display: none; }
@@ -1037,8 +1047,11 @@ h1 {
 
 /* --- Paginas de texto ---------------------------------------------------------------- */
 
-/* Aqui si: una columna estrecha de texto seguido es donde la serif gana. */
-.pagina { margin-top: 1.5rem; max-width: var(--lectura); font-family: var(--lectura-serif); font-size: 1.05rem; }
+/* Ancho propio y no --lectura: esta pagina es texto de principio a fin, sin
+   ninguna cuadricula al lado que explique un corte a media pantalla. La
+   tipografia de lectura -serif, mas grande- ya la distingue del resto del
+   sitio sin necesidad de dejarle un hueco vacio de adorno. */
+.pagina { margin-top: 1.5rem; max-width: 60rem; font-family: var(--lectura-serif); font-size: 1.05rem; }
 .pagina h2 { margin: 2rem 0 .5rem; font-family: var(--titular); font-weight: 700; font-size: 1.6rem; text-transform: uppercase; }
 .pagina ul { margin: 0 0 1rem; padding-left: 1.1rem; }
 .pagina li { margin-bottom: .4rem; }
