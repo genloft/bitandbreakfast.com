@@ -1,6 +1,6 @@
 <?php
 /**
- * La portada: el rio de lo ultimo, partido por dias.
+ * La portada: el rio de lo ultimo, en un solo flujo.
  *
  * Esto sustituye a "la ultima edicion hace de portada", y el cambio es el que
  * mas se nota de todos. Una edicion solo existia cuando se cerraba, asi que
@@ -13,6 +13,13 @@
  * contar de verdad. "Esto es lo que ha aparecido hoy en el radar" es una
  * promesa que se puede cumplir; "esto es todo lo que se ha publicado hoy en el
  * mundo" no.
+ *
+ * $rio llega partido por dias -asi lo necesitan el feed y la comprobacion de
+ * "cuantos dias hay"-, pero aqui se aplana: una caja de dia por cada tramo
+ * volvia a parecer una edicion, justo lo que este sitio dejo de ser. Cada
+ * noticia lleva su fecha encima -"Hoy", "Ayer" o el dia completo, via
+ * web_dia_titulo()- para no perder esa informacion al quitar la cabecera que
+ * antes la llevaba una sola vez por grupo.
  *
  * Recibe $rio -tramos con 'dia' y 'bits'-, $dias, $fuentes, $mas_leidos,
  * $tendencias y $base.
@@ -130,32 +137,25 @@ require_once __DIR__ . '/iconos.php';
 
   <article class="edicion">
 
-    <?php foreach ($rio as $tramo_i => $tramo): ?>
-      <?php $bits = $tramo['bits']; ?>
+    <?php
+      // Aplanado a proposito: vease el comentario de arriba. El orden ya
+      // venia por dia y, dentro de el, del mas relevante al menos -es el
+      // mismo que traia publicar_bits()-, asi que aplanar no reordena nada.
+      $bits_planos = [];
+      foreach ($rio as $tramo) {
+          foreach ($tramo['bits'] as $bit) {
+              $bits_planos[] = $bit;
+          }
+      }
+    ?>
 
-      <header class="dia-cabecera<?= $tramo_i === 0 ? ' dia-cabecera-primera' : '' ?>">
-        <h2 class="dia-titulo">
-          <a href="<?= web_e(web_url_dia($base, (string) $tramo['dia'])) ?>">
-            <time datetime="<?= web_e((string) $tramo['dia']) ?>"><?= web_e(web_dia_titulo((string) $tramo['dia'])) ?></time>
-          </a>
-        </h2>
-        <p class="datos"><?= count($bits) ?> noticia<?= count($bits) === 1 ? '' : 's' ?></p>
-      </header>
+    <div class="bits">
+      <?php foreach ($bits_planos as $indice => $bit): ?>
+        <?php require __DIR__ . '/bit.php'; ?>
+      <?php endforeach; ?>
+    </div>
 
-      <div class="bits">
-        <?php foreach ($bits as $indice => $bit): ?>
-          <?php
-            // El destacado solo en el primer tramo. Mas abajo, una pieza a
-            // doble columna en medio de la pagina no dice "esto importa mas",
-            // dice "aqui se ha roto algo".
-            $indice = $tramo_i === 0 ? $indice : $indice + 1;
-            require __DIR__ . '/bit.php';
-          ?>
-        <?php endforeach; ?>
-      </div>
-    <?php endforeach; ?>
-
-    <?php if (!$rio): ?>
+    <?php if (!$bits_planos): ?>
       <p class="vacio">Todavía no hay nada publicado. El radar está leyendo.</p>
     <?php endif; ?>
 

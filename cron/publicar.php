@@ -51,7 +51,12 @@ require_once dirname(__DIR__) . '/lib/cifras.php';
  */
 function publicar_pendiente(float $limite): array
 {
-    $tope_portada = max(10, (int) ajuste('web_bits_portada', '80'));
+    // Subido de 80: la portada dejo de partirse por dias -es un solo flujo
+    // continuo- y ochenta se notaba enseguida, sobre todo justo despues de
+    // aprobar un lote grande desde el panel. Sin fotos ni JS, trescientas
+    // fichas de texto siguen pesando poco: lo caro de una pagina de noticias
+    // de verdad son las imagenes, y esta no tiene ninguna.
+    $tope_portada = max(10, (int) ajuste('web_bits_portada', '300'));
     $tope_archivo = max(10, (int) ajuste('web_dias_archivo', '180'));
 
     $dias  = publicar_dias($tope_archivo);

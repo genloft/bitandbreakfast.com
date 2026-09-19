@@ -666,13 +666,22 @@ comprobar(
 );
 
 comprobar(
-    'y el pie lo dice con todas las letras',
+    'y el pie lo dice, aunque sea en el aria-label del icono',
     true,
     str_contains($portada, 'Leer el original en')
 );
 
 comprobar('cada bit se puede compartir por WhatsApp', true, str_contains($portada, 'https://wa.me/?text='));
 comprobar('y por LinkedIn', true, str_contains($portada, 'https://www.linkedin.com/sharing/share-offsite/?url='));
+
+// Ya no hay una cabecera de dia por tramo: el rio es un flujo continuo y
+// cada ficha lleva su propia fecha.
+comprobar('la portada ya no separa por dias con su propia caja', false, str_contains($portada, 'dia-cabecera'));
+comprobar('cada bit lleva su fecha encima', true, str_contains($portada, 'etiqueta-fecha'));
+
+// $fuente_a y $fuente_b cuentan la misma noticia: su bit tiene que salir
+// resaltado en negativo.
+comprobar('lo que cuentan varios medios sale en negativo', true, str_contains($portada, 'bit-multifuente'));
 
 comprobar('con las tres cuentas', 3, substr_count($portada, 'class="panel-cifra"'));
 comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));

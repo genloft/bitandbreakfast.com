@@ -104,6 +104,21 @@ function web_icono_ui(string $nombre, string $clase = 'icono'): string
                   . '<path d="M7 9h5M7 12h5M7 15h3"/>',
         'flecha' => '<path d="M5 12h13"/><path d="M13 6l6 6-6 6"/>',
         'lupa'   => '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+
+        // Un enlace que sale de su caja: leer el original, en la fuente.
+        'externo' => '<path d="M14 4h6v6"/><path d="M20 4l-9.5 9.5"/>'
+                    . '<path d="M18 13.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5.5"/>',
+
+        // Un bocadillo de conversacion con un telefono dentro: WhatsApp se
+        // reconoce por la forma, no hace falta el color de la marca.
+        'whatsapp' => '<path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z"/>'
+                     . '<path d="M8.7 9.4c0 3.6 2.5 6.1 6.1 6.1.6 0 1-.4 1-1v-.9a.8.8 0 0 0-.6-.8l-1.5-.4a.8.8 0 0 0-.8.2l-.3.3a5 5 0 0 1-2-2l.3-.3a.8.8 0 0 0 .2-.8l-.4-1.5a.8.8 0 0 0-.8-.6h-.9a1 1 0 0 0-1 1z"/>',
+
+        // El cuadrado redondeado con "in" que todo el mundo asocia a
+        // LinkedIn, en trazo y no en logotipo de color.
+        'linkedin' => '<rect x="3" y="3" width="18" height="18" rx="3"/>'
+                     . '<path d="M7.5 10.7v5.8"/><path d="M7.5 7.7v.1"/>'
+                     . '<path d="M11.5 16.5v-3.7a2.2 2.2 0 0 1 4.3 0v3.7"/><path d="M11.5 10.7v5.8"/>',
     ][$nombre] ?? '';
 
     if ($trazos === '') {
