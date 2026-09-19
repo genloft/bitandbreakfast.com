@@ -12,6 +12,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
+require_once dirname(__DIR__) . '/lib/estado.php';
 
 /**
  * La cola: racimos candidatos, el de mas puntuacion primero.
@@ -396,4 +397,154 @@ function panel_estado_envio(): array
         // Sin las tablas del boletin todavia, no hay envio del que informar.
         return $vacio;
     }
+}
+
+// -----------------------------------------------------------------------------
+// El catalogo de fuentes
+//
+// Antes solo se podia ver o tocar por SQL directo. Con el catalogo a punto de
+// crecer de cincuenta y pico a varios cientos, hace falta un sitio donde
+// verlas todas, cuando entraron y por que las que no aportan nada no lo
+// hacen: si es la fuente la que esta fallando, o si el feed va bien y es lo
+// que cuenta lo que no encaja aqui.
+// -----------------------------------------------------------------------------
+
+/**
+ * Todo el catalogo, con un diagnostico de los ultimos catorce dias por
+ * fuente: cuanto ha entrado, cuanto se ha descartado y por que, y cuanto ha
+ * llegado a publicarse. Sin eso, "esta fuente no trae nada" y "esta fuente
+ * trae mucho pero todo se descarta" se ven exactamente igual en la lista.
+ */
+function datos_fuentes(): array
+{
+    $fuentes = bd()->query(
+        "SELECT id, nombre, url_feed, url_sitio, tipo, idioma, region,
+                categoria_defecto, peso, activa, dormida_hasta, ultimo_intento,
+                ultimo_ok, fallos_consecutivos, notas, fecha_alta
+           FROM fuentes
+          ORDER BY activa DESC, peso DESC, nombre ASC"
+    )->fetchAll();
+
+    if (!$fuentes) {
+        return [];
+    }
+
+    $ventana = 14;
+
+    // Cuanto ha entrado de cada fuente y en que ha acabado, en el mismo golpe
+    // para las quiza varios cientos de fuentes: una consulta por fuente aqui
+    // seria un ida y vuelta a la base por cada fila de la lista.
+    $cuentas = [];
+
+    $sql = "SELECT fuente_id,
+                   COUNT(*) AS total,
+                   SUM(estado = 'descartado') AS descartados,
+                   SUM(estado = 'usado') AS publicados,
+                   SUM(estado IN ('nuevo', 'agrupado')) AS en_cola
+              FROM items
+             WHERE capturado > (NOW() - INTERVAL $ventana DAY)
+             GROUP BY fuente_id";
+
+    foreach (bd()->query($sql)->fetchAll() as $fila) {
+        $cuentas[(int) $fila['fuente_id']] = [
+            'total'       => (int) $fila['total'],
+            'descartados' => (int) $fila['descartados'],
+            'publicados'  => (int) $fila['publicados'],
+            'en_cola'     => (int) $fila['en_cola'],
+        ];
+    }
+
+    // El motivo de descarte mas repetido de cada fuente. Un racimo puede
+    // llevar items de varias fuentes, asi que esto es "lo que le ha pasado a
+    // lo que ha traido esta fuente", no un veredicto exclusivo suyo.
+    $motivo_top = [];
+    $motivo_cuantos = [];
+
+    $sql = "SELECT i.fuente_id, r.motivo_descarte, COUNT(DISTINCT r.id) AS racimos
+              FROM items i
+              JOIN racimos r ON r.id = i.racimo_id
+             WHERE i.capturado > (NOW() - INTERVAL $ventana DAY)
+               AND r.estado = 'descartado'
+               AND r.motivo_descarte <> ''
+             GROUP BY i.fuente_id, r.motivo_descarte";
+
+    foreach (bd()->query($sql)->fetchAll() as $fila) {
+        $fuente_id = (int) $fila['fuente_id'];
+        $racimos   = (int) $fila['racimos'];
+
+        if (!isset($motivo_cuantos[$fuente_id]) || $racimos > $motivo_cuantos[$fuente_id]) {
+            $motivo_cuantos[$fuente_id] = $racimos;
+            // El prefijo 'automatico: ' lo llevan todos y no distingue nada,
+            // igual que en salud_descartes().
+            $motivo_top[$fuente_id] = trim(str_replace('automatico:', '', (string) $fila['motivo_descarte']));
+        }
+    }
+
+    // El ultimo error de ingesta de cada fuente, si el ultimo intento fallo.
+    // Misma consulta que salud_fallando(), pero de todas las fuentes, no solo
+    // de las doce peores: esta pantalla es privada y puede permitirselo.
+    $ultimo_error = [];
+
+    $sql = "SELECT f.id AS fuente_id, u.mensaje
+              FROM fuentes f
+              JOIN log_ingesta u ON u.id = (
+                    SELECT l.id FROM log_ingesta l
+                     WHERE l.fuente_id = f.id
+                     ORDER BY l.inicio DESC, l.id DESC
+                     LIMIT 1)
+             WHERE u.resultado = 'error'";
+
+    foreach (bd()->query($sql)->fetchAll() as $fila) {
+        $ultimo_error[(int) $fila['fuente_id']] = estado_motivo((string) ($fila['mensaje'] ?? ''));
+    }
+
+    return array_map(static function (array $fuente) use ($cuentas, $motivo_top, $ultimo_error): array {
+        $id = (int) $fuente['id'];
+
+        $fuente['diagnostico'] = $cuentas[$id] ?? ['total' => 0, 'descartados' => 0, 'publicados' => 0, 'en_cola' => 0];
+        $fuente['motivo_principal'] = $motivo_top[$id] ?? null;
+        $fuente['ultimo_error'] = $ultimo_error[$id] ?? null;
+
+        return $fuente;
+    }, $fuentes);
+}
+
+/**
+ * Da de alta una fuente desde el panel. $datos ya viene validado con
+ * fuentes_validar(): aqui no se repite la comprobacion, solo se escribe.
+ */
+function datos_fuente_crear(array $datos): int
+{
+    $sql = "INSERT INTO fuentes
+              (nombre, url_feed, url_sitio, tipo, idioma, region,
+               categoria_defecto, peso, activa, notas, fecha_alta)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, UTC_DATE())";
+
+    bd()->prepare($sql)->execute([
+        trim((string) $datos['nombre']),
+        trim((string) $datos['url_feed']),
+        trim((string) ($datos['url_sitio'] ?? '')),
+        (string) $datos['tipo'],
+        trim((string) $datos['idioma']),
+        (string) $datos['region'],
+        (string) $datos['categoria_defecto'],
+        (int) $datos['peso'],
+        trim((string) ($datos['notas'] ?? '')),
+    ]);
+
+    return (int) bd()->lastInsertId();
+}
+
+/**
+ * Activa o desactiva una fuente a mano. Al reactivar se limpia tambien
+ * dormida_hasta y los fallos: una decision de una persona pesa mas que la
+ * penitencia automatica que llevara encima.
+ */
+function datos_fuente_activar(int $id, bool $activa): void
+{
+    $sql = $activa
+        ? "UPDATE fuentes SET activa = 1, dormida_hasta = NULL, fallos_consecutivos = 0 WHERE id = ?"
+        : "UPDATE fuentes SET activa = 0 WHERE id = ?";
+
+    bd()->prepare($sql)->execute([$id]);
 }

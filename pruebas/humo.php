@@ -1003,4 +1003,51 @@ comprobar(
     $mantenimiento['cifras_aviso'] ?? null
 );
 
+// -----------------------------------------------------------------------------
+// El catalogo de fuentes, tal como lo ensena panel/index.php?p=fuentes
+//
+// $fuente_a y $fuente_b acabaron en el mismo racimo, que se publico: sus
+// items pasaron a 'usado'. $fuente_c abrio racimo propio y sigue en la cola.
+// -----------------------------------------------------------------------------
+
+$catalogo = datos_fuentes();
+
+comprobar('el catalogo trae las fuentes de la prueba', true, count($catalogo) >= 3);
+
+$por_id = [];
+foreach ($catalogo as $fila) {
+    $por_id[(int) $fila['id']] = $fila;
+}
+
+comprobar('la fuente de un item publicado cuenta un publicado', 1, $por_id[$fuente_a]['diagnostico']['publicados']);
+comprobar('y la fuente que abrio racimo propio lo tiene en cola', 1, $por_id[$fuente_c]['diagnostico']['en_cola']);
+comprobar('ninguna de las tres esta fallando en esta base limpia', null, $por_id[$fuente_a]['ultimo_error']);
+
+$fuente_nueva_id = datos_fuente_crear([
+    'nombre' => 'Prueba de alta', 'url_feed' => 'https://humo.test/nueva/feed/',
+    'url_sitio' => 'https://humo.test/nueva/', 'tipo' => 'prensa', 'idioma' => 'es',
+    'region' => 'es', 'categoria_defecto' => 'tecnologia-general', 'peso' => 5, 'notas' => '',
+]);
+
+$st = bd()->prepare('SELECT activa, fecha_alta FROM fuentes WHERE id = ?');
+$st->execute([$fuente_nueva_id]);
+$fuente_nueva = $st->fetch();
+
+comprobar('una fuente nueva desde el panel nace activa', 1, (int) $fuente_nueva['activa']);
+comprobar('y con fecha de hoy', gmdate('Y-m-d'), (string) $fuente_nueva['fecha_alta']);
+
+datos_fuente_activar($fuente_nueva_id, false);
+comprobar(
+    'desactivarla a mano la apaga',
+    0,
+    (int) bd()->query('SELECT activa FROM fuentes WHERE id = ' . (int) $fuente_nueva_id)->fetchColumn()
+);
+
+datos_fuente_activar($fuente_nueva_id, true);
+comprobar(
+    'y reactivarla la enciende otra vez',
+    1,
+    (int) bd()->query('SELECT activa FROM fuentes WHERE id = ' . (int) $fuente_nueva_id)->fetchColumn()
+);
+
 resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');

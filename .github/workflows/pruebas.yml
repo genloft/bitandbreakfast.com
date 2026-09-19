@@ -61,7 +61,7 @@ jobs:
       - name: Pruebas sin base de datos
         run: |
           fallo=0
-          for prueba in texto canonica instalacion procesar panel web correo auto estado cifras; do
+          for prueba in texto canonica instalacion procesar panel web correo auto estado cifras fuentes; do
             if salida="$(php "pruebas/$prueba.php" 2>&1)"; then
               echo "$salida"
             else

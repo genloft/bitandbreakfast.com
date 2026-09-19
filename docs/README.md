@@ -527,3 +527,18 @@ un MariaDB 10.6 para la de humo.
   identidad, y esta página tampoco la reconstruye cruzando datos-. Mismo
   motivo que el resto de la página: poder comprobar desde fuera si algo se
   mueve, sin entrar a la base.
+- **El catálogo de fuentes tiene pantalla propia en el panel.** Hasta ahora
+  solo se podía ver o tocar por SQL directo, y con el catálogo a punto de
+  crecer de cincuenta y pico a varios cientos eso deja de ser razonable.
+  `panel/index.php?p=fuentes` enseña todas, con un diagnóstico de los
+  últimos catorce días por fuente -cuánto ha entrado, cuánto se ha
+  descartado y por qué, cuánto sigue en cola, cuánto ha llegado a
+  publicarse-, porque "esta fuente no trae nada" y "esta fuente trae mucho
+  pero todo se descarta" antes se veían exactamente igual. También da de
+  alta fuentes nuevas sin tocar SQL, validadas con `fuentes_validar()`
+  (nueva en `lib/fuentes.php`, pura) antes de escribir.
+  Nueva columna `fecha_alta` en `fuentes` -migración 020-: `NULL` en las
+  que ya estaban, porque no se sabe de verdad cuándo entraron y una fecha
+  inventada sería peor que dejarlo en blanco; a partir de ahora, toda
+  fuente nueva lleva la suya, para poder ver el catálogo ordenado por lo
+  más reciente y no solo por el total.
