@@ -580,3 +580,34 @@ un MariaDB 10.6 para la de humo.
   frente con la razón de ser de `tema.php`, ya escrita en su propio
   comentario: una ficha de proveedor contesta "qué se ha dicho de Mews",
   que es la pregunta de Mews, no la del hotel al que sirve este radar.
+- **La portada dejó de partirse por días.** Cada tramo de `$rio` llevaba su
+  propia caja de "HOY"/"AYER", y con el volumen que ya mueve el catálogo
+  eso volvía a parecerse a una edición -justo lo que este sitio dejó de
+  ser cuando la portada se convirtió en un río-. Ahora es un solo flujo:
+  `portada.php` aplana `$rio` y cada ficha lleva su propia fecha encima
+  (`.etiqueta-fecha` en `bit.php`, con las mismas palabras -"Hoy", "Ayer"-
+  que antes llevaba la cabecera de día). De paso, el tope de la portada
+  sube de 80 a 300: sin fotos ni JS, trescientas fichas de texto siguen
+  pesando poco, y ochenta se notaba justo cuando se aprobaba un lote
+  grande desde el panel.
+- **Todas las fichas del río, del mismo alto.** `.bit:not(.bit-lead)` fija
+  una altura y recorta lo que no cabe con `-webkit-line-clamp` (titular,
+  cuerpo) o con un `max-height` liso ("por qué importa"). Ese segundo caso
+  no es capricho: con el padding que lleva ese cuadro, un `-webkit-line-clamp`
+  calculado justo para dos líneas dejaba pintarse un trozo de una tercera
+  por debajo del recorte -comprobado a mano, capturando la página, no en
+  teoría-, y bajando el límite del `max-height` claramente por debajo de
+  esa medida el recorte vuelve a ser limpio. Se pierden los tres puntos
+  finales; no se pierde la portada con una ficha rota.
+- **Lo que cuentan varios medios sale en negativo.** `.bit-multifuente`
+  (fondo negro, letra blanca) se aplica en el propio `bit.php`, calculando
+  cuántas fuentes hay antes de abrir la ficha, no al final: la señal de
+  "esto lo confirman varios medios independientes" es la más fuerte que
+  puede dar esta página, y una fila más al pie no se veía lo bastante.
+- **El pie de cada ficha son iconos, no texto.** Leer el original, la
+  ficha del medio, compartir por WhatsApp o LinkedIn: los cuatro con su
+  `aria-label` como nombre accesible y, con un `::after` en CSS
+  (`.icono-boton`), como el globo que aparece al pasar el ratón o al
+  llegar por teclado. El nombre del medio se queda visible al lado, sin
+  enlace: no puede depender de pasar el ratón por un icono para saber
+  quién cuenta la noticia.

@@ -519,37 +519,11 @@ h1 {
    abajo y se apelotonaba en una columna estrecha. */
 .sumario { display: none; }
 
-/* --- El rio: un dia detras de otro --------------------------------------------
-   La portada ya no es una edicion, es lo que se ha descubierto cada dia. El
-   dia se anuncia con una barra negra a todo lo ancho: no es decoracion, es lo
-   unico que separa dos dias de noticias que por dentro son identicas. */
-
-.dia-cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: .3rem 1rem;
-  margin-top: 2.2rem;
-  padding: .45rem .8rem;
-  background: var(--tinta);
-  color: var(--papel);
-}
-
-.dia-cabecera-primera { margin-top: 1.4rem; }
-
-.dia-titulo {
-  margin: 0;
-  font-family: var(--titular);
-  font-size: clamp(1.1rem, 4vw, 1.5rem);
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-
-.dia-titulo a { color: inherit; text-decoration: none; }
-.dia-titulo a:hover { color: var(--acento); }
-.dia-cabecera .datos { color: #b9b4ac; }
+/* --- El rio: un solo flujo -----------------------------------------------------
+   La portada ya no separa un dia de otro con su propia barra: cada ficha
+   lleva la fecha encima (.etiqueta-fecha, en bit.php), y lo que antes hacia
+   una cabecera de dia -"esto es de hoy, esto es de ayer"- lo hace ahora esa
+   etiqueta, sin cortar la reticula en tramos. */
 
 .mas-dias {
   margin: 1.6rem 0 0;
@@ -578,6 +552,66 @@ h1 {
   padding: 1.1rem 1.1rem 1.3rem;
   border-right: 1px solid var(--filete);
   border-bottom: 1px solid var(--filete);
+}
+
+/* Todas las fichas del mismo alto, para que la reticula se lea como una
+   reticula y no como columnas de periodico a las que les falta cortar. La
+   apertura del dia (.bit-lead) queda fuera a proposito: ese es el titular
+   grande, no una celda mas. Lo que no cabe en la altura fija se recorta con
+   -webkit-line-clamp en el texto, y de respaldo con el overflow del propio
+   contenedor: entre perder una linea de cuerpo y que la ficha de al lado se
+   quede vacia, la primera opcion es la que no rompe la reticula. */
+.bit:not(.bit-lead) {
+  display: flex;
+  flex-direction: column;
+  height: 28.5rem;
+}
+
+.bit:not(.bit-lead) .bit-cuerpo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.bit:not(.bit-lead) .bit-resumen {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* max-height de respaldo en las tres: dentro de un padre flex con flex:1,
+   -webkit-line-clamp a veces deja de recortar de verdad -el ellipsis sale
+   bien, pero una linea de mas se sigue pintando por debajo del cuadro-. El
+   tope en altura no depende de ese modo de caja y no falla. */
+.bit:not(.bit-lead) h2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 4.5rem;
+}
+
+.bit:not(.bit-lead) .texto p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 5rem;
+}
+
+/* Sin esto, "por que importa" es el unico bloque de la ficha sin tope de
+   lineas: a un movil, con menos caracteres por linea, le basta para
+   desbordar la altura fija y cortarse a medio caracter en vez de a final de
+   linea. Recortado y ya.
+   Sin -webkit-line-clamp a proposito: con el padding que lleva este cuadro,
+   un max-height calculado justo para dos lineas deja que se pinte un
+   fragmento de una tercera por debajo del recorte -probado a mano, no es
+   teoria-. Bajando el tope claramente por debajo de esa medida el recorte
+   vuelve a ser limpio, a costa de perder el "..." final. */
+.bit:not(.bit-lead) .por-que {
+  max-height: 3.5rem;
+  overflow: hidden;
 }
 
 .bit-carril { display: flex; align-items: center; gap: .45rem; margin-bottom: .5rem; }
@@ -661,14 +695,17 @@ h1 {
 .etiqueta-categoria:hover { background: var(--acento); }
 .etiqueta-idioma { color: var(--acento); }
 
+.etiqueta-fecha { color: var(--apagado); text-decoration: none; }
+.etiqueta-fecha:hover { color: var(--tinta); }
+
 .menciona { margin: .5rem 0 0; font-size: .78rem; color: var(--apagado); }
 .menciona a { color: var(--apagado); }
 
 .pie-bit {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: .25rem .8rem;
+  align-items: center;
+  gap: .5rem .8rem;
   margin: .8rem 0 0;
   padding-top: .6rem;
   border-top: 1px solid var(--filete-fino);
@@ -677,10 +714,48 @@ h1 {
   text-transform: uppercase;
 }
 
-.fuente { color: var(--tinta); font-weight: 700; text-decoration: none; }
-.fuente:hover { color: var(--acento); }
-.ficha-medio { color: var(--suave); text-decoration: none; }
-.ficha-medio:hover { color: var(--tinta); }
+.pie-fuente { font-weight: 700; color: var(--tinta); }
+
+/* La fila de acciones: un icono por gesto, sin texto al lado. Lo que dice
+   cada uno vive en su aria-label, que hace de nombre accesible y -con el
+   ::after de aqui abajo- de globo al pasar el raton o al llegar por
+   teclado, asi que nadie se queda sin saber que va a pasar al pulsar. */
+.pie-acciones { display: flex; align-items: center; gap: .15rem; margin-left: auto; }
+
+.icono-boton {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  color: var(--suave);
+  text-decoration: none;
+}
+.icono-boton:hover, .icono-boton:focus-visible { color: var(--tinta); }
+.icono-boton .icono { width: 1.05rem; height: 1.05rem; }
+
+.icono-boton::after {
+  content: attr(aria-label);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -.35rem);
+  background: var(--tinta);
+  color: var(--papel);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-transform: none;
+  white-space: nowrap;
+  padding: .3rem .55rem;
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease;
+  z-index: 2;
+}
+.icono-boton:hover::after, .icono-boton:focus-visible::after { opacity: 1; }
+
 .pie-bit .datos { font-size: .68rem; color: var(--suave); }
 .volver { display: none; }
 
@@ -689,6 +764,38 @@ h1 {
 .fuentes-bit ul { margin: .7rem 0 0; padding: 0; list-style: none; }
 .fuentes-bit li { padding: .5rem 0; border-top: 1px solid var(--filete-fino); }
 .titular-fuente { display: block; color: var(--apagado); }
+
+/* Lo que cuentan varios medios a la vez no es un dato mas: es lo que un
+   directivo tiene que haber visto si solo mira la portada un momento. El
+   negativo -fondo negro, letra blanca- es la misma paleta que ya usaba el
+   resto del sitio para "esto manda" (la cabecera, el rotulo de categoria),
+   llevada a la ficha entera en vez de a una esquina. */
+.bit-multifuente {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.bit-multifuente .numero { color: var(--papel); }
+.bit-multifuente .bit-icono { color: var(--papel); }
+.bit-multifuente h2 a:hover { color: var(--papel); text-decoration: underline; }
+.bit-multifuente .texto p { color: var(--papel); }
+.bit-multifuente .etiqueta-categoria { background: var(--papel); color: var(--tinta); }
+.bit-multifuente .etiqueta-categoria:hover { background: var(--acento); color: var(--papel); }
+.bit-multifuente .etiqueta-idioma { color: var(--papel); }
+.bit-multifuente .etiqueta-fecha { color: #cfcac2; }
+.bit-multifuente .etiqueta-fecha:hover { color: var(--papel); }
+.bit-multifuente .por-que { background: rgba(244, 242, 238, .14); color: var(--papel); }
+.bit-multifuente .menciona,
+.bit-multifuente .menciona a,
+.bit-multifuente .pie-bit .datos,
+.bit-multifuente .fuentes-bit summary,
+.bit-multifuente .titular-fuente { color: #cfcac2; }
+.bit-multifuente .pie-bit { border-top-color: rgba(244, 242, 238, .3); }
+.bit-multifuente .pie-fuente { color: var(--papel); }
+.bit-multifuente .icono-boton { color: #cfcac2; }
+.bit-multifuente .icono-boton:hover, .bit-multifuente .icono-boton:focus-visible { color: var(--papel); }
+.bit-multifuente .icono-boton::after { background: var(--papel); color: var(--tinta); }
+.bit-multifuente .fuentes-bit li { border-top-color: rgba(244, 242, 238, .2); }
+.bit-multifuente .fuentes-bit a { color: var(--papel); }
 
 .vacio { margin: 2rem 0; color: var(--apagado); }
 
