@@ -38,6 +38,7 @@ $url_feed = rtrim($url, '/') . '/feed.xml';
 <meta name="description" content="Todo lo que ha publicado Bit &amp; Breakfast sobre <?= web_e($tema['nombre']) ?> en tecnología hotelera.">
 <link rel="canonical" href="<?= web_e($url) ?>">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast · <?= web_e($tema['nombre']) ?>" href="<?= web_e($url_feed) ?>">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#060a18">
 <meta property="og:site_name" content="Bit &amp; Breakfast">

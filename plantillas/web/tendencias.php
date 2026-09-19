@@ -38,6 +38,7 @@ $descripcion = 'Qué temas de tecnología hotelera suben y cuáles bajan: los ú
 <meta name="description" content="<?= web_e($descripcion) ?>">
 <link rel="canonical" href="<?= web_e($base) ?>/tendencias.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">

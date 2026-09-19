@@ -43,6 +43,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta name="description" content="Todo lo publicado en Bit &amp; Breakfast, día a día: el agregador de tecnología hotelera en español.">
 <link rel="canonical" href="<?= web_e($base) ?>/archivo.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#f4f2ee">
 <meta property="og:site_name" content="Bit &amp; Breakfast">

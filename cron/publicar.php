@@ -23,6 +23,7 @@
  *   feed.xml            RSS de lo ultimo
  *   buscar.html         el explorador, mas indice.json
  *   estilo.css          la hoja del sitio
+ *   favicon.svg         el sello, en un fichero aparte
  *   robots.txt
  *   sitemap.xml         direcciones para Google, con lastmod por dia
  *   estadisticas.html   cuadro de mandos con cifras externas -no de esta base-
@@ -99,6 +100,7 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir($publico . '/estilo.css', publicar_plantilla('estilo', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/buscar.js', publicar_plantilla('buscarjs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
+    $ficheros += publicar_escribir($publico . '/favicon.svg', publicar_plantilla('favicon', [])) ? 1 : 0;
 
     // El .htaccess le pone un mes de cache a los dos ficheros, y se reescriben
     // siempre en el mismo sitio. Sin colgar el hash de su contenido de la URL,

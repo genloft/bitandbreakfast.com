@@ -33,6 +33,7 @@ $url = web_url_medio($base, (string) $medio['slug']);
 <meta name="description" content="Lo que ha publicado Bit &amp; Breakfast a partir de <?= web_e($medio['nombre']) ?>.">
 <link rel="canonical" href="<?= web_e($url) ?>">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#060a18">
 <meta property="og:site_name" content="Bit &amp; Breakfast">

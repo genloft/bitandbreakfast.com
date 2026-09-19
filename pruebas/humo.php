@@ -589,6 +589,13 @@ comprobar(
 );
 comprobar('escribe el robots.txt', true, is_file($publico . '/robots.txt'));
 
+comprobar('escribe el favicon', true, is_file($publico . '/favicon.svg'));
+comprobar(
+    'y la portada lo enlaza',
+    true,
+    str_contains((string) file_get_contents($publico . '/index.html'), '/favicon.svg')
+);
+
 $portada = (string) file_get_contents($publico . '/index.html');
 
 comprobar(

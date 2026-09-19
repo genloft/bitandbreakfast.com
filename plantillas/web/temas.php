@@ -29,6 +29,7 @@ require_once __DIR__ . '/iconos.php';
 <meta name="description" content="Los temas de tecnologia hotelera que cubre Bit &amp; Breakfast, con todo lo publicado en cada uno.">
 <link rel="canonical" href="<?= web_e($base) ?>/temas.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#060a18">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
