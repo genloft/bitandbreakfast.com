@@ -700,6 +700,7 @@ comprobar(
 // no significa publicarlo en espanol, significa llenar la portada de titulares
 // en ingles. Se cumple la intencion, no la letra.
 ajuste_guardar('auto_solo_espanol', '0');
+bd()->prepare("UPDATE items SET estado = 'agrupado' WHERE estado = 'descartado' AND racimo_id IN (SELECT id FROM racimos WHERE estado = 'descartado')")->execute();
 bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
 
 $sin_traductor = auto_publicar_lote(microtime(true) + 20);
@@ -715,6 +716,7 @@ comprobar('y sin el, no', false, traducir_configurado());
 
 // El resto de la cadena se prueba con el racimo ya en espanol: lo que se mira
 // aqui es que el engranaje gira, no la politica editorial.
+bd()->prepare("UPDATE items SET estado = 'agrupado' WHERE estado = 'descartado' AND racimo_id IN (SELECT id FROM racimos WHERE estado = 'descartado')")->execute();
 bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE estado = 'descartado'")->execute();
 bd()->prepare("UPDATE items SET idioma = 'es' WHERE id = ?")->execute([$item_c]);
 
@@ -1001,6 +1003,57 @@ comprobar(
     'y no manda nada sin un buzon propio configurado',
     false,
     $mantenimiento['cifras_aviso'] ?? null
+);
+
+// -----------------------------------------------------------------------------
+// El catalogo de fuentes, tal como lo ensena panel/index.php?p=fuentes
+//
+// Para cuando se llega aqui, el racimo de $fuente_a/$fuente_b ya se publico a
+// mano desde el panel, y el de $fuente_c -que abrio racimo propio- acabo
+// publicandose el solo mas adelante, en las pruebas del modo automatico: los
+// tres items estan en 'usado'. $fuente_d, en cambio, es la de mas abajo -sin
+// resumen utilizable- y se queda descartada para siempre.
+// -----------------------------------------------------------------------------
+
+$catalogo = datos_fuentes();
+
+comprobar('el catalogo trae las fuentes de la prueba', true, count($catalogo) >= 4);
+
+$por_id = [];
+foreach ($catalogo as $fila) {
+    $por_id[(int) $fila['id']] = $fila;
+}
+
+comprobar('la fuente de un item publicado a mano cuenta un publicado', 1, $por_id[$fuente_a]['diagnostico']['publicados']);
+comprobar('y la que se publico sola por el modo automatico tambien', 1, $por_id[$fuente_c]['diagnostico']['publicados']);
+comprobar('la fuente sin resumen utilizable cuenta una descartada', 1, $por_id[$fuente_d]['diagnostico']['descartados']);
+comprobar('ninguna de las cuatro esta fallando en esta base limpia', null, $por_id[$fuente_a]['ultimo_error']);
+
+$fuente_nueva_id = datos_fuente_crear([
+    'nombre' => 'Prueba de alta', 'url_feed' => 'https://humo.test/nueva/feed/',
+    'url_sitio' => 'https://humo.test/nueva/', 'tipo' => 'prensa', 'idioma' => 'es',
+    'region' => 'es', 'categoria_defecto' => 'tecnologia-general', 'peso' => 5, 'notas' => '',
+]);
+
+$st = bd()->prepare('SELECT activa, fecha_alta FROM fuentes WHERE id = ?');
+$st->execute([$fuente_nueva_id]);
+$fuente_nueva = $st->fetch();
+
+comprobar('una fuente nueva desde el panel nace activa', 1, (int) $fuente_nueva['activa']);
+comprobar('y con fecha de hoy', gmdate('Y-m-d'), (string) $fuente_nueva['fecha_alta']);
+
+datos_fuente_activar($fuente_nueva_id, false);
+comprobar(
+    'desactivarla a mano la apaga',
+    0,
+    (int) bd()->query('SELECT activa FROM fuentes WHERE id = ' . (int) $fuente_nueva_id)->fetchColumn()
+);
+
+datos_fuente_activar($fuente_nueva_id, true);
+comprobar(
+    'y reactivarla la enciende otra vez',
+    1,
+    (int) bd()->query('SELECT activa FROM fuentes WHERE id = ' . (int) $fuente_nueva_id)->fetchColumn()
 );
 
 resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');

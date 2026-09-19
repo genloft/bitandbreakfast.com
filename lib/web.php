@@ -252,7 +252,7 @@ function web_ambitos(): array
 
 function web_idiomas(): array
 {
-    return ['es' => 'Español', 'en' => 'Inglés'];
+    return ['es' => 'Español', 'en' => 'Inglés', 'pt' => 'Portugués'];
 }
 
 /**

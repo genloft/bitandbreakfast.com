@@ -137,6 +137,40 @@ button[disabled] { opacity: .4; cursor: not-allowed; }
 .cola .acciones form { display: flex; gap: .4rem; align-items: center; }
 .cola .acciones input[type="text"] { width: 9rem; font-size: .85rem; }
 
+/* --- Catalogo de fuentes --------------------------------------------------- */
+
+.catalogo { list-style: none; padding: 0; margin: 1rem 0 0; }
+
+.fuente-fila {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: var(--papel);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: .75rem;
+}
+
+.fuente-fila h2 { font-size: 1rem; margin: 0; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.fuente-fila .diagnostico { color: var(--apagado); font-size: .85rem; margin: .4rem 0 0; }
+
+.badge {
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge-activa { color: var(--verde); background: #e7f5ea; }
+.badge-apagada { color: var(--apagado); background: var(--fondo); }
+.badge-dormida { color: var(--ambar); background: #fdf1dc; }
+.badge-fallando { color: var(--rojo); background: #fbe9e7; }
+
 /* --- Editor de bit ------------------------------------------------------- */
 
 .dos-columnas { display: grid; grid-template-columns: 3fr 2fr; gap: 2rem; align-items: start; }

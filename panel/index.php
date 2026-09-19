@@ -13,6 +13,7 @@
  *             o se convierten en bit.
  *   bit     - se escribe el bit y se aprueba.
  *   edicion - los bits aprobados se ordenan y la edicion se cierra.
+ *   fuentes - el catalogo de donde viene todo lo anterior.
  *
  * Toda accion es un POST con testigo y termina en una redireccion, para que
  * recargar no repita nada.
@@ -24,6 +25,7 @@ require_once dirname(__DIR__) . '/lib/panel.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/traducir.php';
+require_once dirname(__DIR__) . '/lib/fuentes.php';
 require_once __DIR__ . '/datos.php';
 
 date_default_timezone_set('UTC');
@@ -264,14 +266,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $recuperados = 0;
 
                 if (traducir_configurado()) {
-                    $st = bd()->prepare(
-                        "UPDATE racimos
-                            SET estado = 'candidato', motivo_descarte = ''
+                    $st = bd()->query(
+                        "SELECT id FROM racimos
                           WHERE estado = 'descartado'
                             AND motivo_descarte LIKE '%espanol%'"
                     );
-                    $st->execute();
-                    $recuperados = $st->rowCount();
+                    $ids = array_map('intval', $st->fetchAll(PDO::FETCH_COLUMN));
+
+                    if ($ids) {
+                        $marcas = implode(',', array_fill(0, count($ids), '?'));
+
+                        bd()->prepare("UPDATE racimos SET estado = 'candidato', motivo_descarte = '' WHERE id IN ($marcas)")
+                            ->execute($ids);
+
+                        // Los items tambien: el modo automatico los descarta a la
+                        // vez que el racimo, y si solo vuelve el racimo a la cola,
+                        // auto_items() los sigue dejando fuera para siempre.
+                        bd()->prepare("UPDATE items SET estado = 'agrupado' WHERE racimo_id IN ($marcas) AND estado = 'descartado'")
+                            ->execute($ids);
+
+                        $recuperados = count($ids);
+                    }
                 }
 
                 panel_avisar($guardado['mensaje'] . ($recuperados > 0
@@ -331,6 +346,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             panel_ir('correo');
             // no continua
 
+        case 'crear_fuente':
+            $nueva = [
+                'nombre'            => trim((string) ($_POST['nombre'] ?? '')),
+                'url_feed'          => trim((string) ($_POST['url_feed'] ?? '')),
+                'url_sitio'         => trim((string) ($_POST['url_sitio'] ?? '')),
+                'tipo'              => (string) ($_POST['tipo'] ?? ''),
+                'idioma'            => trim((string) ($_POST['idioma'] ?? '')),
+                'region'            => (string) ($_POST['region'] ?? ''),
+                'categoria_defecto' => (string) ($_POST['categoria_defecto'] ?? ''),
+                'peso'              => (string) ($_POST['peso'] ?? ''),
+                'notas'             => trim((string) ($_POST['notas'] ?? '')),
+            ];
+
+            $fallos = fuentes_validar($nueva);
+
+            if ($fallos) {
+                foreach ($fallos as $fallo) {
+                    panel_avisar($fallo, 'error');
+                }
+                panel_ir('fuentes');
+            }
+
+            datos_fuente_crear($nueva);
+            panel_avisar('Fuente añadida. Empezará a leerse en la próxima pasada del cron.');
+            panel_ir('fuentes');
+            // no continua
+
+        case 'activar_fuente':
+        case 'desactivar_fuente':
+            datos_fuente_activar((int) ($_POST['id'] ?? 0), $accion === 'activar_fuente');
+            panel_avisar($accion === 'activar_fuente' ? 'Fuente reactivada.' : 'Fuente desactivada.');
+            panel_ir('fuentes');
+            // no continua
+
         default:
             panel_avisar('Acción desconocida.', 'error');
             panel_ir('cola');
@@ -387,6 +436,14 @@ switch ($pagina) {
         $aviso_modo   = (string) ajuste('cron_aviso', 'cambios');
         $aviso_correo = (string) ajuste('cron_aviso_correo', '');
         $vista       = 'correo';
+        break;
+
+    case 'fuentes':
+        $fuentes         = datos_fuentes();
+        $fuentes_tipos   = fuentes_tipos();
+        $fuentes_regiones = fuentes_regiones();
+        $categorias      = bits_categorias();
+        $vista           = 'fuentes';
         break;
 
     case 'entrar':

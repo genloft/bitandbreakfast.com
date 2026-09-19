@@ -376,9 +376,15 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
 
     if ($motivo !== '') {
         // Se saca de la cola con el motivo escrito: si no, se volveria a
-        // evaluar en cada pasada y taparia a los que si valen.
+        // evaluar en cada pasada y taparia a los que si valen. Los items
+        // tambien pasan a 'descartado', igual que hace el descarte a mano
+        // del panel (datos_descartar_racimo): si no, el directorio de
+        // fuentes contaria esto como "en cola" y no como lo que es.
         bd()->prepare("UPDATE racimos SET estado = 'descartado', motivo_descarte = ? WHERE id = ?")
             ->execute([$motivo, $racimo_id]);
+
+        bd()->prepare("UPDATE items SET estado = 'descartado' WHERE racimo_id = ?")
+            ->execute([$racimo_id]);
 
         return false;
     }

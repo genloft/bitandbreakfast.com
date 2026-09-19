@@ -42,6 +42,10 @@ CREATE TABLE fuentes (
   last_modified       VARCHAR(120)      NULL DEFAULT NULL,
   fallos_consecutivos SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   notas               VARCHAR(500)      NOT NULL DEFAULT '',
+  -- Cuando entro en el catalogo. NULL en las que ya estaban antes de que
+  -- existiera esta columna: no se sabe de verdad cuando entraron, y una
+  -- fecha inventada seria peor que dejarlo en blanco.
+  fecha_alta          DATE              NULL DEFAULT NULL,
   PRIMARY KEY (id),
   -- Prefijo de 190 caracteres: con utf8mb4 un indice de 500 no cabe en el
   -- limite de 3072 bytes de InnoDB. 190 basta para distinguir feeds reales.
