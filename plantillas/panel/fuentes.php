@@ -37,8 +37,17 @@ declare(strict_types=1);
         $estado_clase = 'apagada';
         $estado_texto = 'Desactivada a mano';
     } elseif (!empty($fuente['dormida_hasta']) && strtotime((string) $fuente['dormida_hasta']) > time()) {
+        // "Cuando" sin "por que" no basta para decidir si hay que tocarla a
+        // mano: dormida_hasta dice solo cuando se reintenta, no que la
+        // desperto. El ultimo_error es el mismo fallo que la durmio -es la
+        // ultima pasada, y una pasada que duerme es una pasada que fallo-,
+        // asi que se enseñan los dos juntos.
         $estado_clase = 'dormida';
         $estado_texto = 'Dormida hasta ' . panel_e(substr((string) $fuente['dormida_hasta'], 0, 16));
+
+        if ($fuente['ultimo_error'] !== null) {
+            $estado_texto .= ' (' . panel_e($fuente['ultimo_error']) . ')';
+        }
     } elseif ($fuente['ultimo_error'] !== null) {
         $estado_clase = 'fallando';
         $estado_texto = 'Fallando: ' . panel_e($fuente['ultimo_error']);
