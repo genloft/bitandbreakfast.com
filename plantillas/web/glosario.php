@@ -128,7 +128,7 @@ $terminos = [
     [
         'sigla'   => 'Ransomware',
         'nombre'  => 'ransomware',
-        'tema'    => 'ciberseguridad-cumplimiento',
+        'tema'    => 'ciberseguridad',
         'definicion' => 'Un programa que cifra los datos de una empresa y pide un pago para devolverlos. Un hotel con el PMS cifrado no puede ni hacer check-in a mano: es de los sectores donde más duele porque no hay un "modo sin sistemas" al que volver.',
     ],
     [
@@ -140,7 +140,7 @@ $terminos = [
     [
         'sigla'   => 'RGPD',
         'nombre'  => 'Reglamento General de Protección de Datos',
-        'tema'    => 'ciberseguridad-cumplimiento',
+        'tema'    => 'cumplimiento',
         'definicion' => 'La norma europea sobre qué datos personales se pueden guardar, para qué y durante cuánto tiempo. Un hotel guarda pasaportes, tarjetas y preferencias de huésped, así que le afecta de lleno.',
     ],
     [
