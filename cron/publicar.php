@@ -86,6 +86,7 @@ function publicar_pendiente(float $limite): array
     // todas las paginas: son los mismos en todas y son dos consultas.
     $temas  = publicar_temas();
     $medios = publicar_medios();
+    $radar  = publicar_radar_total();
     $resumen_dias = publicar_resumen_dias();
     $mas_leidos   = publicar_mas_leidos();
     $tendencias   = publicar_tendencias();
@@ -118,6 +119,7 @@ function publicar_pendiente(float $limite): array
         'alta_abierta' => $alta,
         'temas'        => $temas,
         'medios'       => $medios,
+        'radar'        => $radar,
         'resumen'      => $resumen_dias,
         'mas_leidos'   => $mas_leidos,
         'tendencias'   => $tendencias,
@@ -796,6 +798,37 @@ function publicar_medios(): array
     }
 
     return $medios;
+}
+
+/**
+ * Cuantas fuentes vigila el radar en total, activas o no, publiquen o no.
+ *
+ * `/medios.html` solo lista las que ya han aportado un bit, y eso deja una
+ * impresion de catalogo pequeño que no es real: la mayoria de fuentes
+ * activas simplemente no han tenido todavia una noticia que pase el filtro
+ * de puntuacion, no es que no se vigilen. Esta cifra es la que hace visible
+ * esa diferencia, con el mismo desglose por ambito que usa `web_ambitos()`.
+ *
+ * @return array{total: int, por_region: array<string, int>}
+ */
+function publicar_radar_total(): array
+{
+    $filas = bd()->query("SELECT region, COUNT(*) AS n FROM fuentes WHERE activa = 1 GROUP BY region")->fetchAll();
+
+    $por_region = ['es' => 0, 'eu' => 0, 'global' => 0];
+
+    foreach ($filas as $fila) {
+        $region = (string) $fila['region'];
+
+        if (array_key_exists($region, $por_region)) {
+            $por_region[$region] = (int) $fila['n'];
+        }
+    }
+
+    return [
+        'total'      => array_sum($por_region),
+        'por_region' => $por_region,
+    ];
 }
 
 /**

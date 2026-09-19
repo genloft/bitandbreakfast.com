@@ -6,7 +6,13 @@
  * sitio, aqui se ve- y sirve para saber que fuentes aportan y cuales llevan
  * meses sin pasar el filtro.
  *
- * Recibe $temas, $medios y $base.
+ * Esta lista sola da la impresion de un catalogo pequeño, y no lo es: la
+ * mayoria de fuentes activas simplemente no han tenido todavia una noticia
+ * que pase el filtro de puntuacion. $radar (publicar_radar_total() en
+ * cron/publicar.php) trae la cifra real del catalogo completo para que esa
+ * diferencia se vea, no se explique con una frase vaga.
+ *
+ * Recibe $temas, $medios, $radar y $base.
  */
 
 declare(strict_types=1);
@@ -18,6 +24,7 @@ $enlace_activo = 'medios';
 $alta_abierta  = $alta_abierta ?? false;
 $temas         = $temas ?? [];
 $medios        = $medios ?? [];
+$radar         = $radar ?? ['total' => 0, 'por_region' => []];
 
 require_once __DIR__ . '/iconos.php';
 
@@ -67,10 +74,28 @@ require_once __DIR__ . '/iconos.php';
   <?php endforeach; ?>
   </ul>
 
-  <p class="letra-pequena explorar-pie">
-    El radar rastrea bastantes más medios de los que aparecen aquí: estos son
-    los que han contado algo que pasó el filtro.
-  </p>
+  <?php
+    $pendientes = $radar['total'] - count($medios);
+    $etiquetas  = ['es' => 'de España', 'eu' => 'de Europa', 'global' => 'de alcance global'];
+    $partes     = [];
+    foreach ($etiquetas as $clave => $etiqueta) {
+        $n = (int) ($radar['por_region'][$clave] ?? 0);
+        if ($n > 0) {
+            $partes[] = $n . ' ' . $etiqueta;
+        }
+    }
+    $desglose = count($partes) > 1
+        ? implode(', ', array_slice($partes, 0, -1)) . ' y ' . end($partes)
+        : implode('', $partes);
+  ?>
+  <?php if ($pendientes > 0): ?>
+    <p class="letra-pequena explorar-pie">
+      El radar vigila <?= (int) $radar['total'] ?> fuentes activas<?php if ($desglose !== ''): ?> -<?= web_e($desglose) ?>-<?php endif; ?>.
+      Aquí solo aparecen las <?= count($medios) ?> que ya han contado algo que
+      pasó el filtro; las otras <?= $pendientes ?> siguen vigiladas y
+      aparecerán en cuanto publiquen algo que lo pase.
+    </p>
+  <?php endif; ?>
 
   <?php require __DIR__ . '/suscribir.php'; ?>
 </main>
