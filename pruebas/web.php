@@ -307,6 +307,7 @@ comprobar('una edicion vacia sigue siendo un minuto', 1, web_minutos(0));
 comprobar('una categoria del catalogo se queda igual', 'revenue-rms', bits_categoria_canonica('revenue-rms'));
 comprobar('el nombre viejo lleva al nuevo', 'pms-crs', bits_categoria_canonica('pms-gestion'));
 comprobar('y el de distribucion tambien', 'distribucion-otas', bits_categoria_canonica('distribucion-revenue'));
+comprobar('el combinado de ciberseguridad y cumplimiento cae en ciberseguridad', 'ciberseguridad', bits_categoria_canonica('ciberseguridad-cumplimiento'));
 comprobar('lo que no se reconoce, cadena vacia', '', bits_categoria_canonica('lo-que-sea'));
 
 // El indice del buscador guarda la categoria buena: si guardase la vieja, el

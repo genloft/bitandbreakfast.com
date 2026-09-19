@@ -621,3 +621,19 @@ un MariaDB 10.6 para la de humo.
   falta aquí (alojamiento sube, restauración baja) sale mejor explicado en
   la prensa del sector que en la tabla cruda del INE, aunque el dato en sí
   sea de la EPA.
+- **Ciberseguridad y cumplimiento se separan en dos categorías.** Un
+  director de sistemas que sigue "Ciberseguridad" quiere saber si su
+  cadena está en riesgo esta noche; una multa de la AEPD o una sentencia
+  la lee legal, no TI, y en otro momento. `bits_categorias()` en
+  `lib/bits.php` pasa a tener `ciberseguridad` y `cumplimiento`, y
+  `bits_categoria_canonica()` manda lo publicado con el slug viejo a
+  `ciberseguridad` -mismo mecanismo que ya usaba el reparto de
+  `pms-gestion` o `distribucion-revenue`-, así que ningún bit existente se
+  queda sin categoría válida. No hay ningún prompt de IA que retocar: la
+  categoría sale de `diccionario` por coincidencia de término
+  (`auto_categoria_diccionario()`) o, en su defecto, del
+  `categoria_defecto` de la fuente, así que repartir el catálogo es
+  cuestión de una migración de datos
+  (`sql/migraciones/022-separar-ciberseguridad-y-cumplimiento.sql`) que
+  retoca esas dos tablas, no de reescribir ninguna lógica de
+  clasificación.

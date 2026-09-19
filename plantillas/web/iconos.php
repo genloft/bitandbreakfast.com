@@ -8,12 +8,12 @@
  *      un sprite externo es una peticion mas que puede fallar y dejar la
  *      pagina con huecos.
  *   2. Un icono en linea hereda el color del texto, asi que cada tematica
- *      pinta el suyo sin tener que mantener once ficheros de colores.
+ *      pinta el suyo sin tener que mantener doce ficheros de colores.
  *   3. Pesan menos que la peticion que costaria traerlos.
  *
  * Son trazos, no siluetas: a 20 pixeles y sobre fondo oscuro, una silueta
  * rellena se convierte en una mancha. Todos comparten caja de 24 y grosor de
- * linea, que es lo que hace que parezcan de la misma familia y no once iconos
+ * linea, que es lo que hace que parezcan de la misma familia y no doce iconos
  * distintos puestos juntos.
  *
  * Decorativos a proposito: el nombre de la tematica va escrito al lado, asi
@@ -67,8 +67,12 @@ function web_iconos(): array
             . '<path d="M2.5 10h19"/><path d="M6 15h4"/>',
 
         // Un escudo, que es lo unico que se entiende en dos centimetros.
-        'ciberseguridad-cumplimiento' => '<path d="M12 3l7 3v5.5c0 4.3-2.9 8.2-7 9.5-4.1-1.3-7-5.2-7-9.5V6l7-3z"/>'
+        'ciberseguridad' => '<path d="M12 3l7 3v5.5c0 4.3-2.9 8.2-7 9.5-4.1-1.3-7-5.2-7-9.5V6l7-3z"/>'
             . '<path d="M9 12l2 2 4-4"/>',
+
+        // Un documento con el visto bueno: la norma, no el ataque.
+        'cumplimiento' => '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/>'
+            . '<path d="M9.5 14l1.8 1.8L15 12"/>',
 
         // Engranaje: operaciones.
         'operaciones-iot' => '<circle cx="12" cy="12" r="3"/>'

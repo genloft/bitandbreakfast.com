@@ -16,9 +16,9 @@ require_once dirname(__DIR__) . '/lib/auto.php';
 
 comprobar(
     'la categoria sale de la fuente mejor puntuada',
-    'ciberseguridad-cumplimiento',
+    'ciberseguridad',
     auto_categoria([
-        ['categoria_defecto' => 'ciberseguridad-cumplimiento'],
+        ['categoria_defecto' => 'ciberseguridad'],
         ['categoria_defecto' => 'pms-crs'],
     ])
 );
@@ -506,14 +506,14 @@ comprobar(
 
 $diccionario = [
     ['termino' => 'pms',        'peso' => 6, 'categoria' => 'pms-crs'],
-    ['termino' => 'ransomware', 'peso' => 9, 'categoria' => 'ciberseguridad-cumplimiento'],
+    ['termino' => 'ransomware', 'peso' => 9, 'categoria' => 'ciberseguridad'],
     ['termino' => 'ronda',      'peso' => 5, 'categoria' => 'inversion-mercado'],
     ['termino' => 'revolucion', 'peso' => -5, 'categoria' => ''],
 ];
 
 comprobar(
     'gana el termino de mas peso que este presente',
-    'ciberseguridad-cumplimiento',
+    'ciberseguridad',
     auto_categoria_diccionario('Ransomware en el PMS de una cadena', $diccionario)
 );
 

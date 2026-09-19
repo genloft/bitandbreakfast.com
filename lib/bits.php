@@ -48,7 +48,8 @@ function bits_categorias(): array
         'distribucion-otas'           => 'Distribución y OTAs',
         'revenue-rms'                 => 'Revenue y RMS',
         'pagos-fraude'                => 'Pagos y fraude',
-        'ciberseguridad-cumplimiento' => 'Ciberseguridad y cumplimiento',
+        'ciberseguridad'              => 'Ciberseguridad',
+        'cumplimiento'                => 'Cumplimiento normativo',
         'operaciones-iot'             => 'Operaciones e IoT',
         'experiencia-huesped'         => 'Experiencia del huésped',
         'ia-aplicada'                 => 'IA aplicada',
@@ -76,9 +77,14 @@ function bits_categoria_canonica(string $categoria): string
     }
 
     $viejas = [
-        'pms-gestion'          => 'pms-crs',
-        'distribucion-revenue' => 'distribucion-otas',
-        'operaciones-personal' => 'operaciones-iot',
+        'pms-gestion'                 => 'pms-crs',
+        'distribucion-revenue'        => 'distribucion-otas',
+        'operaciones-personal'        => 'operaciones-iot',
+        // Un incidente y una multa son noticias distintas para un director de
+        // sistemas: la primera la resuelve TI esta noche, la segunda la lee
+        // legal. El combinado se parte en dos catalogo arriba; lo publicado
+        // antes del reparto cae en ciberseguridad, el lado con mas volumen.
+        'ciberseguridad-cumplimiento' => 'ciberseguridad',
     ];
 
     return $viejas[$categoria] ?? '';
