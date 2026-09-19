@@ -23,6 +23,14 @@
  * <details> nativo -sin una linea de JS- porque no hay nada que un script
  * haga aqui mejor que el navegador solo.
  *
+ * Lleva microdatos de schema.org (WebSite, con su SearchAction hacia
+ * /buscar.html), no JSON-LD -mismo motivo que en bit.php: un <script> en
+ * linea cae bajo el script-src 'self' que el resto del sitio no rompe a
+ * proposito-. Va aqui y no en cada plantilla de pagina porque esta cabecera
+ * ya es lo unico que todas comparten. Nada de "logo": no hay ninguna imagen
+ * en todo el sitio, y un schema que apunte a un fichero que no existe es
+ * peor que no llevar ese campo.
+ *
  * Recibe $base, $panel y, opcionalmente, $enlace_activo.
  */
 
@@ -32,7 +40,19 @@ $enlace_activo = $enlace_activo ?? '';
 $en_recursos   = in_array($enlace_activo, ['cifras', 'tendencias', 'glosario'], true);
 
 ?>
-<header class="cabecera">
+<header class="cabecera" itemscope itemtype="https://schema.org/WebSite">
+  <meta itemprop="name" content="Bit &amp; Breakfast">
+  <meta itemprop="url" content="<?= web_e($base) ?>/">
+  <meta itemprop="inLanguage" content="es">
+  <span itemprop="publisher" itemscope itemtype="https://schema.org/Organization" hidden>
+    <meta itemprop="name" content="Bit &amp; Breakfast">
+    <meta itemprop="url" content="<?= web_e($base) ?>/">
+  </span>
+  <div itemprop="potentialAction" itemscope itemtype="https://schema.org/SearchAction" hidden>
+    <meta itemprop="target" content="<?= web_e($base) ?>/buscar.html?q={search_term_string}">
+    <meta itemprop="query-input" content="required name=search_term_string">
+  </div>
+
   <div class="cabecera-barra">
     <a class="sello-marca" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">B</a>
 

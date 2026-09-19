@@ -611,6 +611,12 @@ comprobar(
 // esta vivo.
 comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, 'class="panel"'));
 
+// Microdatos de sitio: WebSite con su SearchAction hacia /buscar.html, para
+// que un buscador pueda ofrecer la caja de busqueda propia en sus resultados
+// y para que quien lea la pagina con una IA sepa que sitio es este.
+comprobar('la cabecera lleva el WebSite de schema.org', true, str_contains($portada, 'itemtype="https://schema.org/WebSite"'));
+comprobar('con su SearchAction hacia el buscador', true, str_contains($portada, 'buscar.html?q={search_term_string}'));
+
 // Cada noticia enlaza a su articulo original, y lo enlaza dos veces: desde el
 // titular, que es donde todo el mundo pincha, y al pie con todas las letras.
 // Un agregador que no lleva a la fuente no es un agregador.
