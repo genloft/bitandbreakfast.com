@@ -637,3 +637,12 @@ un MariaDB 10.6 para la de humo.
   (`sql/migraciones/022-separar-ciberseguridad-y-cumplimiento.sql`) que
   retoca esas dos tablas, no de reescribir ninguna lógica de
   clasificación.
+- **`/medios.html` dice cuántas fuentes vigila el radar, no solo cuántas
+  publican.** La página siempre fue sincera -"el radar rastrea bastantes
+  más medios de los que aparecen aquí"-, pero una frase sin número no
+  transmite alcance. `publicar_radar_total()` en `cron/publicar.php`
+  cuenta las fuentes activas por ámbito (España, Europa, global) y el pie
+  de la página pasa a decir, por ejemplo, "vigila 187 fuentes activas
+  -104 de España, 38 de Europa y 45 de alcance global-; aquí solo
+  aparecen las que ya han contado algo que pasó el filtro". Mismo hecho
+  de siempre, ahora con la cifra real en vez de una vaguedad.
