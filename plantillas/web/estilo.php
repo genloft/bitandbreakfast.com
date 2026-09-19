@@ -1221,6 +1221,13 @@ h1 {
 @media (min-width: 68rem) {
   .bits { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bit-lead { grid-column: 1 / 3; }
+
+  /* Un dia con una sola noticia no tiene con que llenar la tercera columna:
+     dejarle su hueco reservado deja un bloque en blanco al lado, como una
+     pagina de periodico con un agujero. Si es la unica del dia, que ocupe
+     la fila entera. */
+  .bit-lead:only-child { grid-column: 1 / -1; }
+
   .rejilla-fichas { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
   .logo-bloque { letter-spacing: -.025em; }
 }
