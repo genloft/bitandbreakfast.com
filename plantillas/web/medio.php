@@ -46,6 +46,15 @@ $url = web_url_medio($base, (string) $medio['slug']);
 
 <?php require __DIR__ . '/cabecera.php'; ?>
 
+<?php
+  $migas = [
+      ['nombre' => 'Portada', 'url' => $base . '/'],
+      ['nombre' => 'Medios', 'url' => $base . '/medios.html'],
+      ['nombre' => (string) $medio['nombre'], 'url' => $url],
+  ];
+  require __DIR__ . '/migas.php';
+?>
+
 <main id="contenido">
   <header class="edicion-cabecera ficha-cabecera">
     <p class="sello">Medio</p>
