@@ -542,3 +542,17 @@ un MariaDB 10.6 para la de humo.
   inventada sería peor que dejarlo en blanco; a partir de ahora, toda
   fuente nueva lleva la suya, para poder ver el catálogo ordenado por lo
   más reciente y no solo por el total.
+- **Las fuentes de la migración 021 no están verificadas de primera mano,
+  y lo dicen en su propia nota.** Las migraciones 009 y 014 se escribieron
+  tras comprobar cada feed uno a uno -robots.txt, HTTP 200, entradas
+  reales-. Esta vez el entorno donde se preparó el cambio no tenía salida
+  de red a ningún sitio externo -ni siquiera a fuentes ya verificadas del
+  catálogo, como Skift-, así que esa comprobación no se pudo hacer igual.
+  Entran igual, activas: el propio sistema ya sabe distinguir una fuente
+  que no responde de una que sí -se duerme sola, migración 006-, y con el
+  directorio del panel (punto anterior) se puede ver en un par de días
+  cuáles de verdad traen contenido. Mejor esto, dicho con claridad, que
+  fingir la misma comprobación que las migraciones anteriores sí hicieron.
+  De paso, `web_idiomas()` reconoce ya `'pt'`: la primera fuente en
+  portugués del catálogo lo necesitaba, o un bit traducido desde ahí
+  hubiera enseñado "Titular en pt" en vez de "Titular en portugués".
