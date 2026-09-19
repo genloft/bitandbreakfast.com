@@ -5,10 +5,11 @@
  * Toda la web se genera a partir de lo que el radar ha rastreado; esta
  * pagina es la unica excepcion a proposito. Son cifras de organismos y
  * estudios ajenos -INE, Eurostat, IBM, AEPD, UN Tourism, WTTC, STR/CoStar,
- * informes del sector- puestas una junto a otra para que un directivo vea
- * de un vistazo donde esta España frente al resto: adopcion de IA, peso
- * economico real del turismo, rendimiento hotelero, y lo que cuesta no
- * cuidar la ciberseguridad.
+ * Colliers, informes del sector- puestas una junto a otra para que un
+ * directivo vea de un vistazo donde esta España frente al resto: adopcion de
+ * IA, peso economico real del turismo, inversion hotelera, empleo, gasto
+ * turistico, rendimiento hotelero, y lo que cuesta no cuidar la
+ * ciberseguridad.
  *
  * Por eso vive en un array escrito a mano y no en una consulta: no hay tabla
  * que resuma media docena de informes de media docena de organismos
@@ -98,6 +99,16 @@ $fuentes = [
         'nombre'  => 'STR / CoStar',
         'detalle' => 'Proveedor de referencia de datos de rendimiento hotelero: ocupación, precio medio (ADR) e ingreso por habitación disponible (RevPAR).',
         'url'     => 'https://www.costar.com/products/str-benchmark',
+    ],
+    [
+        'nombre'  => 'Colliers',
+        'detalle' => 'Consultora inmobiliaria internacional; publica el informe anual de inversión hotelera en España.',
+        'url'     => 'https://www.colliers.com/es-es/research/informe-inversion-hotelera-en-espana-2025',
+    ],
+    [
+        'nombre'  => 'Hostelería Digital',
+        'detalle' => 'Medio especializado del sector; aquí, vía el desglose por rama de actividad de la EPA del INE.',
+        'url'     => 'https://www.hosteleriadigital.es/2026/01/28/epa-2025-32-000-trabajadores-menos-en-restauracion-y-8-000-mas-en-alojamiento/',
     ],
 ];
 
@@ -285,6 +296,72 @@ $grupos = [
         'destacado' => 'España ganó terreno en 2025; el mercado hotelero más grande del mundo, por primera vez desde 2020, lo perdió.',
     ],
     [
+        'tema' => 'Inversión hotelera',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '4.275 M€',
+                'detalle' => 'invertidos en hoteles en España en 2025 -194 operaciones-, el segundo mejor registro histórico',
+                'fuente'  => 'Colliers, Informe de Inversión Hotelera en España 2025',
+                'fecha'   => 'año 2025 · publicado en enero de 2026',
+                'url'     => 'https://www.colliers.com/es-es/research/informe-inversion-hotelera-en-espana-2025',
+            ],
+            [
+                'ambito'  => 'España',
+                'valor'   => '+30%',
+                'detalle' => 'creció la inversión en hoteles ya en funcionamiento sobre 2024 -de 3.064 M€ a 3.986 M€-',
+                'fuente'  => 'mismo informe',
+                'fecha'   => '2025',
+                'url'     => 'https://www.colliers.com/es-es/research/informe-inversion-hotelera-en-espana-2025',
+            ],
+        ],
+        'destacado' => 'El segmento vacacional concentra ya el 55% de toda la inversión hotelera, y recupera el liderazgo frente al urbano.',
+    ],
+    [
+        'tema' => 'Empleo en alojamiento',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '473.450',
+                'detalle' => 'personas ocupadas en alojamiento en 2025 -media anual-, un 1,8% más que en 2024',
+                'fuente'  => 'INE, Encuesta de Población Activa, vía Hostelería Digital',
+                'fecha'   => 'año 2025 · publicado en enero de 2026',
+                'url'     => 'https://www.hosteleriadigital.es/2026/01/28/epa-2025-32-000-trabajadores-menos-en-restauracion-y-8-000-mas-en-alojamiento/',
+            ],
+            [
+                'ambito'  => 'España',
+                'valor'   => '−2,3%',
+                'detalle' => 'cayó el empleo en restauración en el mismo año -32.375 personas menos-, el otro lado del sector hostelero',
+                'fuente'  => 'mismo informe',
+                'fecha'   => '2025',
+                'url'     => 'https://www.hosteleriadigital.es/2026/01/28/epa-2025-32-000-trabajadores-menos-en-restauracion-y-8-000-mas-en-alojamiento/',
+            ],
+        ],
+        'destacado' => 'El alojamiento crece en empleo mientras la restauración lo pierde: "hostelería" no es una sola foto.',
+    ],
+    [
+        'tema' => 'Gasto turístico',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '195 €',
+                'detalle' => 'gasto medio diario de un turista internacional en 2025 -media anual-, un 4,9% más que en 2024',
+                'fuente'  => 'INE, Encuesta de Gasto Turístico (Egatur)',
+                'fecha'   => 'año 2025 · publicado en febrero de 2026',
+                'url'     => 'https://www.ine.es/dyngs/Prensa/EGATUR1225.htm',
+            ],
+            [
+                'ambito'  => 'España',
+                'valor'   => '134.712 M€',
+                'detalle' => 'gasto total de los turistas internacionales en España en 2025, un 6,8% más que en 2024',
+                'fuente'  => 'mismo informe',
+                'fecha'   => '2025',
+                'url'     => 'https://www.ine.es/dyngs/Prensa/EGATUR1225.htm',
+            ],
+        ],
+        'destacado' => 'El turista de hoy no solo es más numeroso: cada uno gasta más cada día que el del año pasado.',
+    ],
+    [
         'tema' => 'Ciberseguridad hotelera',
         'cifras' => [
             [
@@ -308,7 +385,7 @@ $grupos = [
     ],
 ];
 
-$descripcion = 'IA, turismo, rendimiento hotelero y ciberseguridad: España frente al dato global, con fuente y fecha en cada cifra.';
+$descripcion = 'IA, turismo, inversión, empleo y rendimiento hotelero: España frente al dato global, con fuente y fecha en cada cifra.';
 
 ?><!doctype html>
 <html lang="es">
@@ -338,7 +415,7 @@ $descripcion = 'IA, turismo, rendimiento hotelero y ciberseguridad: España fren
   <header class="edicion-cabecera">
     <p class="sello">Cifras</p>
     <h1>España frente al mundo</h1>
-    <p class="datos">IA, turismo, rendimiento hotelero y ciberseguridad, con fuente y fecha en cada cifra</p>
+    <p class="datos">IA, turismo, inversión, empleo y rendimiento hotelero, con fuente y fecha en cada cifra</p>
   </header>
 
   <p class="intro">Ninguna de estas cifras la ha medido este radar: son de organismos y estudios ajenos, puestos aquí uno junto a otro para poder comparar. Cada una lleva su fuente y su fecha porque el criterio del resto del sitio también vale aquí: si no se puede comprobar, no se publica. Todas son del último año. Quién firma cada cifra importa tanto como la cifra misma, así que las fuentes están otra vez todas juntas al final, con quiénes son y un enlace.</p>
@@ -380,7 +457,7 @@ $descripcion = 'IA, turismo, rendimiento hotelero y ciberseguridad: España fren
 
   <section class="fuentes" aria-labelledby="fuentes-titulo">
     <h2 id="fuentes-titulo">Quién firma estas cifras</h2>
-    <p class="cuadro-nota">Diez organismos y estudios, ninguno de este sitio. Cuanto más se sabe de quién mide algo, mejor se sabe cuánto fiarse de lo que mide.</p>
+    <p class="cuadro-nota">Doce organismos y estudios, ninguno de este sitio. Cuanto más se sabe de quién mide algo, mejor se sabe cuánto fiarse de lo que mide.</p>
 
     <dl class="fuentes-lista">
       <?php foreach ($fuentes as $fuente): ?>
