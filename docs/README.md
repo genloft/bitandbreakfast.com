@@ -556,3 +556,14 @@ un MariaDB 10.6 para la de humo.
   De paso, `web_idiomas()` reconoce ya `'pt'`: la primera fuente en
   portugués del catálogo lo necesitaba, o un bit traducido desde ahí
   hubiera enseñado "Titular en pt" en vez de "Titular en portugués".
+- **Cifras ya no es solo adopción de IA: también es el tamaño real del
+  turismo.** Tres grupos nuevos -turismo internacional, contribución
+  económica del sector y rendimiento hotelero-, con España frente al dato
+  global o frente a Estados Unidos según qué organismo cubre qué lado,
+  siguiendo la misma regla que ya tenía la página: nunca inventar el lado
+  que falta. Se quedó fuera, a propósito, la sostenibilidad hotelera -el
+  Cornell Hotel Sustainability Benchmarking Index es la referencia del
+  sector, pero su cifra pública más reciente y citable de un vistazo es de
+  2018-2021, no del último año que esta página se exige a sí misma-: mejor
+  no meter un grupo que no que meter uno con la fecha caducada desde el
+  primer día.

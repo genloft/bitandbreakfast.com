@@ -4,10 +4,11 @@
  *
  * Toda la web se genera a partir de lo que el radar ha rastreado; esta
  * pagina es la unica excepcion a proposito. Son cifras de organismos y
- * estudios ajenos -INE, Eurostat, IBM, AEPD, informes del sector- puestas
- * una junto a otra para que un directivo vea de un vistazo donde esta
- * España frente al resto: adopcion de IA, y lo que cuesta no cuidar la
- * ciberseguridad.
+ * estudios ajenos -INE, Eurostat, IBM, AEPD, UN Tourism, WTTC, STR/CoStar,
+ * informes del sector- puestas una junto a otra para que un directivo vea
+ * de un vistazo donde esta España frente al resto: adopcion de IA, peso
+ * economico real del turismo, rendimiento hotelero, y lo que cuesta no
+ * cuidar la ciberseguridad.
  *
  * Por eso vive en un array escrito a mano y no en una consulta: no hay tabla
  * que resuma media docena de informes de media docena de organismos
@@ -82,6 +83,21 @@ $fuentes = [
         'nombre'  => 'Statista y Skyscanner',
         'detalle' => 'Plataforma de datos de mercado y buscador de viajes; encuestas propias.',
         'url'     => 'https://www.statista.com/topics/10887/artificial-intelligence-ai-use-in-travel-and-tourism/',
+    ],
+    [
+        'nombre'  => 'UN Tourism (antes OMT)',
+        'detalle' => 'Agencia de Naciones Unidas para el turismo; publica el World Tourism Barometer.',
+        'url'     => 'https://www.untourism.int/',
+    ],
+    [
+        'nombre'  => 'WTTC — World Travel & Tourism Council',
+        'detalle' => 'Organización del sector turístico mundial; publica su Economic Impact Research con Oxford Economics.',
+        'url'     => 'https://wttc.org/research/economic-impact',
+    ],
+    [
+        'nombre'  => 'STR / CoStar',
+        'detalle' => 'Proveedor de referencia de datos de rendimiento hotelero: ocupación, precio medio (ADR) e ingreso por habitación disponible (RevPAR).',
+        'url'     => 'https://www.costar.com/products/str-benchmark',
     ],
 ];
 
@@ -202,6 +218,73 @@ $grupos = [
         'destacado' => 'España aparece, según varias encuestas, entre los países líderes de Europa en este uso.',
     ],
     [
+        'tema' => 'Turismo internacional',
+        'nota' => 'Esta y las dos siguientes ya no son sobre tecnología: son el tamaño real del sector en el que esa tecnología se usa.',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '96,8 M',
+                'detalle' => 'turistas internacionales recibidos en 2025, máximo histórico (+3,2% sobre 2024)',
+                'fuente'  => 'INE, Estadística de Movimientos Turísticos en Frontera (Frontur)',
+                'fecha'   => 'año 2025 · publicado en enero de 2026',
+                'url'     => 'https://www.ine.es/dyngs/Prensa/FRONTUR1225.htm',
+            ],
+            [
+                'ambito'  => 'Global',
+                'valor'   => '1.520 M',
+                'detalle' => 'turistas internacionales en todo el mundo en 2025, un nuevo récord (+4% sobre 2024)',
+                'fuente'  => 'UN Tourism, World Tourism Barometer',
+                'fecha'   => 'año 2025 · publicado en enero de 2026',
+                'url'     => 'https://www.untourism.int/news/international-tourist-arrivals-up-4-in-2025-reflecting-strong-travel-demand-around-the-world',
+            ],
+        ],
+        'destacado' => 'España sola concentra más del 6% de todo el turismo internacional del planeta.',
+    ],
+    [
+        'tema' => 'Contribución económica del turismo',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '16%',
+                'detalle' => 'del PIB español lo aporta el sector de viajes y turismo, con más de 3,2 millones de empleos',
+                'fuente'  => 'WTTC — World Travel & Tourism Council',
+                'fecha'   => 'año 2025 · publicado en mayo de 2025',
+                'url'     => 'https://wttc.org/news/el-sector-turistico-de-espana-podria-superar-los-260000-millones-de-euros-en-2025',
+            ],
+            [
+                'ambito'  => 'Global',
+                'valor'   => '9,9%',
+                'detalle' => 'del PIB mundial (12 billones de dólares) lo aporta el sector, con 376 millones de empleos —uno de cada nueve del planeta—',
+                'fuente'  => 'WTTC — World Travel & Tourism Council',
+                'fecha'   => 'previsión 2026 · publicado en mayo de 2026',
+                'url'     => 'https://wttc.org/news/global-travel-tourism-growth-to-outpace-wider-economy-by-1-5-times-over-the-next-decade',
+            ],
+        ],
+        'destacado' => 'El turismo pesa en España mucho más que en el resto del mundo: un 16% del PIB frente a un 9,9% global.',
+    ],
+    [
+        'tema' => 'Rendimiento hotelero',
+        'cifras' => [
+            [
+                'ambito'  => 'España',
+                'valor'   => '61,4%',
+                'detalle' => 'de ocupación media en 2025, con un ADR de 127,7 € y un RevPAR de 89,7 €; récord histórico de pernoctaciones',
+                'fuente'  => 'INE, Coyuntura Turística Hotelera (EOH/IPH/IRSH)',
+                'fecha'   => 'año 2025 · publicado en enero de 2026',
+                'url'     => 'https://ine.es/dyngs/Prensa/CTH1225.htm',
+            ],
+            [
+                'ambito'  => 'Estados Unidos',
+                'valor'   => '62,3%',
+                'detalle' => 'de ocupación media en 2025, con un ADR de 160,54 $ y un RevPAR de 100,02 $ —el primer retroceso anual en ocupación y RevPAR desde 2020—',
+                'fuente'  => 'STR / CoStar',
+                'fecha'   => 'año 2025 · publicado en enero de 2026',
+                'url'     => 'https://www.costar.com/products/str-benchmark/resources/press-releases/us-hotels-report-first-full-year-occupancy-revpar',
+            ],
+        ],
+        'destacado' => 'España ganó terreno en 2025; el mercado hotelero más grande del mundo, por primera vez desde 2020, lo perdió.',
+    ],
+    [
         'tema' => 'Ciberseguridad hotelera',
         'cifras' => [
             [
@@ -225,7 +308,7 @@ $grupos = [
     ],
 ];
 
-$descripcion = 'IA, cloud, comercio electrónico y ciberseguridad en tecnología hotelera: España frente al dato global, con fuente y fecha en cada cifra.';
+$descripcion = 'IA, turismo, rendimiento hotelero y ciberseguridad: España frente al dato global, con fuente y fecha en cada cifra.';
 
 ?><!doctype html>
 <html lang="es">
@@ -254,7 +337,7 @@ $descripcion = 'IA, cloud, comercio electrónico y ciberseguridad en tecnología
   <header class="edicion-cabecera">
     <p class="sello">Cifras</p>
     <h1>España frente al mundo</h1>
-    <p class="datos">IA, cloud, comercio electrónico y ciberseguridad, con fuente y fecha en cada cifra</p>
+    <p class="datos">IA, turismo, rendimiento hotelero y ciberseguridad, con fuente y fecha en cada cifra</p>
   </header>
 
   <p class="intro">Ninguna de estas cifras la ha medido este radar: son de organismos y estudios ajenos, puestos aquí uno junto a otro para poder comparar. Cada una lleva su fuente y su fecha porque el criterio del resto del sitio también vale aquí: si no se puede comprobar, no se publica. Todas son del último año. Quién firma cada cifra importa tanto como la cifra misma, así que las fuentes están otra vez todas juntas al final, con quiénes son y un enlace.</p>
@@ -296,7 +379,7 @@ $descripcion = 'IA, cloud, comercio electrónico y ciberseguridad en tecnología
 
   <section class="fuentes" aria-labelledby="fuentes-titulo">
     <h2 id="fuentes-titulo">Quién firma estas cifras</h2>
-    <p class="cuadro-nota">Siete organismos y estudios, ninguno de este sitio. Cuanto más se sabe de quién mide algo, mejor se sabe cuánto fiarse de lo que mide.</p>
+    <p class="cuadro-nota">Diez organismos y estudios, ninguno de este sitio. Cuanto más se sabe de quién mide algo, mejor se sabe cuánto fiarse de lo que mide.</p>
 
     <dl class="fuentes-lista">
       <?php foreach ($fuentes as $fuente): ?>
