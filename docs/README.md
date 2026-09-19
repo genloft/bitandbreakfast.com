@@ -611,3 +611,13 @@ un MariaDB 10.6 para la de humo.
   llegar por teclado. El nombre del medio se queda visible al lado, sin
   enlace: no puede depender de pasar el ratón por un icono para saber
   quién cuenta la noticia.
+- **Cifras suma inversión, empleo y gasto turístico.** Tres grupos más
+  -Colliers para la inversión hotelera, la EPA del INE para el empleo en
+  alojamiento frente a restauración, Egatur del INE para el gasto del
+  turista internacional-, siguiendo la misma disciplina que ya tenía la
+  página: doce fuentes citadas, ninguna cifra sin fecha ni enlace. El
+  empleo se cita "vía Hostelería Digital" -mismo patrón que ya usaba la
+  AEPD vía Moncloa- porque el desglose por rama de actividad que hace
+  falta aquí (alojamiento sube, restauración baja) sale mejor explicado en
+  la prensa del sector que en la tabla cruda del INE, aunque el dato en sí
+  sea de la EPA.
