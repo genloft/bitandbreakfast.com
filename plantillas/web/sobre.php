@@ -24,6 +24,7 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta name="description" content="Bit &amp; Breakfast es un radar de tecnología hotelera: rastrea el sector, agrupa lo que cuenta lo mismo y publica cada día lo que encuentra.">
 <link rel="canonical" href="<?= web_e($base) ?>/sobre.html">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#12100d">
 <meta property="og:site_name" content="Bit &amp; Breakfast">

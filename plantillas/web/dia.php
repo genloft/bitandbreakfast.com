@@ -57,6 +57,7 @@ require_once __DIR__ . '/iconos.php';
 <meta name="description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
 <link rel="canonical" href="<?= web_e($url) ?>">
 <link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
+<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
 <meta name="theme-color" content="#f4f2ee">
 <meta property="og:site_name" content="Bit &amp; Breakfast">
