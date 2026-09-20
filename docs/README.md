@@ -1206,3 +1206,26 @@ un MariaDB 10.6 para la de humo.
   solo comprueba después que esas reglas siguen en la hoja publicada:
   la prueba de verdad de esta mejora fue la del navegador, no una
   comprobación de texto.
+- **Un resplandor muy tenue detrás del nombre, con la misma contención que
+  el resto de gestos de movimiento del sitio.** El sello ya tenía su
+  barrido de radar y el ampersand su guiño cada nueve segundos -las dos
+  única señales de vida que el sitio se permite-; el nombre entero no
+  tenía ninguna. Vive en `.logo::before`, detrás del texto -`z-index:
+  -1`-, así que nunca cambia el contraste de lo que se lee encima: las
+  letras tapan el resplandor donde caen, y solo asoma en los huecos.
+  Opacidad entre el 4 % y el 12 %, respirando cada 7 segundos, sin forma
+  que se note como dibujo.
+- **De paso se arregló un `prefers-reduced-motion` que llevaba tiempo sin
+  hacer nada.** El bloque `@media (prefers-reduced-motion: reduce)` que
+  para el sello, el pulso, el sello de imprenta del nombre y el guiño del
+  ampersand estaba escrito *antes* que las reglas de `.logo-bloque` y
+  `.logo-amp` en la hoja. Con la misma especificidad, en un empate de
+  cascada gana la regla que aparece última en el fichero, así que esas
+  dos animaciones nunca se desactivaban de verdad, aunque el propio
+  comentario dijera lo contrario -`.sello-marca` sí funcionaba, por pura
+  casualidad de estar definida por encima de la excepción-. Se detectó
+  emulando `prefers-reduced-motion: reduce` con Playwright y comprobando
+  `getComputedStyle`, no leyendo la regla y dando por hecho que
+  funcionaba; se corrigió moviendo el bloque de excepción después de
+  todas las animaciones que anula, y `pruebas/humo.php` ahora comprueba
+  esa posición relativa en el CSS publicado para que no se repita.
