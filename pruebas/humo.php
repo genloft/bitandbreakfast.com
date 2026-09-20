@@ -416,6 +416,7 @@ comprobar('escribe la pagina de que es esto', true, is_file($publico . '/sobre.h
 $sobre = (string) file_get_contents($publico . '/sobre.html');
 
 comprobar('y enlaza a Cifras', true, str_contains($sobre, '/estadisticas.html'));
+comprobar('y a Cumplimiento', true, str_contains($sobre, '/cumplimiento.html'));
 comprobar('y a Tendencias', true, str_contains($sobre, '/tendencias.html'));
 comprobar('y a Glosario', true, str_contains($sobre, '/glosario.html'));
 comprobar('y a Medios', true, str_contains($sobre, '/medios.html'));
@@ -425,7 +426,26 @@ comprobar(
     true,
     str_contains((string) file_get_contents($publico . '/estadisticas.html'), 'con revisión antes del')
 );
+comprobar('escribe el calendario de cumplimiento', true, is_file($publico . '/cumplimiento.html'));
+
+$cumplimiento_html = (string) file_get_contents($publico . '/cumplimiento.html');
+
+comprobar(
+    'y tambien dice hasta cuando vale su revision',
+    true,
+    str_contains($cumplimiento_html, 'con revisión antes del')
+);
+comprobar(
+    'con al menos una norma en cuenta atras',
+    true,
+    str_contains($cumplimiento_html, 'Cuenta atrás')
+);
 comprobar('escribe el sitemap', true, is_file($publico . '/sitemap.xml'));
+comprobar(
+    'y el sitemap lista cumplimiento.html',
+    true,
+    str_contains((string) file_get_contents($publico . '/sitemap.xml'), '/cumplimiento.html')
+);
 comprobar('escribe el glosario', true, is_file($publico . '/glosario.html'));
 comprobar(
     'y enlaza un termino con el tema que le corresponde',
@@ -1080,6 +1100,11 @@ comprobar(
     'y no manda nada sin un buzon propio configurado',
     false,
     $mantenimiento['cifras_aviso'] ?? null
+);
+comprobar(
+    'ni el aviso de cumplimiento tampoco',
+    false,
+    $mantenimiento['cumplimiento_aviso'] ?? null
 );
 
 // -----------------------------------------------------------------------------

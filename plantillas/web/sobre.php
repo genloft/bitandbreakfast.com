@@ -112,10 +112,13 @@ $radar         = $radar ?? ['total' => 0, 'por_region' => []];
     <p>El río de bits es el centro, pero no es todo. <a href="<?= web_e($base) ?>/estadisticas.html">Cifras</a>
     pone a España frente al mundo en adopción de IA, cloud, comercio
     electrónico y ciberseguridad, con fuente y fecha en cada dato.
+    <a href="<?= web_e($base) ?>/cumplimiento.html">Cumplimiento</a> es el
+    calendario de las normas que afectan a un hotel -Verifactu,
+    SES.Hospedajes, accesibilidad, NIS2-, con su fecha y su fuente oficial.
     <a href="<?= web_e($base) ?>/tendencias.html">Tendencias</a> dice qué tema
     sube y cuál baja este trimestre, comparado con el anterior.
     <a href="<?= web_e($base) ?>/glosario.html">Glosario</a> explica las
-    siglas del sector sin salir del sitio -las tres, siempre a mano, bajo
+    siglas del sector sin salir del sitio -las cuatro, siempre a mano, bajo
     «Recursos» en el menú de arriba-. Y
     <a href="<?= web_e($base) ?>/medios.html">Medios</a> enseña de dónde sale
     cada noticia y cuánto aporta cada fuente.</p>
