@@ -649,10 +649,28 @@ h1 {
    un max-height calculado justo para dos lineas deja que se pinte un
    fragmento de una tercera por debajo del recorte -probado a mano, no es
    teoria-. Bajando el tope claramente por debajo de esa medida el recorte
-   vuelve a ser limpio, a costa de perder el "..." final. */
+   vuelve a ser limpio, a costa de perder el "..." final -recorte limpio,
+   pero sin decir que hay mas: un corte de dos pixeles no arregla eso solo,
+   asi que un degradado, no un "...", marca la diferencia entre "esta
+   cortado" y "acaba ahi" sin volver al recorte sucio de -webkit-line-clamp-. */
 .bit:not(.bit-lead) .por-que {
+  position: relative;
   max-height: 3.5rem;
   overflow: hidden;
+}
+
+/* El degradado funde el texto en el propio fondo de la caja -no en el de la
+   pagina-, para que valga tanto en la version normal (--realce) como en la
+   negativa de .bit-multifuente (un negro translucido): funde hacia el mismo
+   color que ya pinta el resto de la caja, así que nunca deja una costura. */
+.bit:not(.bit-lead) .por-que::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(to bottom, transparent, var(--realce));
 }
 
 .bit-carril { display: flex; align-items: center; gap: .45rem; margin-bottom: .5rem; }
@@ -836,6 +854,7 @@ h1 {
 .bit-multifuente .etiqueta-fecha { color: var(--filete-fino); }
 .bit-multifuente .etiqueta-fecha:hover { color: var(--papel); }
 .bit-multifuente .por-que { background: rgba(244, 242, 238, .14); color: var(--papel); }
+.bit-multifuente .por-que::after { background: linear-gradient(to bottom, transparent, rgba(244, 242, 238, .14)); }
 .bit-multifuente .etiqueta-analisis { background: rgba(244, 242, 238, .14); color: var(--papel); }
 .bit-multifuente .etiqueta-analisis:hover { background: var(--acento); color: var(--papel); }
 .bit-multifuente .menciona,
