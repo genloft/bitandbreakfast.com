@@ -482,6 +482,29 @@ comprobar('explica la base legal de citar fragmentos', true, str_contains($legal
 comprobar('declara que la web publica no usa cookies de rastreo', true, str_contains($legal, 'instala ninguna cookie'));
 comprobar('el pie enlaza al aviso legal', true, str_contains($sobre, '/legal.html'));
 
+// La reserva agentica: pagina explicativa, no categoria nueva -misma logica
+// que Cifras y Cumplimiento, con su propio enlace de vuelta a Cifras.
+comprobar('escribe la pagina de reserva agentica', true, is_file($publico . '/agentica.html'));
+
+$agentica_html = (string) file_get_contents($publico . '/agentica.html');
+
+comprobar('y cubre MCP', true, str_contains($agentica_html, 'MCP'));
+comprobar('y ACP', true, str_contains($agentica_html, 'ACP'));
+comprobar('y UCP', true, str_contains($agentica_html, 'UCP'));
+comprobar(
+    'y dice hasta cuando vale su revision, igual que Cifras y Cumplimiento',
+    true,
+    str_contains($agentica_html, 'con revisión antes del')
+);
+comprobar(
+    'y enlaza de vuelta al mix de canal directo y OTA de Cifras',
+    true,
+    str_contains($agentica_html, '/estadisticas.html#mix-de-canal-directo-y-ota')
+);
+comprobar('y a las siglas del glosario', true, str_contains($agentica_html, '/glosario.html#mcp'));
+comprobar('y el sitemap la lista', true, str_contains((string) file_get_contents($publico . '/sitemap.xml'), '/agentica.html'));
+comprobar('y "Qué es" enlaza a ella', true, str_contains($sobre, '/agentica.html'));
+
 // Las dos paginas de indice eran las unicas de todo el sitio sin enlace de
 // autodescubrimiento al RSS general: un lector de feeds que las visitara no
 // tenia forma de encontrarlo desde ahi.
@@ -1181,6 +1204,11 @@ comprobar(
     'ni el aviso de cumplimiento tampoco',
     false,
     $mantenimiento['cumplimiento_aviso'] ?? null
+);
+comprobar(
+    'ni el de la reserva agentica',
+    false,
+    $mantenimiento['agentica_aviso'] ?? null
 );
 
 // -----------------------------------------------------------------------------

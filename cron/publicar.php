@@ -33,6 +33,9 @@
  *   cumplimiento.html   calendario normativo, con fecha y fuente en cada norma
  *   tendencias.html     que tema sube y cual baja, con los datos propios
  *   glosario.html       las siglas del sector, explicadas una vez
+ *   legal.html          aviso legal, cookies y datos personales
+ *   agentica.html        reserva agentica: MCP, ACP, UCP y AP2, con fecha y fuente
+ *   cifras.json          las mismas cifras de estadisticas.html, en JSON
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
  * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
@@ -48,6 +51,7 @@ require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
 require_once dirname(__DIR__) . '/lib/cumplimiento.php';
 require_once dirname(__DIR__) . '/lib/glosario.php';
+require_once dirname(__DIR__) . '/lib/agentica.php';
 require_once dirname(__DIR__) . '/lib/imagen_social.php';
 
 /**
@@ -333,6 +337,11 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/legal.html',
         publicar_plantilla('legal', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/agentica.html',
+        publicar_plantilla('agentica', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
