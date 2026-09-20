@@ -782,6 +782,18 @@ comprobar(
 comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
 comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
 
+// §3.5 de docs/MEJORAS.md: la hoja de estilo trae su bloque de impresion, y
+// no ha quedado con las llaves descuadradas -el fallo mas facil de cometer
+// al añadir un bloque @media entero a mano-.
+$estilo_css = (string) file_get_contents($publico . '/estilo.css');
+
+comprobar('la hoja de estilo trae el bloque de impresion', true, str_contains($estilo_css, '@media print'));
+comprobar(
+    'con las llaves cuadradas',
+    substr_count($estilo_css, '{'),
+    substr_count($estilo_css, '}')
+);
+
 // Sin version en la URL, quien ya haya visitado el sitio se queda con la hoja
 // vieja hasta treinta dias: el .htaccess le pone un mes de cache y el fichero
 // se reescribe siempre en el mismo sitio.

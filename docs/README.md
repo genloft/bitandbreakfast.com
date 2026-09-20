@@ -1133,3 +1133,38 @@ un MariaDB 10.6 para la de humo.
   sitio publique o indexe. "La pregunta de Mews, no la del hotel" -la
   razón original para no tener fichas de proveedor- no aplica a un
   filtro que nadie más que el propio suscriptor llega a ver.
+- **El bloque de impresión (§3.5) oculta la interfaz, no crea una
+  página distinta.** No hay una plantilla `imprimir.php` ni un enlace
+  "versión para imprimir": es el mismo `estilo.php` de siempre, con un
+  `@media print` que quita lo que en papel no sirve -menú, buscador,
+  botones de compartir y votar, el bloque de alta, "lo más leído/útil"-
+  y corrige lo que en papel solo gasta tinta -el fondo negro de
+  `.bit-multifuente`, las pastillas de color sólido de las etiquetas-.
+  El contenido -titulares, cuerpo, «por qué importa», quién lo cuenta-
+  no cambia. Una sola hoja de estilo para las dos salidas, en vez de dos
+  plantillas que mantener sincronizadas.
+- **`.fuentes-bit:not([open]) > :not(summary) { display: block !important; }`
+  fuerza a que el `<details>` de "N fuentes lo cuentan" imprima su
+  contenido aunque esté cerrado en pantalla.** La mayoría de navegadores
+  no expanden un `<details>` cerrado solo porque toque imprimir, y qué
+  otros medios cuentan la misma noticia es precisamente el tipo de dato
+  que vale la pena llevarse en papel -es la prueba de que una noticia
+  importa de verdad, la misma señal que ya destaca `.bit-multifuente` en
+  pantalla-.
+- **No se añadió la URL del original junto al titular en la versión
+  impresa**, un truco clásico de hoja de estilo de impresión
+  (`content: " (" attr(href) ")"`). El `href` real del titular de un bit
+  no es la URL de la fuente: pasa por `web_url_clic()`, el contador
+  propio que redirige al original, así que imprimir ese `href` habría
+  enseñado una URL de este sitio, no la del medio que contó la
+  noticia. Hacerlo bien exigiría un atributo `data-url` nuevo en la
+  plantilla -tocar `bit.php`, no solo CSS-, y el propio punto de
+  `docs/MEJORAS.md` lo pedía como "media hora de CSS": se deja fuera en
+  vez de ampliar el alcance sin que nadie lo pidiera.
+- **`pruebas/humo.php` comprueba que las llaves de `estilo.css` cuadran
+  -`substr_count('{') === substr_count('}')`- en vez de dar por buena
+  la sintaxis de un `@media` añadido a mano.** Es el fallo más fácil de
+  cometer al escribir un bloque CSS grande sin un compilador que avise,
+  y una llave de más o de menos no rompe `php -l` -es solo texto dentro
+  de una cadena-, así que no lo habría cazado ninguna otra prueba de
+  esta lista.
