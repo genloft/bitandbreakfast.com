@@ -39,3 +39,4 @@ declare(strict_types=1);
   se publica sin pasar el mismo filtro de puntuación y comprobación -a mano
   o en modo automático, como explica <a href="<?= web_e($base) ?>/sobre.html">Qué es</a>-.</p>
 </footer>
+<script src="<?= web_e($base) ?>/dinamico.js?v=<?= web_e($version_js ?? '0') ?>" defer></script>

@@ -46,17 +46,4 @@ $filas = [
     <dt>RevPAR</dt>
     <dd><?= web_e($panel['revpar'] ?? '€ 114,20') ?></dd>
   </div>
-  <div class="banner-item banner-cifras">
-    <dt>Cifras</dt>
-    <dd>
-      <?= (int) $filas['Noticias']['total'] ?> noticias, <?= (int) $filas['Medios']['total'] ?> medios
-      <?php if ((int) $filas['Noticias']['nuevas'] > 0): ?>
-        <span class="panel-nuevas-hay">(+<?= (int) $filas['Noticias']['nuevas'] ?>)</span>
-      <?php endif; ?>
-    </dd>
-  </div>
-  <div class="banner-item banner-tendencias">
-    <dt>Tendencias</dt>
-    <dd>IA aplicada, PMS y CRS</dd>
-  </div>
 </div>

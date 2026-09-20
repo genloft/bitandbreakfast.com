@@ -78,19 +78,19 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias
       <a href="<?= web_e($base) ?>/buscar.html"<?= $enlace_activo === 'buscar' ? ' aria-current="page"' : '' ?>>Buscar</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
     </nav>
+    <div class="cabecera-buscar" style="margin-left: auto; position: relative;">
+      <form role="search" action="<?= web_e($base) ?>/buscar.html" method="get" style="display: flex; align-items: center; background: var(--tinta); padding: 0.2rem; border-radius: 4px;">
+        <input id="q-dinamico" name="q" type="search" placeholder="Buscar en vivo..." aria-label="Buscar noticias" autocomplete="off" style="padding: 0.3rem 0.5rem; border: none; background: transparent; color: var(--papel); font-size: 0.9rem; outline: none; width: 200px;">
+        <button type="submit" style="background: transparent; color: var(--papel); border: none; cursor: pointer;">🔍</button>
+      </form>
+      <div id="resultados-dinamicos" style="display: none; position: absolute; top: 100%; right: 0; background: var(--papel); border: 1px solid var(--filete); width: 300px; max-height: 400px; overflow-y: auto; z-index: 2000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 0.5rem;"></div>
+    </div>
   </div>
 
-  <div class="cabecera-marca" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+  <div class="cabecera-marca">
     <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
       <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
     </a>
-    
-    <div class="cabecera-buscar" style="margin-left: auto; padding-right: 1rem;">
-      <form role="search" action="<?= web_e($base) ?>/buscar.html" method="get" style="display: flex; align-items: center;">
-        <input name="q" type="search" placeholder="Buscar noticias..." aria-label="Buscar noticias" style="padding: 0.3rem 0.5rem; border: 1px solid var(--filete-fino); font-size: 0.9rem;">
-        <button type="submit" style="padding: 0.3rem 0.5rem; background: var(--acento); color: var(--papel); border: none; cursor: pointer; font-weight: bold;">🔍</button>
-      </form>
-    </div>
   </div>
 
   <div>
