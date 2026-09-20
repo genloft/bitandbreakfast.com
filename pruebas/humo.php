@@ -794,6 +794,19 @@ comprobar(
     substr_count($estilo_css, '}')
 );
 
+// Con la misma especificidad, en un empate de cascada gana la regla que
+// aparece ultima en la hoja: el @media (prefers-reduced-motion: reduce) que
+// para las animaciones de la cabecera solo puede desactivarlas de verdad si
+// esta escrito despues de todas ellas, .logo-bloque y .logo-amp incluidos.
+// Puesto antes -como estuvo un tiempo- nunca las paraba, aunque el propio
+// comentario dijera que si.
+$pos_reduce = strpos($estilo_css, '@media (prefers-reduced-motion: reduce)');
+$pos_logo_amp = strpos($estilo_css, '.logo-amp {');
+$pos_logo_glow = strpos($estilo_css, '@keyframes resplandor-logo');
+
+comprobar('el bloque de prefers-reduced-motion va despues de .logo-amp', true, $pos_reduce !== false && $pos_logo_amp !== false && $pos_reduce > $pos_logo_amp);
+comprobar('y tambien despues del resplandor del logo', true, $pos_reduce !== false && $pos_logo_glow !== false && $pos_reduce > $pos_logo_glow);
+
 // §4.6 de docs/MEJORAS.md: toda la celda es zona de clic -el "enlace
 // estirado" del titular-, comprobado de verdad en un navegador de verdad
 // antes de escribir esta prueba; aqui solo se comprueba que las reglas

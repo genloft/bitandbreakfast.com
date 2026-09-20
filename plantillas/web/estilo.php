@@ -241,14 +241,6 @@ img { max-width: 100%; height: auto; }
   50%      { opacity: 1;  transform: scale(1); }
 }
 
-/* Quien pide menos movimiento no tiene por que verlo: el barrido, el pulso,
-   el sello de imprenta y el giro del ampersand se paran y dejan sitio a la
-   version quieta de siempre. */
-@media (prefers-reduced-motion: reduce) {
-  .sello-marca, .pulso, .logo-bloque, .logo-amp { animation: none; }
-  .logo-amp { transition: none; }
-}
-
 .menu {
   display: flex;
   flex-wrap: wrap;
@@ -364,6 +356,45 @@ img { max-width: 100%; height: auto; }
 .logo:focus-visible .logo-amp {
   animation-play-state: paused;
   transform: rotate(-14deg) scale(1.15);
+}
+
+/* La misma idea del barrido del sello -una señal de que el radar sigue
+   encendido-, pero detras del nombre entero y mucho mas discreta: no un
+   dibujo que se note, solo un respirar de opacidad. Vive en el ::before de
+   .logo, con z-index negativo, asi que pinta por debajo del texto y nunca
+   le cambia el contraste a lo que se lee encima -las letras tapan el
+   resplandor donde caen, y solo asoma en los huecos-. */
+.logo { position: relative; }
+
+.logo::before {
+  content: '';
+  position: absolute;
+  inset: -1.2rem -.6rem;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, var(--acento) 0%, transparent 68%);
+  opacity: .05;
+  animation: resplandor-logo 7s ease-in-out infinite;
+}
+
+@keyframes resplandor-logo {
+  0%, 100% { opacity: .04; }
+  50%      { opacity: .12; }
+}
+
+/* Quien pide menos movimiento no tiene por que verlo: el barrido, el pulso,
+   el sello de imprenta, el giro del ampersand y el resplandor de detras se
+   paran y dejan sitio a la version quieta de siempre.
+
+   Tiene que ir despues de las reglas que anula, no antes: con la misma
+   especificidad, en un empate gana la que aparezca ultima en la hoja, asi
+   que puesto aqui arriba esto nunca desactivaba nada -.sello-marca era la
+   unica excepcion, porque esa es la unica animacion que ya estaba definida
+   por encima-. Comprobado con Playwright emulando
+   prefers-reduced-motion: reduce, no solo leyendo la regla. */
+@media (prefers-reduced-motion: reduce) {
+  .sello-marca, .pulso, .logo-bloque, .logo-amp, .logo::before { animation: none; }
+  .logo-amp { transition: none; }
+  .logo::before { opacity: .05; }
 }
 
 /* --- El panel de cifras ------------------------------------------------------
