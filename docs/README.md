@@ -43,7 +43,7 @@ plantillas/   plantillas: web/ publicada, panel/ e instalador
 publico/      salida estática generada por cron/publicar.php (no se versiona)
 pruebas/      scripts de prueba sin framework
 sql/          esquema, semillas y migraciones/ (cambios que se aplican solos)
-docs/         esta documentación, INSTALACION.md y CRON.md
+docs/         esta documentación, INSTALACION.md, CRON.md y MEJORAS.md
 ```
 
 ## Puesta en marcha
@@ -95,6 +95,9 @@ un MariaDB 10.6 para la de humo.
 | 4 | Generador estático, archivo, RSS | completada |
 | 5 | Correo: buzón propio, alta con doble confirmación, baja y envío | completada |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador, clics y votos hechos |
+
+Lo que falta por hacer —y por qué merece la pena cada cosa— está en
+[MEJORAS.md](MEJORAS.md), revisado el 2026-09-20.
 
 ## Decisiones que conviene no olvidar
 
