@@ -926,3 +926,31 @@ un MariaDB 10.6 para la de humo.
   `noindex`: son dos señales contradictorias sobre la misma URL. El
   `follow` se queda para que el rastreador sí siga el enlace desde el pie
   hacia el resto del sitio.
+- **§2.3 de `docs/MEJORAS.md` pedía tres cosas; solo se hicieron dos.** El
+  mix de canal directo y OTA -un grupo nuevo en Cifras- y `cifras.json` sí
+  se verificaron y se publican. La digitalización de la hostelería
+  española vía la encuesta ETICCE del INE se queda pendiente: `ine.es` no
+  es accesible desde este entorno de desarrollo -el mismo bloqueo de red
+  que ya afectó a una fuente de `/cumplimiento.html`-, y lo único que dieron
+  las fuentes secundarias fue una cifra aproximada ("inferior al 15 %"),
+  no la precisión con fuente directa que exige esta página. Publicar un
+  número aproximado habría sido peor que dejarlo pendiente y decirlo:
+  `docs/MEJORAS.md` conserva ese punto, reescrito para que quien lo retome
+  sepa exactamente qué falta y por qué no se resolvió esta vez.
+- **El mix de canal directo y OTA cita la edición de 2025 del informe
+  «State of Distribution», no la de 2026 que ya citaba el grupo "IA en los
+  hoteles".** Son dos hallazgos de dos ediciones anuales distintas del
+  mismo informe -la paridad canal directo/OTA se publicó en la 2.ª edición,
+  junio de 2025-, así que cada cifra enlaza a la nota de prensa de su
+  propia edición en vez de citar la más reciente por comodidad. La entrada
+  de `$fuentes` que los describe ya era lo bastante genérica -"Informe
+  anual «State of Distribution»", sin fijar un año- para cubrir ambas sin
+  tocarla.
+- **`cifras_exportar()` expone exactamente `cifras_grupos()`, sin filtrar
+  los grupos que no son del sector hotelero.** Los tres grupos con
+  `categoria => null` -la vara de medir de fondo: IA, cloud y comercio
+  electrónico en la empresa española en general- siguen siendo datos
+  reales, con fuente y fecha, que alguien puede querer citar aunque no
+  sean específicos de hoteles; filtrarlos del JSON solo porque
+  `/estadisticas.html` los pinta con una nota aclaratoria habría sido
+  esconder un dato válido, no limpiar el fichero.

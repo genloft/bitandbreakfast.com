@@ -207,7 +207,7 @@ $descripcion = 'IA, turismo, inversión, empleo y rendimiento hotelero: España 
     </dl>
   </section>
 
-  <p class="letra-pequena cuadro-revision">Datos revisados el <?= web_e(web_fecha_larga($revisado)) ?>, con revisión antes del <?= web_e(web_fecha_larga($limite_revision)) ?> como muy tarde —o en cuanto salga un informe nuevo, lo que llegue primero—. Si una cifra de aquí ya tiene más de un año, avísanos.</p>
+  <p class="letra-pequena cuadro-revision">Datos revisados el <?= web_e(web_fecha_larga($revisado)) ?>, con revisión antes del <?= web_e(web_fecha_larga($limite_revision)) ?> como muy tarde —o en cuanto salga un informe nuevo, lo que llegue primero—. Si una cifra de aquí ya tiene más de un año, avísanos. Las mismas cifras, en <a href="<?= web_e($base) ?>/cifras.json">cifras.json</a>, para quien quiera citarlas sin rehacerlas.</p>
 
   <?php require __DIR__ . '/suscribir.php'; ?>
 </main>

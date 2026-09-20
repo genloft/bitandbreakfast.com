@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Cifras: dos grupos que faltan, y uno automatizable de verdad (§2.3). Mismo patrón de mantenimiento que ya existe.
+1. La reserva agéntica merece cobertura propia (§2.4). El tema del año para un director comercial.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -68,20 +68,23 @@ es de lo primero que un directivo busca al empezar el ejercicio.
 Mismo patrón de mantenimiento que Cifras: revisión a mano y aviso al
 caducar.
 
-### 2.3 Cifras: dos grupos que faltan, y uno automatizable de verdad
+### 2.3 Cifras: digitalización de la hostelería española
 
-Faltan dos datos que un directivo mira siempre: mix de canal directo frente
-a OTA y digitalización de la hostelería española.
+Falta un dato que un directivo mira siempre: cómo de digitalizada está la
+hostelería española frente al resto de sectores, no solo frente al resto
+de Europa.
 
-El segundo tiene una ventaja sobre casi todo lo que hay en esa página: la
-encuesta de uso de TIC y comercio electrónico del INE tiene desglose por
-rama de actividad y API abierta. Es decir, es de los pocos grupos que se
-podrían traer solos, al contrario que RateGain, IBM o las encuestas de
-viajeros —el motivo por el que `cron/mantenimiento.php` avisa en vez de
-raspar—.
-
-Y un `cifras.json` junto a la página: es lo que hace que otros citen estos
-datos en vez de rehacerlos.
+La encuesta de uso de TIC y comercio electrónico del INE tiene desglose
+por rama de actividad -sección I del CNAE, hostelería- y API abierta, así
+que es de los pocos grupos que se podrían traer sin depender de que
+RateGain, IBM o una encuestadora de viajeros publiquen su informe anual.
+Pendiente de una cifra concreta y verificable con fuente directa: la nota
+de prensa de la ETICCE (`ine.es/dyngs/Prensa/ETICCE20241T2025.htm`) trae
+el desglose sectorial, pero `ine.es` no es accesible desde este entorno de
+desarrollo y las fuentes secundarias solo dan una cifra aproximada
+("inferior al 15 %", sin precisar) que no llega al nivel de precisión que
+exige esta página. Falta comprobarlo contra la tabla original antes de
+publicar un número.
 
 ### 2.4 La reserva agéntica merece cobertura propia
 

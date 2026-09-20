@@ -139,4 +139,22 @@ comprobar(
 
 comprobar('un tema sin ningun grupo devuelve una lista vacia', [], cifras_por_tema('sostenibilidad-energia'));
 
+comprobar(
+    'el mix de canal directo y OTA aparece al pedir distribucion-otas',
+    true,
+    in_array('Mix de canal directo y OTA', array_column(cifras_por_tema('distribucion-otas'), 'tema'), true)
+);
+
+// --- cifras_exportar() --------------------------------------------------------
+
+$exportado = cifras_exportar();
+
+foreach (['revisado', 'limite_revision', 'grupos'] as $campo) {
+    comprobar("cifras_exportar() trae el campo '$campo'", true, array_key_exists($campo, $exportado));
+}
+
+comprobar('cifras_exportar() usa la misma fecha de revision que la pagina', cifras_revisado(), $exportado['revisado']);
+comprobar('y el mismo limite de revision', cifras_limite_revision(cifras_revisado()), $exportado['limite_revision']);
+comprobar('y exporta los mismos grupos, no una copia distinta', cifras_grupos(), $exportado['grupos']);
+
 resumen_pruebas('Pruebas de lib/cifras.php');
