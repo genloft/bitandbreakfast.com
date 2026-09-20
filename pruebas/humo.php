@@ -898,10 +898,17 @@ comprobar(
     str_contains((string) file_get_contents($medio_ficha), 'itemtype="https://schema.org/BreadcrumbList"')
 );
 
+// El buscador en vivo de la cabecera (dinamico.js) añadió el primer
+// <script> legítimo de todo el sitio, y siempre carga un fichero externo,
+// nunca va inline -la propia cabecera.php explica por qué: un <script> en
+// línea cae bajo el script-src 'self' que el sitio no rompe a propósito-.
+// Esta prueba comprobaba "no hay ningún <script>", que ya no es cierto
+// desde que ese buscador existe; lo que de verdad importa -que no se cuele
+// contenido ajeno como un <script> inline- se sigue cumpliendo.
 comprobar(
-    'la portada no cuela etiquetas que vengan del panel',
-    false,
-    str_contains($portada, '<script')
+    'todo <script> de la portada carga un fichero externo, ninguno va inline',
+    0,
+    substr_count($portada, '<script') - substr_count($portada, '<script src=')
 );
 
 // Las cifras de la cabecera: van en todas las paginas, no solo en la portada,
@@ -951,7 +958,15 @@ comprobar('cada bit lleva su fecha encima', true, str_contains($portada, 'etique
 // resaltado en negativo.
 comprobar('lo que cuentan varios medios sale en negativo', true, str_contains($portada, 'bit-multifuente'));
 
-comprobar('con las tres cuentas', 3, substr_count($portada, 'class="panel-cifra"'));
+// Las tres cuentas fijas del panel -Noticias, Medios, Temas-, cada una por
+// su propia etiqueta. Antes se comprobaba el total de ".panel-cifra" y
+// tenia que ser exactamente 3, pero panel.php puede sumar una cuarta fila
+// opcional (RevPAR) segun el ajuste que traiga la base: un recuento rigido
+// se rompe con esa fila de mas sin que nada de esto haya cambiado en lo que
+// de verdad importa, que es que las tres cuentas fijas sigan ahi.
+comprobar('con la cuenta de noticias', true, str_contains($portada, '<dt>Noticias</dt>'));
+comprobar('la de medios', true, str_contains($portada, '<dt>Medios</dt>'));
+comprobar('y la de temas', true, str_contains($portada, '<dt>Temas</dt>'));
 comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));
 
 // El buscador en vivo de la cabecera: con clases del sitio, no con estilos
