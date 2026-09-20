@@ -1029,3 +1029,17 @@ un MariaDB 10.6 para la de humo.
   sin `<lastmod>` a propósito: ninguna tiene una fecha propia que no sea
   inventada, y el propio documento solo pedía fecha para las cinco
   categorías que sí la tienen.
+- **`--suave` (§1.4) baja de `#8d8982` a `#6b6862`, y `--apagado` no se
+  toca.** El primero daba 3,11:1 sobre `--papel` y 3,31:1 sobre
+  `--tarjeta` -por debajo del 4,5:1 que exige WCAG AA para texto normal,
+  y se usa a `.68rem` en más de una docena de sitios, muy por debajo del
+  tamaño de "texto grande" que se conformaría con menos-; el nuevo valor
+  da 4,97:1 y 5,28:1. Se comprobó con el mismo método que ya documenta
+  esta lista para el modo oscuro -luminancia relativa, no una
+  calculadora externa ni a ojo-, y también contra las variables del
+  propio modo oscuro (`--suave: #8b8477` ya daba 4,73:1 y 4,96:1, así
+  que esa mitad no se tocó). Al quedar la sección 1 vacía tras resolver
+  este punto, se retiró de `docs/MEJORAS.md` en vez de dejar un
+  encabezado sin contenido; las secciones siguientes no se
+  renumeraron -tocar cada referencia cruzada por un hueco en la
+  numeración habría sido más riesgo que beneficio-.

@@ -11,23 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Contraste insuficiente en el texto pequeño (§1.4). Un solo valor de color en `estilo.php`, y deja de incumplir WCAG AA.
-
-## 1. Lo que resta credibilidad hoy
-
-Son fallos, no ideas. Van primero porque un directivo que pilla una
-contradicción deja de fiarse del resto de la página, y este sitio no tiene
-más activo que ese.
-
-### 1.4 Contraste insuficiente en el texto pequeño
-
-En `plantillas/web/estilo.php`, `--suave: #8d8982` sobre `--papel: #f4f2ee`
-da 3,11:1, por debajo del 4,5:1 que pide WCAG AA para texto normal. Y no se
-usa en rótulos grandes: se usa a `.68rem` en `.pie-bit .datos`,
-`.nube-cuenta`, `.rejilla-cuenta` y una docena de sitios más.
-
-Bajarlo a algo del orden de `#6b6862` lo resuelve sin tocar la estética.
-`--apagado: #5f5c57` está bien (5,95:1) y no hay que moverlo.
+1. El «por qué importa» vacío es la mayor deuda de contenido (§2.1). Es la pregunta que un directivo hace siempre, y el sitio hoy no la contesta.
 
 ## 2. Contenido para directivos
 

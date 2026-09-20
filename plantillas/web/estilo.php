@@ -68,7 +68,12 @@ declare(strict_types=1);
      cuatro lineas seguidas. La diferencia entre leer y descifrar. */
   --texto:   #26241f;
   --apagado: #5f5c57;
-  --suave:   #8d8982;
+  /* 4,97:1 sobre --papel y 5,28:1 sobre --tarjeta -antes #8d8982, 3,11:1 y
+     3,31:1-: por debajo del 4,5:1 que exige WCAG AA para texto normal, y se
+     usa a .68rem en más de una docena de sitios (.pie-bit .datos,
+     .nube-cuenta, .rejilla-cuenta...), muy por debajo del tamaño de "texto
+     grande" que se conformaría con menos contraste. */
+  --suave:   #6b6862;
   --filete:  #0d0d0d;
   --filete-fino: #cfcac2;
   --negro:   #0d0d0d;
