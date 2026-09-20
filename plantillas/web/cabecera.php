@@ -80,11 +80,20 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias
     </nav>
   </div>
 
-  <div class="cabecera-marca">
+  <div class="cabecera-marca" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
     <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
       <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
     </a>
+    
+    <div class="cabecera-buscar" style="margin-left: auto; padding-right: 1rem;">
+      <form role="search" action="<?= web_e($base) ?>/buscar.html" method="get" style="display: flex; align-items: center;">
+        <input name="q" type="search" placeholder="Buscar noticias..." aria-label="Buscar noticias" style="padding: 0.3rem 0.5rem; border: 1px solid var(--filete-fino); font-size: 0.9rem;">
+        <button type="submit" style="padding: 0.3rem 0.5rem; background: var(--acento); color: var(--papel); border: none; cursor: pointer; font-weight: bold;">🔍</button>
+      </form>
+    </div>
+  </div>
 
+  <div>
     <?php require __DIR__ . '/panel.php'; ?>
   </div>
 

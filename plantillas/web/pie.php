@@ -24,6 +24,16 @@ declare(strict_types=1);
     <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
   </nav>
 
+  <div class="flotante-newsletter">
+    <form method="post" action="<?= web_e($base) ?>/api/suscribir.php">
+      <label for="flotante-email"><strong>Suscríbete a la newsletter</strong></label>
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+        <input id="flotante-email" name="email" type="email" placeholder="Tu correo electrónico" required>
+        <button type="submit">Alta</button>
+      </div>
+    </form>
+  </div>
+
   <p class="letra-pequena">Bit &amp; Breakfast es un radar, no un agregador:
   filtra duro y enseña poco. Cada bit enlaza a su fuente original, y ninguno
   se publica sin pasar el mismo filtro de puntuación y comprobación -a mano

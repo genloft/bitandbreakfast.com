@@ -1060,7 +1060,7 @@ function publicar_bits(?string $dia = null, int $tope = 80): array
               FROM bits b
              WHERE b.estado = 'publicado'
                AND b.dia IS NOT NULL"
-         . ($dia !== null ? " AND b.dia = ?" : '')
+         . ($dia !== null ? " AND b.dia = ?" : " AND b.categoria != 'inversion-mercado'")
          . " ORDER BY b.dia DESC, b.id DESC
              LIMIT ?";
 

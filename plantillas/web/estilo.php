@@ -406,31 +406,35 @@ img { max-width: 100%; height: auto; }
   font-variant-numeric: tabular-nums;
 }
 
-.panel-cifras {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.panel-banners {
+  display: flex;
   gap: 0;
+  width: 100%;
+  border-left: 1px solid var(--filete-fino);
   margin-top: .55rem;
 }
 
-.panel-cifra { padding-right: .9rem; }
-.panel-cifra + .panel-cifra { padding-left: .9rem; border-left: 1px solid var(--filete-fino); }
-
-.panel-cifra dd {
+.banner-item {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-right: 1px solid var(--filete-fino);
   display: flex;
-  align-items: baseline;
-  gap: .4rem;
-  font-variant-numeric: tabular-nums;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.panel-nuevas {
-  font-family: var(--titular);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--suave);
+.banner-item dt {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--filete-fino);
 }
 
-.panel-nuevas-hay { color: var(--acento); }
+.banner-item dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
 
 .panel-total {
   font-size: .72rem;
@@ -629,7 +633,7 @@ h1 {
 .bit:not(.bit-lead) {
   display: flex;
   flex-direction: column;
-  height: 28.5rem;
+  height: 100%;
 }
 
 .bit:not(.bit-lead) .bit-cuerpo {
@@ -1407,6 +1411,37 @@ h1 {
   color: #b9b4ac;
 }
 .alta-tema input { margin: 0; }
+
+.flotante-newsletter {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--tinta);
+  color: var(--papel);
+  padding: 1rem;
+  border: 2px solid var(--filete);
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.flotante-newsletter label, .flotante-newsletter button {
+  color: var(--papel);
+}
+
+.flotante-newsletter input {
+  padding: 0.3rem;
+  border: 1px solid var(--filete-fino);
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+.flotante-newsletter button {
+  background: var(--acento);
+  border: none;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-weight: bold;
+}
 
 .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
