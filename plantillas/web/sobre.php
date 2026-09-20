@@ -118,11 +118,14 @@ $radar         = $radar ?? ['total' => 0, 'por_region' => []];
     <a href="<?= web_e($base) ?>/tendencias.html">Tendencias</a> dice qué tema
     sube y cuál baja este trimestre, comparado con el anterior.
     <a href="<?= web_e($base) ?>/glosario.html">Glosario</a> explica las
-    siglas del sector sin salir del sitio -las cinco, siempre a mano, bajo
+    siglas del sector sin salir del sitio -las seis, siempre a mano, bajo
     «Recursos» en el menú de arriba-.
     <a href="<?= web_e($base) ?>/agentica.html">Reserva agéntica</a> sigue de
     cerca los protocolos que dejan reservar sin salir de un chat -MCP, ACP,
-    UCP-, con la misma fecha y fuente. Y
+    UCP-, con la misma fecha y fuente.
+    <a href="<?= web_e($base) ?>/calendario.html">Calendario</a> reúne las
+    ferias y foros del sector que quedan por delante -FITUR, HIP, TIS, el
+    IHTF-, también con fecha, lugar y fuente. Y
     <a href="<?= web_e($base) ?>/medios.html">Medios</a> enseña de dónde sale
     cada noticia y cuánto aporta cada fuente.</p>
   </div>

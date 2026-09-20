@@ -18,6 +18,7 @@ declare(strict_types=1);
     <a href="<?= web_e($base) ?>/tendencias.html">Tendencias</a>
     <a href="<?= web_e($base) ?>/glosario.html">Glosario</a>
     <a href="<?= web_e($base) ?>/agentica.html">Reserva agéntica</a>
+    <a href="<?= web_e($base) ?>/calendario.html">Calendario</a>
     <a href="<?= web_e($base) ?>/sobre.html">Qué es</a>
     <a href="<?= web_e($base) ?>/legal.html">Aviso legal</a>
     <a href="<?= web_e($base) ?>/feed.xml">RSS</a>

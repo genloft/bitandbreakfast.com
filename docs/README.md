@@ -982,3 +982,31 @@ un MariaDB 10.6 para la de humo.
   Trip.com como socios- el que de verdad compite por la reserva de hotel;
   citar solo AP2 habría dejado fuera la pieza más relevante para un
   director comercial.
+- **`/calendario.html` (§2.2 de `docs/MEJORAS.md`) solo enseña lo que
+  queda por delante, nunca lo que ya ha pasado.** A diferencia de
+  `cifras_grupos()` o `cumplimiento_normas()`, que se leen enteros
+  siempre, un evento vencido no es información para un calendario, es
+  ruido -y si se dejaran los cinco eventos completos, a los pocos meses
+  la página entera estaría hablando del pasado-. `calendario_proximos()`
+  filtra y ordena por `fecha_fin`, no por la primera fecha del rango: un
+  evento de varios días sigue siendo relevante mientras no haya
+  terminado. Cuando no queda ninguno, la página lo dice en vez de
+  enseñar una lista vacía sin explicación, la misma señal de "toca
+  revisar esto" que ya usan Cifras y Cumplimiento con su aviso por
+  correo.
+- **Las fechas de FITURTechY y de HIP en `docs/MEJORAS.md` (21-23 de
+  enero; 16-18 de febrero) eran las de una edición anterior, no las de
+  la próxima.** Se verificaron contra las páginas oficiales de IFEMA vía
+  búsqueda -no se copiaron del documento-: FITUR 2027 es del 20 al 24 de
+  enero, y HIP 2027 (11.ª edición) del 1 al 3 de marzo. Una página que
+  promete fecha y fuente en cada evento no puede heredar sin comprobar
+  las fechas de un documento de planificación interna.
+- **El ITH Hotel Energy Meetings es una gira por varias ciudades, no un
+  congreso con una sola fecha, y `/calendario.html` lo trata como una
+  única entrada con las cuatro paradas de 2026 en el mismo campo
+  `fechas` -Madrid, Barcelona, Málaga y Benidorm-, con `fecha_fin` en la
+  última.** Partirlo en cuatro filas habría inflado una lista de cinco
+  eventos a ocho por un solo organizador; tratarlo como cualquier otro
+  evento de una sola fecha habría sido inventar una fecha que no existe.
+  Un término medio explícito -una fila, con las cuatro fechas escritas-
+  es más honesto que cualquiera de los dos extremos.

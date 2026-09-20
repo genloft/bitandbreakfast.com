@@ -505,6 +505,25 @@ comprobar('y a las siglas del glosario', true, str_contains($agentica_html, '/gl
 comprobar('y el sitemap la lista', true, str_contains((string) file_get_contents($publico . '/sitemap.xml'), '/agentica.html'));
 comprobar('y "Qué es" enlaza a ella', true, str_contains($sobre, '/agentica.html'));
 
+// El calendario de ferias y foros: escrito a mano como Cifras y
+// Cumplimiento, pero solo enseña lo que todavia queda por delante.
+comprobar('escribe el calendario de eventos', true, is_file($publico . '/calendario.html'));
+
+$calendario_html = (string) file_get_contents($publico . '/calendario.html');
+
+comprobar(
+    'con al menos un evento por delante -TIS, en octubre de 2026-',
+    true,
+    str_contains($calendario_html, 'Tourism Innovation Summit')
+);
+comprobar(
+    'y dice hasta cuando vale su revision, igual que el resto de Recursos',
+    true,
+    str_contains($calendario_html, 'con revisión antes del')
+);
+comprobar('y el sitemap lo lista', true, str_contains((string) file_get_contents($publico . '/sitemap.xml'), '/calendario.html'));
+comprobar('y "Qué es" enlaza a él', true, str_contains($sobre, '/calendario.html'));
+
 // Las dos paginas de indice eran las unicas de todo el sitio sin enlace de
 // autodescubrimiento al RSS general: un lector de feeds que las visitara no
 // tenia forma de encontrarlo desde ahi.
@@ -1209,6 +1228,11 @@ comprobar(
     'ni el de la reserva agentica',
     false,
     $mantenimiento['agentica_aviso'] ?? null
+);
+comprobar(
+    'ni el del calendario de eventos',
+    false,
+    $mantenimiento['calendario_aviso'] ?? null
 );
 
 // -----------------------------------------------------------------------------

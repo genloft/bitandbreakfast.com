@@ -1199,6 +1199,13 @@ h1 {
 
 .cumplimiento-norma .cuadro-detalle + .cuadro-detalle { margin-top: .5rem; }
 
+/* --- Calendario: mismo cuadro, en orden de fecha -------------------------
+   Reutiliza .cuadro/.cuadro-tarjeta entero, igual que Cumplimiento: aquí no
+   hay estado que marcar en el borde, solo el orden en que llegan los
+   eventos que quedan por delante. */
+
+.calendario-lista { list-style: none; padding: 0; }
+
 /* --- Fuentes de Cifras --------------------------------------------------------------
    La bibliografia de la pagina de arriba, con el mismo peso que las cifras
    que sostiene: un nombre grande que enlaza, y debajo quien es. */

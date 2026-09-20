@@ -17,8 +17,8 @@
  * es de las primeras cosas que se preguntan al volver a un agregador. Al lado
  * del nombre son parte de la cabecera, no un mensaje.
  *
- * El menu agrupa Cifras, Cumplimiento, Tendencias, Glosario y Reserva
- * agéntica bajo un
+ * El menu agrupa Cifras, Cumplimiento, Tendencias, Glosario, Reserva
+ * agéntica y Calendario bajo un
  * desplegable ("Recursos"): son paginas de consulta, no de lectura diaria, y
  * puestas al mismo nivel que Portada o Temas la barra crecio a diez enlaces. Un
  * <details> nativo -sin una linea de JS- porque no hay nada que un script
@@ -38,7 +38,7 @@
 declare(strict_types=1);
 
 $enlace_activo = $enlace_activo ?? '';
-$en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias', 'glosario', 'agentica'], true);
+$en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias', 'glosario', 'agentica', 'calendario'], true);
 
 ?>
 <header class="cabecera" itemscope itemtype="https://schema.org/WebSite">
@@ -71,6 +71,7 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias
           <a href="<?= web_e($base) ?>/tendencias.html"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>>Tendencias</a>
           <a href="<?= web_e($base) ?>/glosario.html"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>>Glosario</a>
           <a href="<?= web_e($base) ?>/agentica.html"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>>Reserva agéntica</a>
+          <a href="<?= web_e($base) ?>/calendario.html"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>>Calendario</a>
         </div>
       </details>
       <span class="menu-fin"></span>

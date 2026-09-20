@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. `/calendario.html`: los eventos del sector (§2.2). Evergreen, verificable con fecha y sede, y de lo primero que un directivo busca al empezar el ejercicio.
+1. `sitemap.xml` solo lleva `lastmod` en los días (§1.5). Los datos ya los calcula `publicar_pendiente()`; falta pasarlos al resto de páginas del sitemap, Calendario y Reserva agéntica incluidas.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -58,17 +58,7 @@ salidas, compatibles las tres con no inventar:
   humano donde lo hay. Ahora mismo un bit con «por qué importa» y uno sin
   él se distinguen solo leyéndolos enteros.
 
-### 2.2 `/calendario.html`: los eventos del sector
-
-FITURTECHY (21-23 de enero, IFEMA), HIP (16-18 de febrero, décimo
-aniversario, con Global CEOs Summit), TIS (6-8 de octubre, FIBES Sevilla),
-ITH Hotel Energy Meetings, IHTF. Evergreen, se actualiza dos veces al año y
-es de lo primero que un directivo busca al empezar el ejercicio.
-
-Mismo patrón de mantenimiento que Cifras: revisión a mano y aviso al
-caducar.
-
-### 2.3 Cifras: digitalización de la hostelería española
+### 2.2 Cifras: digitalización de la hostelería española
 
 Falta un dato que un directivo mira siempre: cómo de digitalizada está la
 hostelería española frente al resto de sectores, no solo frente al resto

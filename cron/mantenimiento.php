@@ -2,11 +2,11 @@
 /**
  * Mantenimiento diario: lo que no hace falta mirar cada cinco minutos.
  *
- * Tres avisos, el mismo mecanismo para los tres: si /estadisticas.html o
- * /agentica.html llevan mas de su plazo fijo sin que una persona los
- * revise, o si /cumplimiento.html ha llegado a la fecha pendiente mas
- * proxima de su propia tabla, manda un aviso por el mismo buzon que ya usa
- * el cron para su propio parte.
+ * Cuatro avisos, el mismo mecanismo para los cuatro: si /estadisticas.html,
+ * /agentica.html o /calendario.html llevan mas de su plazo fijo sin que una
+ * persona los revise, o si /cumplimiento.html ha llegado a la fecha
+ * pendiente mas proxima de su propia tabla, manda un aviso por el mismo
+ * buzon que ya usa el cron para su propio parte.
  *
  * No intenta traer las cifras solas. La mayoria de las fuentes que cita esa
  * pagina -RateGain, IBM, AEPD, las encuestas de viajeros- son informes y
@@ -30,6 +30,7 @@ require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
 require_once dirname(__DIR__) . '/lib/cumplimiento.php';
 require_once dirname(__DIR__) . '/lib/agentica.php';
+require_once dirname(__DIR__) . '/lib/calendario.php';
 
 /**
  * Punto de entrada que llama cron/tareas.php cada dia a partir de las 05:00
@@ -45,6 +46,7 @@ function mantenimiento_diario(float $limite): array
         'cifras_aviso'       => mantenimiento_avisar_cifras_caducadas(),
         'cumplimiento_aviso' => mantenimiento_avisar_cumplimiento_caducado(),
         'agentica_aviso'     => mantenimiento_avisar_agentica_caducada(),
+        'calendario_aviso'   => mantenimiento_avisar_calendario_caducado(),
     ];
 }
 
@@ -219,6 +221,63 @@ function mantenimiento_avisar_agentica_caducada(): bool
     }
 
     ajuste_guardar('agentica_aviso_revisado', $revisado);
+
+    return true;
+}
+
+/**
+ * Manda el aviso de caducidad de /calendario.html si toca, y deja
+ * constancia de para que revision se ha mandado.
+ *
+ * Mismo patron exacto que mantenimiento_avisar_cifras_caducadas(), con el
+ * plazo de CALENDARIO_CADUCIDAD_DIAS: un calendario de ferias cambia dos
+ * veces al ano, no cada mes.
+ */
+function mantenimiento_avisar_calendario_caducado(): bool
+{
+    $revisado     = calendario_revisado();
+    $ultimo_aviso = (string) ajuste('calendario_aviso_revisado', '');
+
+    if (!calendario_caducadas($revisado, gmdate('Y-m-d'), $ultimo_aviso)) {
+        return false;
+    }
+
+    $conf = correo_conf();
+
+    if (!correo_configurado($conf) || $conf['proveedor'] !== 'propio') {
+        return false;
+    }
+
+    $destino = trim((string) ajuste('cron_aviso_correo', ''));
+    $destino = $destino !== '' ? $destino : (string) $conf['usuario'];
+
+    if (!correo_valido($destino)) {
+        return false;
+    }
+
+    $dias = (int) floor((time() - (strtotime($revisado . ' UTC') ?: time())) / 86400);
+
+    $envio = smtp_enviar($conf, [
+        'para'   => $destino,
+        'asunto' => 'Bit & Breakfast: /calendario.html lleva ' . $dias . ' días sin revisar',
+        'texto'  => "La página /calendario.html se revisó por última vez el $revisado.\n\n"
+            . "Han pasado $dias días. Toca comprobar si FITUR, HIP, TIS, el IHTF o el ITH Hotel "
+            . "Energy Meetings han anunciado ya las fechas del siguiente ciclo, retirar los eventos "
+            . "que hayan quedado obsoletos y actualizar calendario_eventos() -y la fecha en "
+            . "lib/calendario.php-.\n",
+        'cabeceras' => [
+            'Auto-Submitted: auto-generated',
+            'Precedence: bulk',
+        ],
+    ]);
+
+    if (!$envio['ok']) {
+        error_log('Bit & Breakfast, aviso de Calendario caducado: ' . $envio['mensaje']);
+
+        return false;
+    }
+
+    ajuste_guardar('calendario_aviso_revisado', $revisado);
 
     return true;
 }
