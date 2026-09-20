@@ -175,10 +175,21 @@ img { max-width: 100%; height: auto; }
 
 .cabecera-barra {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  gap: .5rem 1rem;
   padding: .55rem 0;
   border-bottom: 1px solid var(--filete);
+}
+
+/* En movil el menu ya ocupa varias lineas por su cuenta -flex-wrap propio-;
+   sin esto el buscador se colaba a media altura junto al enlace que
+   quedara centrado en ese bloque, en vez de caer limpio en su propia
+   linea. */
+.cabecera-buscar { flex-basis: 100%; }
+
+@media (min-width: 30rem) {
+  .cabecera-buscar { flex-basis: auto; }
 }
 
 /* El sello: un circulo negro con la inicial. No es un icono ilustrativo -de
@@ -305,6 +316,74 @@ img { max-width: 100%; height: auto; }
 }
 
 .menu-recursos-lista a { white-space: nowrap; }
+
+/* El buscador en vivo de la cabecera: mismo filete y misma tarjeta que el
+   desplegable de "Recursos" de aqui arriba, para que se lea como parte de
+   la misma barra y no como un elemento prestado de otra pagina. */
+.cabecera-buscar { position: relative; margin-left: auto; }
+
+.cabecera-buscar-forma {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--filete);
+  background: var(--tarjeta);
+}
+.cabecera-buscar-forma:focus-within { border-color: var(--acento); }
+
+.cabecera-buscar-forma input {
+  width: 11rem;
+  max-width: 40vw;
+  padding: .35rem .5rem;
+  border: none;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--ui);
+  font-size: .8rem;
+}
+.cabecera-buscar-forma input::placeholder { color: var(--suave); }
+.cabecera-buscar-forma input:focus { outline: none; }
+
+.cabecera-buscar-forma button {
+  display: grid;
+  place-items: center;
+  padding: 0 .55rem;
+  border: none;
+  background: transparent;
+  color: var(--apagado);
+  cursor: pointer;
+}
+.cabecera-buscar-forma button:hover,
+.cabecera-buscar-forma button:focus-visible { color: var(--tinta); }
+
+.cabecera-resultados {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  right: 0;
+  margin-top: .4rem;
+  width: 20rem;
+  max-width: 80vw;
+  max-height: 22rem;
+  overflow-y: auto;
+  background: var(--tarjeta);
+  border: 1px solid var(--filete);
+}
+
+.cabecera-resultados a {
+  display: block;
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--filete-fino);
+  color: var(--tinta);
+  font-family: var(--ui);
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.cabecera-resultados a:last-child { border-bottom: none; }
+.cabecera-resultados a:hover,
+.cabecera-resultados a:focus-visible { background: var(--papel); }
+
+.cabecera-resultados-vacio { margin: 0; padding: .6rem .7rem; color: var(--suave); font-size: .82rem; }
 
 /* El nombre y las cifras, en la misma fila. En el movil se apilan: el panel
    debajo del nombre y a todo lo ancho, que es lo unico que cabe. */

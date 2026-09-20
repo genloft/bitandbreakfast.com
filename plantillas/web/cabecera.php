@@ -32,10 +32,19 @@
  * en todo el sitio, y un schema que apunte a un fichero que no existe es
  * peor que no llevar ese campo.
  *
+ * A la derecha del menu va un buscador en vivo: un campo que consulta el
+ * mismo indice.json del explorador (dinamicojs.php, publico/dinamico.js) y
+ * ensena hasta ocho titulares segun se escribe, sin esperar al envio del
+ * formulario. El formulario en si sigue funcionando sin JavaScript -manda a
+ * /buscar.html como siempre-, asi que quien tenga el script desactivado no
+ * pierde nada.
+ *
  * Recibe $base, $panel y, opcionalmente, $enlace_activo.
  */
 
 declare(strict_types=1);
+
+require_once __DIR__ . '/iconos.php';
 
 $enlace_activo = $enlace_activo ?? '';
 $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias', 'glosario', 'agentica', 'calendario'], true);
@@ -78,12 +87,12 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias
       <a href="<?= web_e($base) ?>/buscar.html"<?= $enlace_activo === 'buscar' ? ' aria-current="page"' : '' ?>>Buscar</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
     </nav>
-    <div class="cabecera-buscar" style="margin-left: auto; position: relative;">
-      <form role="search" action="<?= web_e($base) ?>/buscar.html" method="get" style="display: flex; align-items: center; background: var(--tinta); padding: 0.2rem; border-radius: 4px;">
-        <input id="q-dinamico" name="q" type="search" placeholder="Buscar en vivo..." aria-label="Buscar noticias" autocomplete="off" style="padding: 0.3rem 0.5rem; border: none; background: transparent; color: var(--papel); font-size: 0.9rem; outline: none; width: 200px;">
-        <button type="submit" style="background: transparent; color: var(--papel); border: none; cursor: pointer;">🔍</button>
+    <div class="cabecera-buscar">
+      <form class="cabecera-buscar-forma" role="search" action="<?= web_e($base) ?>/buscar.html" method="get">
+        <input id="q-dinamico" name="q" type="search" placeholder="Buscar…" aria-label="Buscar noticias" autocomplete="off">
+        <button type="submit" aria-label="Buscar"><?= web_icono_ui('lupa', 'icono icono-mini') ?></button>
       </form>
-      <div id="resultados-dinamicos" style="display: none; position: absolute; top: 100%; right: 0; background: var(--papel); border: 1px solid var(--filete); width: 300px; max-height: 400px; overflow-y: auto; z-index: 2000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 0.5rem;"></div>
+      <div id="resultados-dinamicos" class="cabecera-resultados" hidden aria-live="polite"></div>
     </div>
   </div>
 
