@@ -35,6 +35,7 @@
  *   glosario.html       las siglas del sector, explicadas una vez
  *   legal.html          aviso legal, cookies y datos personales
  *   agentica.html        reserva agentica: MCP, ACP, UCP y AP2, con fecha y fuente
+ *   calendario.html      ferias y foros del sector, con fecha, lugar y fuente
  *   cifras.json          las mismas cifras de estadisticas.html, en JSON
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
@@ -52,6 +53,7 @@ require_once dirname(__DIR__) . '/lib/cifras.php';
 require_once dirname(__DIR__) . '/lib/cumplimiento.php';
 require_once dirname(__DIR__) . '/lib/glosario.php';
 require_once dirname(__DIR__) . '/lib/agentica.php';
+require_once dirname(__DIR__) . '/lib/calendario.php';
 require_once dirname(__DIR__) . '/lib/imagen_social.php';
 
 /**
@@ -342,6 +344,11 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/agentica.html',
         publicar_plantilla('agentica', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/calendario.html',
+        publicar_plantilla('calendario', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(

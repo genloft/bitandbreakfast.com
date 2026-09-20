@@ -25,6 +25,7 @@ require_once __DIR__ . '/lib/traducir.php';
 require_once __DIR__ . '/lib/cifras.php';
 require_once __DIR__ . '/lib/cumplimiento.php';
 require_once __DIR__ . '/lib/agentica.php';
+require_once __DIR__ . '/lib/calendario.php';
 
 date_default_timezone_set('UTC');
 
@@ -339,6 +340,19 @@ $informe = [
             agentica_revisado(),
             gmdate('Y-m-d', $ahora),
             (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'agentica_aviso_revisado'", '')
+        ),
+    ],
+    // Mismo control que 'cifras', para /calendario.html, con el plazo mas
+    // largo de los cuatro: un calendario de ferias cambia dos veces al ano,
+    // no cada mes ni cada trimestre.
+    'calendario' => [
+        'revisado'         => calendario_revisado(),
+        'dias_sin_revisar' => (int) floor(($ahora - (strtotime(calendario_revisado() . ' UTC') ?: $ahora)) / 86400),
+        'caduca_en_dias'   => CALENDARIO_CADUCIDAD_DIAS,
+        'caducada'         => calendario_caducadas(
+            calendario_revisado(),
+            gmdate('Y-m-d', $ahora),
+            (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'calendario_aviso_revisado'", '')
         ),
     ],
     // Mismo control que 'cifras', para /cumplimiento.html. La diferencia
