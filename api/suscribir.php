@@ -22,6 +22,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/web.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
+require_once dirname(__DIR__) . '/lib/bits.php';
 require_once __DIR__ . '/respuesta.php';
 
 /** Altas permitidas por IP y hora. */
@@ -125,7 +126,16 @@ if (!correo_valido($email)) {
     );
 }
 
-$resultado = correo_alta($email, $base . '/');
+// Los temas elegidos, filtrados contra el catalogo real: un valor que no
+// esta en bits_categorias() no puede colarse en la columna -ni por un
+// formulario manipulado, ni porque el catalogo cambie de nombres con el
+// tiempo-. Vacio, o con todos marcados, significa "todos los temas", que es
+// tambien el valor por defecto: elegir es una opcion, no un requisito.
+$catalogo   = array_keys(bits_categorias());
+$elegidos   = array_values(array_intersect((array) ($_POST['temas'] ?? []), $catalogo));
+$temas      = count($elegidos) < count($catalogo) ? implode(',', $elegidos) : '';
+
+$resultado = correo_alta($email, $base . '/', $temas);
 
 if (!$resultado['ok']) {
     api_responder($base, 'No ha podido ser', $resultado['mensaje'], 502);

@@ -95,6 +95,12 @@ function publicar_pendiente(float $limite): array
     // sitio.
     $alta = correo_configurado();
 
+    // Elegir temas solo tiene efecto con el buzon propio: MailerLite y Brevo
+    // llevan su propia lista y su propia segmentacion, ajenas a la columna
+    // 'temas' de suscriptores. Enseñar el selector igual con esos dos
+    // proveedores seria prometer un filtro que no hace nada.
+    $alta_temas = correo_conf()['proveedor'] === 'propio';
+
     // Los temas y los medios que tienen algo publicado. Se piden una vez para
     // todas las paginas: son los mismos en todas y son dos consultas.
     $temas  = publicar_temas();
@@ -150,6 +156,7 @@ function publicar_pendiente(float $limite): array
         'version'      => web_version($publico . '/estilo.css'),
         'version_js'   => web_version($publico . '/buscar.js'),
         'alta_abierta' => $alta,
+        'alta_temas'   => $alta_temas,
         'temas'        => $temas,
         'medios'       => $medios,
         'radar'        => $radar,

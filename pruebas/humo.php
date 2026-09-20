@@ -645,6 +645,40 @@ comprobar('y los negativos', 1, (int) bd()->query('SELECT COUNT(*) FROM votos WH
 // contra el esquema, no solo que el umbral funciona en abstracto.
 comprobar('publicar_mas_votados() no rompe contra la base real', [], publicar_mas_votados());
 
+// -----------------------------------------------------------------------------
+// Suscripcion por tema (§3.1 de docs/MEJORAS.md)
+//
+// Lo que no se puede probar sin base de datos: que la columna nueva de
+// suscriptores viaja entera hasta enviar_pendientes(), que es de donde la
+// lee cron/enviar.php para decidir el subconjunto de cada destinatario. El
+// filtro en si -envio_bits_para_tema()- ya es puro y lo prueba
+// pruebas/envio.php sin montar nada.
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/lib/lista.php';
+require_once $raiz . '/cron/enviar.php';
+
+bd()->prepare("INSERT INTO suscriptores (email, estado, temas) VALUES (?, 'confirmado', ?)")
+    ->execute(['filtrado@humo.test', 'ciberseguridad,cumplimiento']);
+$sus_filtrado_id = (int) bd()->lastInsertId();
+
+bd()->prepare("INSERT INTO suscriptores (email, estado, temas) VALUES (?, 'confirmado', '')")
+    ->execute(['todos@humo.test']);
+$sus_todos_id = (int) bd()->lastInsertId();
+
+$por_id = [];
+foreach (enviar_pendientes((int) $edicion['id'], 50) as $fila) {
+    $por_id[(int) $fila['id']] = $fila;
+}
+
+comprobar('enviar_pendientes() trae al suscriptor con temas elegidos', true, isset($por_id[$sus_filtrado_id]));
+comprobar(
+    'con sus temas tal cual se guardaron al darse de alta',
+    'ciberseguridad,cumplimiento',
+    $por_id[$sus_filtrado_id]['temas'] ?? null
+);
+comprobar('y al que no eligio ninguno, con la columna vacia -"todos"-', '', $por_id[$sus_todos_id]['temas'] ?? null);
+
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 $bits_indice = $indice['bits'] ?? [];
 
