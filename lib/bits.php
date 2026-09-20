@@ -90,6 +90,34 @@ function bits_categoria_canonica(string $categoria): string
     return $viejas[$categoria] ?? '';
 }
 
+/**
+ * Qué es cada tema, en un párrafo evergreen: no cuenta lo que ha pasado
+ * -eso ya lo hace la lista de bits de la propia ficha-, cuenta qué es y por
+ * qué le importa a un hotel. No caduca -un PMS sigue siendo un PMS el año
+ * que viene-, así que no lleva fecha ni fuente, igual que el glosario.
+ *
+ * @return string El párrafo, o '' si la categoría no se reconoce.
+ */
+function bits_categoria_descripcion(string $categoria): string
+{
+    $textos = [
+        'tecnologia-general' => 'La categoría de lo que no encaja en ninguna otra: movimientos corporativos, tendencias de fondo y anuncios de producto que tocan a varios sistemas del hotel a la vez, no a uno solo. Sirve de cajón de sastre a propósito, porque forzar cada noticia a encajar en una categoría más estrecha habría sido peor que admitir que algunas cruzan varias.',
+        'pms-crs' => 'El sistema del que cuelgan casi todos los demás: el PMS (Property Management System) lleva las reservas, el check-in, la asignación de habitaciones y la facturación de un hotel, y el CRS (Central Reservation System) centraliza esas reservas cuando hay varios canales de venta o varios hoteles de una misma cadena. Un cambio de PMS es la migración más temida del sector porque channel manager, RMS y cerraduras dependen de que hable con todos ellos.',
+        'distribucion-otas' => 'Cómo llega la reserva hasta el hotel: agencias online como Booking o Expedia, el motor de reservas propio, el GDS heredado de las aerolíneas y, desde hace poco, la reserva agéntica -Booking y Expedia dentro de ChatGPT, protocolos como el Agentic Commerce Protocol-. La tensión de fondo es siempre la misma: cuánta comisión se paga por traer al huésped frente a cuánto cuesta traerlo por cuenta propia.',
+        'revenue-rms' => 'La ciencia de poner precio a una habitación que caduca cada noche que no se vende. Un RMS (Revenue Management System) ajusta tarifas solo, mirando ocupación, fechas y competencia, y los indicadores del oficio -ADR, RevPAR, ocupación- son el idioma en el que un director de revenue mide si le va bien o mal.',
+        'pagos-fraude' => 'Cobrar sin que el dinero se pierda por el camino: pasarelas de pago, cumplimiento de PCI DSS -obligatorio para poder procesar tarjetas-, contracargos cuando un banco devuelve un cargo a la fuerza, y el fraude que aparece en cuanto una reserva se puede hacer sin pisar el mostrador.',
+        'ciberseguridad' => 'Incidentes técnicos que se resuelven esta noche, no en un juzgado: ransomware, brechas de datos, vulnerabilidades explotadas en el software que usa un hotel. Un PMS cifrado no permite ni hacer check-in a mano, y es uno de los pocos sectores sin un "modo sin sistemas" al que volver, lo que explica por qué el coste medio de una brecha en hostelería sube mientras la media de otros sectores baja.',
+        'cumplimiento' => 'Lo que exige la ley y no el mercado: Verifactu y la facturación electrónica, SES.Hospedajes y el registro de viajeros, el RGPD y los datos personales que guarda cualquier recepción, la accesibilidad digital del motor de reservas. A diferencia de la ciberseguridad, aquí el plazo lo pone un boletín oficial, no un atacante, y por eso tiene su propio calendario en /cumplimiento.html.',
+        'operaciones-iot' => 'Lo que pasa puertas adentro, fuera de la recepción: cerraduras conectadas, termostatos y contadores de energía, aplicaciones de housekeeping, mantenimiento predictivo. Es la categoría que menos titulares genera y más horas de trabajo ahorra cuando funciona bien.',
+        'experiencia-huesped' => 'Todo lo que el huésped toca directamente: chatbots de atención, check-in sin mostrador, mensajería durante la estancia, venta adicional -upselling- automatizada. La frontera con Operaciones es que aquí el sistema habla con el huésped, no solo con el hotel.',
+        'ia-aplicada' => 'La inteligencia artificial generativa aplicada a un caso concreto del sector: chatbots, fijación de precios, planificación de viaje del lado del huésped. La adopción va casi siempre por delante de la medición -la mayoría de hoteles usa o adquiere IA generativa, pero muy pocos miden si de verdad cambia algo-, y esa brecha entre adoptar y medir es, en sí misma, la noticia recurrente de esta categoría.',
+        'sostenibilidad-energia' => 'El consumo energético y la huella ambiental de un hotel, y la tecnología que los mide o los reduce: sistemas de gestión energética (BMS/BEMS), certificaciones, informes de sostenibilidad que empiezan a pedir tanto viajeros como reguladores.',
+        'inversion-mercado' => 'El negocio detrás de la tecnología: rondas de financiación, adquisiciones, movimientos de capital en el sector hotelero y en sus proveedores. No cualquier ronda -las de empresas que un hotel nunca va a contratar quedan fuera-, solo la que mueve algo que un hotel pueda llegar a usar.',
+    ];
+
+    return $textos[$categoria] ?? '';
+}
+
 function bits_madureces(): array
 {
     return [

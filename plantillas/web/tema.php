@@ -12,6 +12,15 @@
  * Lleva su propio RSS -t/<tema>/feed.xml, escrito por cron/publicar.php-
  * porque a quien solo le interesa Pagos y fraude o Revenue y RMS suscribirse
  * al feed general es suscribirse a diez temas para leer uno.
+ *
+ * Encima de la lista de bits van cuatro cosas que ya existían en otro
+ * sitio del propio proyecto, no datos nuevos: qué es el tema
+ * (bits_categoria_descripcion(), evergreen), las siglas del glosario que
+ * enlazan aquí (glosario_por_tema(), el camino de vuelta que ya preveía
+ * plantillas/web/glosario.php), los hitos normativos que le tocan
+ * (cumplimiento_por_tema()) y las cifras que le tocan (cifras_por_tema()).
+ * Las cuatro son opcionales -un tema puede no tener ninguna cifra o ninguna
+ * norma asociada- y no se pintan cuando vienen vacías.
  */
 
 declare(strict_types=1);
@@ -28,6 +37,11 @@ require_once __DIR__ . '/iconos.php';
 
 $url      = web_url_tema($base, (string) $tema['slug']);
 $url_feed = rtrim($url, '/') . '/feed.xml';
+
+$descripcion_tema = bits_categoria_descripcion((string) $tema['slug']);
+$siglas_tema      = glosario_por_tema((string) $tema['slug']);
+$normas_tema      = cumplimiento_por_tema((string) $tema['slug']);
+$cifras_tema      = cifras_por_tema((string) $tema['slug']);
 
 ?><!doctype html>
 <html lang="es">
@@ -79,6 +93,55 @@ $url_feed = rtrim($url, '/') . '/feed.xml';
       <a href="<?= web_e($url_feed) ?>">RSS de este tema</a>
     </p>
   </header>
+
+  <?php if ($descripcion_tema !== ''): ?>
+    <p class="intro"><?= web_e($descripcion_tema) ?></p>
+  <?php endif; ?>
+
+  <?php if ($siglas_tema || $normas_tema || $cifras_tema): ?>
+    <section class="explorar" aria-labelledby="relacionado-titulo">
+      <h2 id="relacionado-titulo">Más sobre este tema</h2>
+
+      <?php if ($siglas_tema): ?>
+        <h3 class="explorar-grupo">Siglas del glosario</h3>
+        <ul class="nube nube-siglas">
+          <?php foreach ($siglas_tema as $sigla): ?>
+            <li>
+              <a href="<?= web_e($base) ?>/glosario.html#<?= web_e(web_slug_seguro($sigla['sigla'])) ?>">
+                <span class="nube-nombre"><?= web_e($sigla['sigla']) ?></span>
+              </a>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+
+      <?php if ($normas_tema): ?>
+        <h3 class="explorar-grupo">Cumplimiento</h3>
+        <ul class="nube nube-siglas">
+          <?php foreach ($normas_tema as $norma): ?>
+            <li>
+              <a href="<?= web_e($base) ?>/cumplimiento.html#<?= web_e(web_slug_seguro($norma['norma'])) ?>">
+                <span class="nube-nombre"><?= web_e($norma['norma']) ?></span>
+              </a>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+
+      <?php if ($cifras_tema): ?>
+        <h3 class="explorar-grupo">Cifras</h3>
+        <ul class="nube nube-siglas">
+          <?php foreach ($cifras_tema as $grupo): ?>
+            <li>
+              <a href="<?= web_e($base) ?>/estadisticas.html#<?= web_e(web_slug_seguro($grupo['tema'])) ?>">
+                <span class="nube-nombre"><?= web_e($grupo['tema']) ?></span>
+              </a>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </section>
+  <?php endif; ?>
 
   <?php if (!$bits): ?>
     <p class="vacio">Todavía no hay nada publicado en este tema.</p>

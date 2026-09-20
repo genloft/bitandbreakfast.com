@@ -818,3 +818,37 @@ un MariaDB 10.6 para la de humo.
   el resto del titular también lo está -es el texto de CISA, sin traducir
   todavía-: así el bit entero pasa por el mismo traductor que cualquier otra
   fuente en inglés, en vez de dejar una frase en español a medio traducir.
+- **Las fichas de tema se enriquecen con datos que ya existían, no con
+  contenido nuevo.** `plantillas/web/tema.php` ganó cuatro secciones -qué es
+  el tema, siglas del glosario, cumplimiento y cifras relacionadas- y las
+  cuatro leen de sitios que ya estaban: `bits_categoria_descripcion()`
+  (nueva, en `lib/bits.php`, un párrafo evergreen por categoría),
+  `glosario_por_tema()`, `cumplimiento_por_tema()` y `cifras_por_tema()`.
+  Ninguna se pinta si viene vacía -un tema puede no tener ninguna norma ni
+  ninguna cifra asociada, y un bloque de sección vacío es peor que no
+  ponerlo-.
+- **Los términos del glosario y los grupos de Cifras se trasladaron a
+  `lib/glosario.php` y `lib/cifras.php` (`cifras_grupos()`), fuera de sus
+  plantillas.** Antes de esta revisión solo `lib/cumplimiento.php` vivía
+  fuera de su plantilla, y por el motivo de siempre -`cron/mantenimiento.php`
+  necesita leer sus fechas sin ejecutar la página entera-. Ahora
+  `plantillas/web/tema.php` necesita esos mismos datos -qué siglas y qué
+  grupos de cifras tocan a un tema-, así que aplica el mismo motivo: un solo
+  sitio que tocar cuando se actualicen, no dos copias que puedan
+  desincronizarse. El traslado es mecánico -mismo texto, mismas cifras,
+  mismas fechas, solo cambia el fichero que las contiene-; ninguna cifra ni
+  fecha se retocó al moverla, para no arriesgar una transcripción en una
+  página cuyo único valor es que cada dato se pueda comprobar.
+- **`cifras_grupos()` marca con `'categoria' => null` los tres grupos que no
+  son del sector hotelero, en vez de omitir el campo.** "IA en la empresa,
+  en general", "Cloud computing" y "Comercio electrónico" son la vara de
+  medir de fondo -la misma encuesta del INE sirve para cualquier sector-, no
+  un dato de hotel, y por eso no deben aparecer en la ficha de ningún tema.
+  Un campo `null` explícito dice esa decisión a quien lea el array; omitir
+  el campo habría dejado la misma pregunta sin contestar la próxima vez que
+  alguien añada un grupo.
+- **`cumplimiento_normas()` deja el alquiler de corta duración sin ningún
+  tema (`'temas' => []`).** Esa norma ya dice en su propio campo `aplica`
+  que no afecta a hoteles -entra en `/cumplimiento.html` solo por contexto
+  competitivo-, así que enlazarla desde la ficha de cualquier tema hotelero
+  habría contradicho lo que la propia entrada explica.

@@ -216,4 +216,12 @@ comprobar(
     datos_formatear_candidato($racimo_candidato, [])['items']
 );
 
+// --- bits_categoria_descripcion() ---------------------------------------
+
+foreach (array_keys(bits_categorias()) as $categoria) {
+    comprobar("$categoria tiene descripcion evergreen", true, bits_categoria_descripcion($categoria) !== '');
+}
+
+comprobar('una categoria que no existe no revienta, da cadena vacia', '', bits_categoria_descripcion('esto-no-existe'));
+
 resumen_pruebas('Pruebas de la fase 3: reglas del bit y de la edicion');

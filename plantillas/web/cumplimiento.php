@@ -73,7 +73,7 @@ $descripcion = 'El calendario normativo de la tecnología hotelera en España: V
 
   <ol class="cuadro cumplimiento-lista" aria-label="Calendario normativo">
     <?php foreach ($normas as $norma): ?>
-      <li class="cuadro-tarjeta cumplimiento-norma cumplimiento-<?= web_e($norma['estado']) ?>">
+      <li id="<?= web_e(web_slug_seguro($norma['norma'])) ?>" class="cuadro-tarjeta cumplimiento-norma cumplimiento-<?= web_e($norma['estado']) ?>">
         <h2 class="cuadro-tema"><?= web_e($norma['norma']) ?></h2>
         <p class="cuadro-nota"><?= web_e($norma['ambito']) ?></p>
 
