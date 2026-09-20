@@ -31,6 +31,8 @@ $categorias = bits_categorias();
   <ol class="masleido-lista">
     <?php foreach ($mas_leidos as $indice => $bit): ?>
       <?php
+        // target="_blank": mismo motivo que en bit.php, este enlace lleva al
+        // original y no debe cerrar la pagina de portada de la que sale.
         $tema   = bits_categoria_canonica((string) $bit['categoria']) ?: 'tecnologia-general';
         $enlace = !empty($bit['url'])
             ? web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])
@@ -40,7 +42,7 @@ $categorias = bits_categorias();
         <span class="masleido-numero"><?= str_pad((string) ($indice + 1), 2, '0', STR_PAD_LEFT) ?></span>
         <span class="masleido-cuerpo">
           <?php if ($enlace !== ''): ?>
-            <a href="<?= web_e($enlace) ?>" rel="nofollow noopener"><?= web_e((string) $bit['titular']) ?></a>
+            <a href="<?= web_e($enlace) ?>" rel="nofollow noopener" target="_blank"><?= web_e((string) $bit['titular']) ?></a>
           <?php else: ?>
             <?= web_e((string) $bit['titular']) ?>
           <?php endif; ?>

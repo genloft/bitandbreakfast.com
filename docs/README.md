@@ -852,3 +852,14 @@ un MariaDB 10.6 para la de humo.
   que no afecta a hoteles -entra en `/cumplimiento.html` solo por contexto
   competitivo-, así que enlazarla desde la ficha de cualquier tema hotelero
   habría contradicho lo que la propia entrada explica.
+- **Los tres enlaces que llevan al artículo original abren en pestaña
+  nueva.** El titular del bit, el botón "externo" del pie y cada fuente del
+  desplegable "N fuentes lo cuentan" -en `bit.php` y en `mas_leido.php`-
+  llevan `target="_blank"` a petición expresa del dueño del sitio: un
+  agregador vive de que el lector siga en el sitio entre un clic y el
+  siguiente, y perder la portada -o la ficha del bit- cada vez que se pulsa
+  un enlace es justo lo contrario. Los enlaces de cita -las fuentes de
+  Cifras y Cumplimiento, "ir al medio" en la ficha de un medio- se quedan
+  como estaban: no son "una noticia" en el sentido de lo que pidió el
+  dueño, son referencias de una página que ya de por sí es de consulta, no
+  de lectura seguida.
