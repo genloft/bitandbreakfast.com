@@ -863,3 +863,21 @@ un MariaDB 10.6 para la de humo.
   como estaban: no son "una noticia" en el sentido de lo que pidió el
   dueño, son referencias de una página que ya de por sí es de consulta, no
   de lectura seguida.
+- **El glosario pasó de veinte a cuarenta y ocho términos, siguiendo al
+  pie de la letra la lista de `docs/MEJORAS.md` -reserva agéntica,
+  métricas de negocio, pagos, arquitectura genérica, seis siglas
+  normativas y BMS/BEMS-.** Cada término nuevo se verificó por separado
+  antes de escribirlo, no se copió de memoria: en particular, CSRD llevaba
+  en la cabeza el ámbito de aplicación original de la directiva, y una
+  búsqueda mostró que el "Omnibus I" de 2026 lo redujo a partir de 1.000
+  empleados y 450 M€ de facturación -deja fuera a la inmensa mayoría de
+  cadenas hoteleras-, así que la definición dice eso, no el ámbito viejo.
+  BMS y BEMS se separaron en dos entradas -el documento los escribía juntos
+  como "BMS/BEMS"- porque son siglas distintas con significados distintos
+  y el glosario no tiene precedente de entradas combinadas.
+- **Los cinco términos de "arquitectura genérica" -CDP, middleware, iPaaS,
+  webhook, SSO- se quedan sin tema (`tema => null`), igual que API y
+  KPI.** El propio documento los agrupaba aparte de "PMS y CRS", y son
+  conceptos que no son privativos de la tecnología hotelera: forzarles un
+  tema habría sido una etiqueta menos precisa que no ponerles ninguna,
+  el mismo criterio que ya regía para API y KPI antes de esta ampliación.

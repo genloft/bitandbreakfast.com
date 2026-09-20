@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Glosario: de veinte términos a unos cincuenta (§2.3). Amplía justo lo que ya demostró valer la pena.
+1. Cifras: dos grupos que faltan, y uno automatizable de verdad (§2.3). Mismo patrón de mantenimiento que ya existe.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -68,23 +68,7 @@ es de lo primero que un directivo busca al empezar el ejercicio.
 Mismo patrón de mantenimiento que Cifras: revisión a mano y aviso al
 caducar.
 
-### 2.3 Glosario: de veinte términos a unos cincuenta
-
-`plantillas/web/glosario.php` tiene veinte entradas y le faltan justo las
-que más se están usando ahora:
-
-- Reserva agéntica y protocolos: MCP, ACP (Agentic Commerce Protocol),
-  agentic booking.
-- Negocio: TRevPAR, GOPPAR, RevPAG, ALOS, OCC, rate parity y disparidad,
-  attribute-based selling, dynamic packaging, metabuscador.
-- Pagos: SCA, 3DS, tokenización.
-- Arquitectura: CDP, middleware, iPaaS, webhook, SSO.
-- Normativa: NIS2, AI Act, EAA, Verifactu, SES.Hospedajes, CSRD.
-- Operaciones: BMS/BEMS.
-
-Cada uno enlazando a su tema, como ya hacen los que hay.
-
-### 2.4 Cifras: dos grupos que faltan, y uno automatizable de verdad
+### 2.3 Cifras: dos grupos que faltan, y uno automatizable de verdad
 
 Faltan dos datos que un directivo mira siempre: mix de canal directo frente
 a OTA y digitalización de la hostelería española.
@@ -99,7 +83,7 @@ raspar—.
 Y un `cifras.json` junto a la página: es lo que hace que otros citen estos
 datos en vez de rehacerlos.
 
-### 2.5 La reserva agéntica merece cobertura propia
+### 2.4 La reserva agéntica merece cobertura propia
 
 El tema del año para un director comercial, y hoy cae disuelto en
 «Distribución y OTAs»: Booking y Expedia dentro de ChatGPT, el Agentic
