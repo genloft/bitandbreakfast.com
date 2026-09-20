@@ -590,9 +590,33 @@ h1 {
 
 .bit {
   display: block;
+  position: relative;
   padding: 1.1rem 1.1rem 1.3rem;
   border-right: 1px solid var(--filete);
   border-bottom: 1px solid var(--filete);
+}
+
+/* Toda la celda es zona de clic, no solo el titular. El truco del "enlace
+   estirado": el titular lleva un ::after que cubre la celda entera -.bit ya
+   es su contenedor posicionado, arriba-, y cada control propio de la ficha
+   -las etiquetas, "menciona", compartir y votar, "N fuentes lo cuentan"-
+   sube de plano con z-index para seguir siendo su propio objetivo de toque
+   en vez de desaparecer bajo el titular. Lo que queda debajo del estirado
+   -el numero, el icono de tema, el nombre de la fuente, las fechas- no
+   pierde nada: nunca eran zona de clic propia, y ahora tocarlos lleva al
+   mismo sitio que tocar el titular. */
+.bit-resumen h2 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.etiquetas,
+.menciona,
+.pie-acciones,
+.fuentes-bit {
+  position: relative;
+  z-index: 1;
 }
 
 /* Todas las fichas del mismo alto, para que la reticula se lea como una

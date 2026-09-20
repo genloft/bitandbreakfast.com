@@ -794,6 +794,17 @@ comprobar(
     substr_count($estilo_css, '}')
 );
 
+// §4.6 de docs/MEJORAS.md: toda la celda es zona de clic -el "enlace
+// estirado" del titular-, comprobado de verdad en un navegador de verdad
+// antes de escribir esta prueba; aqui solo se comprueba que las reglas
+// no han desaparecido de la hoja publicada.
+comprobar('la hoja de estilo trae el enlace estirado del titular', true, str_contains($estilo_css, '.bit-resumen h2 a::after'));
+comprobar(
+    'y sube de plano los controles propios de la ficha',
+    true,
+    str_contains($estilo_css, ".etiquetas,\n.menciona,\n.pie-acciones,\n.fuentes-bit {")
+);
+
 // Sin version en la URL, quien ya haya visitado el sitio se queda con la hoja
 // vieja hasta treinta dias: el .htaccess le pone un mes de cache y el fichero
 // se reescribe siempre en el mismo sitio.

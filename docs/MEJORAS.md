@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Toda la celda debería ser zona de clic (§4.6). Ahora solo lo son el titular y los iconos del pie; en móvil, un objetivo de toque del tamaño de la celda cambia por completo la sensación de uso.
+1. Las cifras del radar, separadas del nombre (§4.6). «Actualizado hace X, N noticias» compite tipográficamente con el nombre del sitio en `cabecera.php`; un filete y un rótulo propio las separan.
 
 ## 2. Contenido para directivos
 
@@ -142,13 +142,7 @@ ciberseguridad».
 —cuántas noticias, de qué temas, qué es lo más confirmado— convierten una
 lista en una página que se puede mandar por WhatsApp.
 
-### 4.6 Toda la celda debería ser zona de clic
-
-Ahora solo lo son el titular y los iconos del pie. En móvil, un objetivo de
-toque del tamaño de la celda cambia por completo la sensación de uso, y en
-una retícula de celdas con filete el gesto es obvio.
-
-### 4.7 Las cifras del radar, separadas del nombre
+### 4.6 Las cifras del radar, separadas del nombre
 
 «Actualizado hace X, N noticias» es la pregunta de quien vuelve, y en
 `cabecera.php` compite tipográficamente con el nombre del sitio. Un filete
