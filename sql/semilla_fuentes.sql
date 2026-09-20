@@ -75,3 +75,17 @@ VALUES
   ('Nexotur', 'https://www.nexotur.com/rss/', 'https://www.nexotur.com/', 'prensa', 'es', 'es', 'distribucion-otas', 4, 1, 'Agencias y distribucion en Espana');
 
 -- 59 fuentes insertadas.
+
+-- La fuente del boletin de vulnerabilidades KEV: no es un feed RSS -es un
+-- JSON con su propia forma, y la alimenta cron/kev.php, no el rastreador
+-- generico-, asi que necesita su columna "gestion" propia. Ver
+-- sql/migraciones/023-fuente-cisa-kev.sql para la instalacion que ya corria.
+INSERT INTO fuentes
+  (nombre, url_feed, url_sitio, tipo, gestion, idioma, region,
+   categoria_defecto, peso, activa, notas, fecha_alta)
+VALUES
+  ('CISA KEV', 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json',
+   'https://www.cisa.gov/known-exploited-vulnerabilities-catalog', 'estado', 'manual', 'en', 'global',
+   'ciberseguridad', 8, 1,
+   'No la lee el rastreador de feeds: la alimenta cron/kev.php, que cruza cada entrada nueva del catalogo contra proveedores y proveedor_alias.',
+   UTC_DATE());

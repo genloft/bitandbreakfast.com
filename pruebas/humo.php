@@ -1020,6 +1020,30 @@ $horas = (int) bd()->query(
 comprobar('robots.txt duerme una semana a la primera', true, $horas >= 167 && $horas <= 168);
 
 // -----------------------------------------------------------------------------
+// La fuente del boletin KEV: la trae la semilla, y el rastreador de RSS
+// tiene que dejarla en paz -no sabe leer JSON, y si la cogiera en su turno
+// la marcaria como una fuente rota para siempre-.
+// -----------------------------------------------------------------------------
+
+require_once $raiz . '/cron/kev.php';
+
+$kev_fila = bd()->query("SELECT id, activa, gestion FROM fuentes WHERE nombre = 'CISA KEV'")->fetch();
+
+comprobar('la fuente del KEV existe y esta gestionada aparte', 'manual', $kev_fila['gestion'] ?? null);
+comprobar('y sigue activa -asi el panel puede apagarla de verdad-', 1, (int) ($kev_fila['activa'] ?? 0));
+
+comprobar(
+    'el rastreador de RSS nunca la coge, aunque este activa',
+    false,
+    in_array((int) $kev_fila['id'], array_map(
+        static fn (array $f): int => (int) $f['id'],
+        ingesta_siguientes(0, 200)
+    ), true)
+);
+
+comprobar('kev_fuente() la encuentra para poder anclar sus items', true, kev_fuente() !== null);
+
+// -----------------------------------------------------------------------------
 // Tendencias
 //
 // publicar_tendencias() solo lee categoria, dia y estado de bits, asi que no

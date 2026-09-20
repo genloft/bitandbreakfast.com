@@ -43,6 +43,7 @@ reparte en más pasadas, porque todas llevan puntero.
 | 0 | **cerrojo** | Si la pasada anterior sigue viva, ésta se va sin tocar nada | siempre |
 | 0 | **migraciones** | Aplica los cambios de esquema que traiga el despliegue | siempre |
 | 1 | **ingesta** | Descarga un lote de feeds y guarda las entradas nuevas | siempre |
+| 1 | **kev** | Cruza el catálogo KEV de CISA contra proveedores y guarda lo que coincide | siempre |
 | 2 | **procesar** | Limpia, deduplica y **agrupa en racimos** lo que dice lo mismo | siempre |
 | 3 | **auto** | Aplica las puertas y **escribe los bits** que las pasan | siempre |
 | 4 | **publicar** | Regenera el HTML estático si algo ha cambiado | siempre |
@@ -149,6 +150,7 @@ Por SSH, si el plan lo permite:
 
 ```bash
 php cron/tareas.php ingesta     # solo la ingesta
+php cron/tareas.php kev         # solo el cruce con el catalogo KEV
 php cron/tareas.php auto        # solo la escritura de bits
 php cron/tareas.php publicar    # solo regenerar la web
 ```

@@ -6,8 +6,8 @@
  * alojamiento puede no permitir mas. Este fichero mira el reloj y decide que
  * toca en cada ejecucion.
  *
- *   Cada ejecucion : ingesta, procesado, publicacion automatica, generador
- *                    y envio del boletin
+ *   Cada ejecucion : ingesta, boletin de vulnerabilidades KEV, procesado,
+ *                    publicacion automatica, generador y envio del boletin
  *   A las 05:00 UTC: mantenimiento, una vez al dia
  *
  * Uso normal (desde cron, cada cinco minutos):
@@ -237,7 +237,7 @@ function tareas_toca(string $tarea, string $forzada): bool
     }
 
     return match ($tarea) {
-        'ingesta', 'procesar', 'auto' => true,
+        'ingesta', 'kev', 'procesar', 'auto' => true,
         // El envio va por tandas cortas por el limite del buzon, asi que le
         // toca en cada pasada: sale enseguida cuando no hay nada que mandar.
         'enviar'              => true,
@@ -270,6 +270,7 @@ function tareas_toca_mantenimiento(): bool
 
 $tareas = [
     'ingesta'       => dirname(__DIR__) . '/cron/ingesta.php',
+    'kev'           => dirname(__DIR__) . '/cron/kev.php',
     'procesar'      => dirname(__DIR__) . '/cron/procesar.php',
     'auto'          => dirname(__DIR__) . '/cron/auto.php',
     'publicar'      => dirname(__DIR__) . '/cron/publicar.php',
@@ -333,6 +334,7 @@ foreach ($tareas as $nombre => $fichero) {
 
         $funcion = match ($nombre) {
             'ingesta'       => 'ingesta_lote',
+            'kev'           => 'kev_lote',
             'procesar'      => 'procesar_lote',
             'auto'          => 'auto_publicar_lote',
             'publicar'      => 'publicar_pendiente',
