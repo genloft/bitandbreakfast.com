@@ -406,35 +406,31 @@ img { max-width: 100%; height: auto; }
   font-variant-numeric: tabular-nums;
 }
 
-.panel-banners {
-  display: flex;
+.panel-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  width: 100%;
-  border-left: 1px solid var(--filete-fino);
   margin-top: .55rem;
 }
 
-.banner-item {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  border-right: 1px solid var(--filete-fino);
+.panel-cifra { padding-right: .9rem; }
+.panel-cifra + .panel-cifra { padding-left: .9rem; border-left: 1px solid var(--filete-fino); }
+
+.panel-cifra dd {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: baseline;
+  gap: .4rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.banner-item dt {
-  margin: 0;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: var(--filete-fino);
+.panel-nuevas {
+  font-family: var(--titular);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--suave);
 }
 
-.banner-item dd {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 500;
-}
+.panel-nuevas-hay { color: var(--acento); }
 
 .panel-total {
   font-size: .72rem;

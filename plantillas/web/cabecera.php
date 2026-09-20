@@ -91,9 +91,7 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias
     <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
       <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
     </a>
-  </div>
 
-  <div>
     <?php require __DIR__ . '/panel.php'; ?>
   </div>
 

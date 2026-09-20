@@ -41,9 +41,40 @@ $filas = [
 ];
 
 ?>
-<div class="panel-banners" role="complementary" aria-label="Métricas del radar">
-  <div class="banner-item banner-revpar">
-    <dt>RevPAR</dt>
-    <dd><?= web_e($panel['revpar'] ?? '€ 114,20') ?></dd>
-  </div>
+<div class="panel" role="complementary" aria-label="Estado del radar">
+  <dl class="panel-relojes">
+    <div class="panel-reloj">
+      <dt>Actualizado</dt>
+      <dd><span class="pulso" aria-hidden="true"></span> <time datetime="<?= web_e(str_replace(' ', 'T', (string) $panel['cuando']) . 'Z') ?>"><?= web_e($cuando) ?></time></dd>
+    </div>
+
+    <?php if ($siguiente !== ''): ?>
+      <div class="panel-reloj">
+        <dt>Siguiente</dt>
+        <dd><time datetime="<?= web_e(str_replace(' ', 'T', $siguiente) . 'Z') ?>">~<?= web_e(web_hora($siguiente)) ?></time></dd>
+      </div>
+    <?php endif; ?>
+  </dl>
+
+  <dl class="panel-cifras">
+    <?php foreach ($filas as $nombre => $cifra): ?>
+      <div class="panel-cifra">
+        <dt><?= web_e($nombre) ?></dt>
+        <dd>
+          <span class="panel-nuevas<?= (int) $cifra['nuevas'] > 0 ? ' panel-nuevas-hay' : '' ?>">
+            +<?= (int) $cifra['nuevas'] ?>
+          </span>
+          <span class="panel-total"><?= (int) $cifra['total'] ?></span>
+        </dd>
+      </div>
+    <?php endforeach; ?>
+    <?php if (isset($panel['revpar']) && $panel['revpar'] !== ''): ?>
+      <div class="panel-cifra">
+        <dt>RevPAR</dt>
+        <dd>
+          <span class="panel-total"><?= web_e($panel['revpar']) ?></span>
+        </dd>
+      </div>
+    <?php endif; ?>
+  </dl>
 </div>

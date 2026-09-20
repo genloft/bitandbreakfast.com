@@ -121,23 +121,6 @@ require_once __DIR__ . '/iconos.php';
 
 <main id="contenido">
 
-  <section class="destacados" aria-label="Destacados">
-    <a class="destacado" href="<?= web_e($base) ?>/estadisticas.html">
-      <span class="destacado-cifra"><?= web_e($cifra_cifras) ?></span>
-      <span class="destacado-texto">
-        <span class="destacado-rotulo">Cifras del sector →</span>
-        <span class="destacado-pie"><?= web_e($pie_cifras) ?></span>
-      </span>
-    </a>
-    <a class="destacado" href="<?= web_e($base) ?>/tendencias.html">
-      <span class="destacado-cifra"><?= web_e($cifra_tendencias) ?></span>
-      <span class="destacado-texto">
-        <span class="destacado-rotulo">Tendencias →</span>
-        <span class="destacado-pie"><?= web_e($pie_tendencias) ?></span>
-      </span>
-    </a>
-  </section>
-
   <article class="edicion">
 
     <?php
