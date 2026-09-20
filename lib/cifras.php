@@ -186,6 +186,21 @@ function cifras_grupos(): array
             'destacado' => 'España aparece, según varias encuestas, entre los países líderes de Europa en este uso.',
         ],
         [
+            'tema' => 'Mix de canal directo y OTA',
+            'categoria' => 'distribucion-otas',
+            'cifras' => [
+                [
+                    'ambito'  => 'Global',
+                    'valor'   => '≈21%',
+                    'detalle' => 'de las reservas hoteleras llegan por el canal directo del propio hotel, según el informe -su segunda edición-, igualando por primera vez a la cuota de las OTAs',
+                    'fuente'  => 'NYU SPS, HEDNA y RateGain — «State of Distribution 2025» (700+ cadenas, 21.000+ hoteles, 310 ciudades)',
+                    'fecha'   => 'informe de 2025 (2.ª edición) · publicado en junio de 2025',
+                    'url'     => 'https://rategain.com/press-release/state-of-distribution-2025-launch/',
+                ],
+            ],
+            'destacado' => 'Llevaba años perdiendo terreno frente a las OTAs; es la primera vez que el canal directo empata con ellas.',
+        ],
+        [
             'tema' => 'Turismo internacional',
             'categoria' => 'inversion-mercado',
             'nota' => 'Esta y las dos siguientes ya no son sobre tecnología: son el tamaño real del sector en el que esa tecnología se usa.',
@@ -359,6 +374,23 @@ function cifras_por_tema(string $categoria): array
         cifras_grupos(),
         static fn (array $grupo): bool => ($grupo['categoria'] ?? null) === $categoria
     ));
+}
+
+/**
+ * Todo lo que ensena /estadisticas.html, en forma de datos: para /cifras.json,
+ * que es lo que hace que otros citen estas cifras en vez de rehacerlas -tal
+ * cual pide docs/MEJORAS.md-. Mismos grupos y el mismo criterio de revision
+ * que la pagina, sin nada que la pagina no diga ya.
+ */
+function cifras_exportar(): array
+{
+    $revisado = cifras_revisado();
+
+    return [
+        'revisado'        => $revisado,
+        'limite_revision' => cifras_limite_revision($revisado),
+        'grupos'          => cifras_grupos(),
+    ];
 }
 
 /**

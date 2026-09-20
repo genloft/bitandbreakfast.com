@@ -353,6 +353,16 @@ function publicar_pendiente(float $limite): array
         ])
     ) ? 1 : 0;
 
+    // Las mismas cifras de /estadisticas.html, en JSON: es lo que hace que
+    // otros citen estos datos en vez de rehacerlos.
+    $ficheros += publicar_escribir(
+        $publico . '/cifras.json',
+        (string) json_encode(
+            cifras_exportar(),
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
+        )
+    ) ? 1 : 0;
+
     // Y se barre lo que ya no le corresponde a nada: un dia caido del archivo
     // no puede seguir servido en su direccion de siempre. Las ediciones se
     // barren enteras: ya no existen como concepto y sus paginas enlazaban a un

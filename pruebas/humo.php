@@ -446,6 +446,21 @@ comprobar(
     true,
     str_contains((string) file_get_contents($publico . '/sitemap.xml'), '/cumplimiento.html')
 );
+
+// cifras.json: las mismas cifras de la pagina, en JSON valido.
+comprobar('escribe cifras.json', true, is_file($publico . '/cifras.json'));
+
+$cifras_json = json_decode((string) file_get_contents($publico . '/cifras.json'), true);
+
+comprobar('cifras.json es JSON valido', true, is_array($cifras_json));
+comprobar('con la misma fecha de revision que la pagina', cifras_revisado(), $cifras_json['revisado'] ?? null);
+comprobar('y al menos diez grupos', true, count($cifras_json['grupos'] ?? []) >= 10);
+comprobar(
+    'incluyendo el mix de canal directo y OTA',
+    true,
+    in_array('Mix de canal directo y OTA', array_column($cifras_json['grupos'] ?? [], 'tema'), true)
+);
+
 comprobar('escribe el glosario', true, is_file($publico . '/glosario.html'));
 comprobar(
     'y enlaza un termino con el tema que le corresponde',
