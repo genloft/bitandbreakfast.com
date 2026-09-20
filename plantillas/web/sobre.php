@@ -32,6 +32,9 @@ $radar         = $radar ?? ['total' => 0, 'por_region' => []];
 <meta property="og:title" content="Qué es Bit &amp; Breakfast">
 <meta property="og:type" content="website">
 <meta property="og:url" content="<?= web_e($base) ?>/sobre.html">
+<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
 </head>
 <body>
 

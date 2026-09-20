@@ -11,31 +11,15 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. `og:image` tipográfica (§1.3). Desbloquea los botones de compartir que ya existen.
-2. `/cumplimiento.html` (§2.1). La página con más valor por hora invertida de toda la lista.
-3. Tipografía autoalojada y modo oscuro (§4.1 y §4.2). El salto visual.
-4. Boletín de vulnerabilidades KEV (§2.2). Lo que hace que un director de sistemas se suscriba.
+1. `/cumplimiento.html` (§2.1). La página con más valor por hora invertida de toda la lista.
+2. Tipografía autoalojada y modo oscuro (§4.1 y §4.2). El salto visual.
+3. Boletín de vulnerabilidades KEV (§2.2). Lo que hace que un director de sistemas se suscriba.
 
 ## 1. Lo que resta credibilidad hoy
 
 Son fallos, no ideas. Van primero porque un directivo que pilla una
 contradicción deja de fiarse del resto de la página, y este sitio no tiene
 más activo que ese.
-
-### 1.3 No hay `og:image` en ninguna página
-
-`bit.php` construye botones de compartir en WhatsApp y LinkedIn, y lo que se
-comparte sale como un enlace desnudo: no hay una sola etiqueta `og:image` en
-`plantillas/`, y `twitter:card` está en `summary`.
-
-Se arregla sin traicionar el «sin fotos, y a propósito»: lo que falta no es
-una foto, es una tarjeta tipográfica —papel, filete, el sello y el titular—
-que el propio generador puede escribir en SVG, como ya escribe
-`favicon.svg`. El Content-Security-Policy del `.htaccess` ya permite
-`img-src 'self'`, así que no hay que tocar la política.
-
-Una por día y una genérica para el resto es suficiente para empezar; una por
-bit es el final del camino, no el principio.
 
 ### 1.4 Contraste insuficiente en el texto pequeño
 

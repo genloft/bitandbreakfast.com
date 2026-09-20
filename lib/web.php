@@ -356,6 +356,15 @@ function web_url_medio(string $base, string $slug): string
 }
 
 /**
+ * La tarjeta que se comparte desde cualquier página que no sea un día
+ * concreto -esas llevan la suya propia, junto a su index.html-.
+ */
+function web_url_imagen_generica(string $base): string
+{
+    return rtrim($base, '/') . '/og-generica.png';
+}
+
+/**
  * El slug de un medio a partir de su nombre.
  *
  * Los medios no tienen slug en la base -son un nombre en la tabla fuentes-,

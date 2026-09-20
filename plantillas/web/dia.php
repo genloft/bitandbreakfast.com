@@ -45,6 +45,7 @@ $descripcion = sprintf(
 );
 
 $enlace_activo = 'archivo';
+$imagen_og     = web_url_dia($base, $fecha) . 'og.png';
 
 require_once __DIR__ . '/iconos.php';
 
@@ -66,7 +67,9 @@ require_once __DIR__ . '/iconos.php';
 <meta property="og:type" content="article">
 <meta property="og:url" content="<?= web_e($url) ?>">
 <meta property="og:locale" content="es_ES">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="<?= web_e($imagen_og) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= web_e($imagen_og) ?>">
 </head>
 <body>
 

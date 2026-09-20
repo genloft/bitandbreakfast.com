@@ -108,7 +108,9 @@ require_once __DIR__ . '/iconos.php';
 <meta property="og:type" content="website">
 <meta property="og:url" content="<?= web_e($base) ?>/">
 <meta property="og:locale" content="es_ES">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
 </head>
 <body>
 

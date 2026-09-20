@@ -40,6 +40,9 @@ $url = web_url_medio($base, (string) $medio['slug']);
 <meta property="og:title" content="<?= web_e($medio['nombre']) ?> en Bit &amp; Breakfast">
 <meta property="og:type" content="website">
 <meta property="og:url" content="<?= web_e($url) ?>">
+<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
 </head>
 <body>
 
