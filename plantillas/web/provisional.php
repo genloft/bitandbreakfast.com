@@ -33,6 +33,11 @@ $alta_abierta  = $alta_abierta ?? false;
 <meta property="og:title" content="Bit &amp; Breakfast">
 <meta property="og:description" content="Radar de tecnología hotelera. Cinco minutos de lectura a la semana.">
 <meta property="og:type" content="website">
+<?php if ($base !== ''): ?>
+<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php endif; ?>
 </head>
 <body>
 

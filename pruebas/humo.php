@@ -596,6 +596,32 @@ comprobar(
     str_contains((string) file_get_contents($publico . '/index.html'), '/favicon.svg')
 );
 
+// La tarjeta generica: og:image tiene que ser PNG de verdad, no SVG como el
+// favicon -ninguna red social que enseña vista previa rasteriza SVG-.
+comprobar('escribe la tarjeta generica', true, is_file($publico . '/og-generica.png'));
+comprobar(
+    'y es un PNG de verdad, no el mismo SVG que el favicon',
+    'image/png',
+    getimagesizefromstring((string) file_get_contents($publico . '/og-generica.png'))['mime'] ?? null
+);
+comprobar(
+    'la portada enlaza la tarjeta generica en og:image',
+    true,
+    str_contains((string) file_get_contents($publico . '/index.html'), '/og-generica.png')
+);
+
+// La tarjeta de un dia concreto, con el titular del bit que lleva.
+$ruta_dia_og = $publico . '/' . dirname(web_ruta_dia($dia)) . '/og.png';
+comprobar('escribe la tarjeta del dia', true, is_file($ruta_dia_og));
+comprobar(
+    'y el dia la enlaza en og:image',
+    true,
+    str_contains(
+        (string) file_get_contents($publico . '/' . web_ruta_dia($dia)),
+        '/d/' . $dia . '/og.png'
+    )
+);
+
 $portada = (string) file_get_contents($publico . '/index.html');
 
 comprobar(

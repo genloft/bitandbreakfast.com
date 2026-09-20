@@ -176,6 +176,9 @@ $descripcion = 'Las siglas de la tecnología hotelera -PMS, RMS, NDC, RevPAR y e
 <meta property="og:description" content="<?= web_e($descripcion) ?>">
 <meta property="og:type" content="website">
 <meta property="og:url" content="<?= web_e($base) ?>/glosario.html">
+<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
 </head>
 <body>
 

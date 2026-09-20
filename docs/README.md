@@ -687,3 +687,21 @@ un MariaDB 10.6 para la de humo.
   antes de que el sitio empezara a traducir con DeepL: la regla nueva ya
   estaba bien explicada en este README, pero esta página, que es la que
   lee quien llega por un enlace suelto, se había quedado con la vieja.
+- **La tarjeta que se comparte es PNG, no SVG, aunque favicon.svg sea
+  SVG.** `bit.php` construye botones para compartir en WhatsApp y
+  LinkedIn desde hace tiempo, pero sin ninguna etiqueta `og:image` lo que
+  se compartía era un enlace desnudo. La corrección obvia -escribir la
+  tarjeta en SVG, como ya escribe `favicon.svg`- no funciona aquí:
+  ninguna red que enseña vista previa (WhatsApp, LinkedIn, Facebook, X)
+  rasteriza SVG en `og:image`, solo PNG/JPG/WebP. `lib/imagen_social.php`
+  usa GD -viene con casi cualquier PHP, no hace falta Composer- para
+  dibujar la misma tarjeta tipográfica -papel, filete, el sello y el
+  titular- pero en un PNG de verdad. La tipografía es Big Shoulders (SIL
+  Open Font License, en `plantillas/web/fuentes/`): condensada, como pide
+  `--titular` en `estilo.php`, y usada solo en el servidor para generar
+  la imagen, así que no toca la regla de "nada de Google Fonts" del CSP
+  -esa regla es sobre cargar fuentes en el navegador, no sobre qué
+  tipografía dibuja una imagen que ya sale terminada-. Una tarjeta
+  genérica para todo lo que no es un día, y una por día con el titular
+  del bit más reciente de esa fecha; una por bit, dice el propio
+  documento de mejoras, es el final del camino, no el principio.

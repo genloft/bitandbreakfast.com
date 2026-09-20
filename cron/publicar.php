@@ -24,6 +24,8 @@
  *   buscar.html         el explorador, mas indice.json
  *   estilo.css          la hoja del sitio
  *   favicon.svg         el sello, en un fichero aparte
+ *   og-generica.png      la tarjeta que se comparte, para todo lo que no es un dia
+ *   d/<AAAA-MM-DD>/og.png  la tarjeta de ese dia, con su titular de cabeza
  *   robots.txt
  *   sitemap.xml         direcciones para Google, con lastmod por dia
  *   estadisticas.html   cuadro de mandos con cifras externas -no de esta base-
@@ -42,6 +44,7 @@ require_once dirname(__DIR__) . '/lib/web.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
+require_once dirname(__DIR__) . '/lib/imagen_social.php';
 
 /**
  * Publica lo que haya pendiente.
@@ -107,6 +110,15 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir($publico . '/buscar.js', publicar_plantilla('buscarjs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/favicon.svg', publicar_plantilla('favicon', [])) ? 1 : 0;
+
+    // La tarjeta generica que se comparte desde cualquier pagina que no sea
+    // un dia -og-image tiene que ser PNG de verdad, ninguna red social
+    // rasteriza SVG en la vista previa, asi que este fichero no es un primo
+    // del favicon aunque se escriba igual-.
+    $ficheros += publicar_escribir(
+        $publico . '/og-generica.png',
+        imagen_social_png('El radar de tecnología hotelera')
+    ) ? 1 : 0;
 
     // El .htaccess le pone un mes de cache a los dos ficheros, y se reescriben
     // siempre en el mismo sitio. Sin colgar el hash de su contenido de la URL,
@@ -184,6 +196,15 @@ function publicar_pendiente(float $limite): array
             'bits'    => $bits,
             'fuentes' => publicar_fuentes($racimos),
         ])) ? 1 : 0;
+
+        // La tarjeta de ese dia, con su titular de cabeza: es la que ve
+        // quien recibe un enlace a /d/<fecha>/ por WhatsApp o LinkedIn.
+        if ($bits) {
+            $ficheros += publicar_escribir(
+                dirname($ruta) . '/og.png',
+                imagen_social_png((string) $bits[0]['titular'], web_fecha_larga(substr((string) $dia['dia'], 0, 10)))
+            ) ? 1 : 0;
+        }
 
         $hechas++;
     }

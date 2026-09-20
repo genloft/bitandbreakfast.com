@@ -51,7 +51,7 @@ jobs:
         with:
           # La misma version minima que exige el instalador.
           php-version: '8.1'
-          extensions: pdo_mysql, curl, mbstring, simplexml, json
+          extensions: pdo_mysql, curl, mbstring, simplexml, json, gd
           coverage: none
 
       - name: Sintaxis de todos los ficheros PHP
@@ -61,7 +61,7 @@ jobs:
       - name: Pruebas sin base de datos
         run: |
           fallo=0
-          for prueba in texto canonica instalacion procesar panel web correo auto estado cifras fuentes; do
+          for prueba in texto canonica instalacion procesar panel web correo auto estado cifras fuentes imagen_social; do
             if salida="$(php "pruebas/$prueba.php" 2>&1)"; then
               echo "$salida"
             else
