@@ -32,7 +32,7 @@ const LISTA_TESTIGO_HORAS = 72;
  *
  * @return array ['ok' => bool, 'mensaje' => string]
  */
-function correo_alta_propia(string $email, array $conf, string $url_vuelta = '', string $temas = ''): array
+function correo_alta_propia(string $email, array $conf, string $url_vuelta = '', string $temas = '', string $alerta = ''): array
 {
     if (!correo_valido($email)) {
         return ['ok' => false, 'mensaje' => 'Esa dirección no parece válida.'];
@@ -51,7 +51,7 @@ function correo_alta_propia(string $email, array $conf, string $url_vuelta = '',
     }
 
     $testigo = bin2hex(random_bytes(32));
-    $id      = lista_guardar_pendiente($email, $testigo, $temas);
+    $id      = lista_guardar_pendiente($email, $testigo, $temas, $alerta);
 
     if ($id <= 0) {
         return ['ok' => false, 'mensaje' => 'No se ha podido registrar el alta. Inténtalo más tarde.'];
@@ -101,26 +101,29 @@ function lista_buscar(string $email): ?array
  *
  * $temas es una cadena separada por comas de slugs de bits_categorias() -por
  * ejemplo "ciberseguridad,cumplimiento"-, o cadena vacia para "todos los
- * temas", que es tambien el valor por defecto de la columna: quien vuelve a
- * pedir el alta sin elegir nada recupera el "todos" de siempre, no se queda
- * con la eleccion de la vez anterior.
+ * temas", que es tambien el valor por defecto de la columna. $alerta es una
+ * cadena separada por comas de terminos libres -sigla, proveedor o palabra
+ * suelta-, o vacia para no filtrar por esto. Quien vuelve a pedir el alta
+ * sin elegir nada recupera el comportamiento de siempre en ambas columnas,
+ * no se queda con la eleccion de la vez anterior.
  *
  * @return int Id del suscriptor, o 0 si no se ha podido.
  */
-function lista_guardar_pendiente(string $email, string $testigo, string $temas = ''): int
+function lista_guardar_pendiente(string $email, string $testigo, string $temas = '', string $alerta = ''): int
 {
     try {
-        $sql = "INSERT INTO suscriptores (email, estado, testigo, huella, temas, pedido)
-                VALUES (?, 'pendiente', ?, ?, ?, UTC_TIMESTAMP())
+        $sql = "INSERT INTO suscriptores (email, estado, testigo, huella, temas, alerta, pedido)
+                VALUES (?, 'pendiente', ?, ?, ?, ?, UTC_TIMESTAMP())
                 ON DUPLICATE KEY UPDATE
                     estado    = 'pendiente',
                     testigo   = VALUES(testigo),
                     huella    = VALUES(huella),
                     temas     = VALUES(temas),
+                    alerta    = VALUES(alerta),
                     pedido    = UTC_TIMESTAMP(),
                     dado_baja = NULL";
 
-        bd()->prepare($sql)->execute([$email, $testigo, lista_huella(), $temas]);
+        bd()->prepare($sql)->execute([$email, $testigo, lista_huella(), $temas, $alerta]);
 
         $st = bd()->prepare('SELECT id FROM suscriptores WHERE email = ? LIMIT 1');
         $st->execute([$email]);

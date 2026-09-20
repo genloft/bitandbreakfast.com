@@ -1109,3 +1109,27 @@ un MariaDB 10.6 para la de humo.
   tabla en todo el repositorio. Vacía significa "todos los temas", que
   es también el valor por defecto: ninguna fila existente, ni ninguna
   alta que no toque el selector, cambia de comportamiento.
+- **§3.2 -alerta por palabra o proveedor- usa una sola columna de texto
+  libre, no una de proveedores y otra de palabras clave.** Para quien
+  escribe "Mews, ransomware" al suscribirse son la misma cosa, un
+  término que le importa; separarlas habría sido una distinción técnica
+  sin ningún valor para quien rellena el formulario. Un término
+  coincide si aparece en el titular o el cuerpo del bit, o dentro del
+  nombre de un proveedor que ese bit ya trae identificado -así "Oracle"
+  encuentra un bit sobre "Oracle Hospitality" aunque el cuerpo no repita
+  el nombre completo-, sin distinguir mayúsculas de minúsculas en
+  ningún caso.
+- **`envio_bits_para_tema()` y `envio_bits_para_alerta()` se encadenan
+  en `cron/enviar.php`, no se combinan en una función mayor.** Quien
+  elige ambos recibe la intersección -sus temas, y dentro de esos temas
+  solo lo que menciona su alerta-, y cada filtro sigue siendo una
+  función pura de una sola responsabilidad, comprobable por separado en
+  `pruebas/envio.php` sin tener que construir el producto cartesiano de
+  los dos para probar cualquiera de los dos.
+- **La alerta no reabre la decisión de no publicar fichas de proveedor.**
+  Sigue sin haber ninguna página `/p/<proveedor>/`: el nombre de un
+  proveedor aquí es un término más de una lista de texto libre que
+  decide un lector para su propio correo, nunca contenido que este
+  sitio publique o indexe. "La pregunta de Mews, no la del hotel" -la
+  razón original para no tener fichas de proveedor- no aplica a un
+  filtro que nadie más que el propio suscriptor llega a ver.

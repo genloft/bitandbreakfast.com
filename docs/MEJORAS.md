@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Alertas por palabra clave o por proveedor (§3.2). Es la funcionalidad por la que un profesional deja su correo, y no choca con la decisión de no hacer fichas de proveedor.
+1. Hoja de estilo de impresión (§3.5). Con la estética de papel ya construida, es media hora de CSS y es de lo más coherente con la marca que se puede hacer.
 
 ## 2. Contenido para directivos
 
@@ -82,16 +82,7 @@ semanal, algo bien distinto del modelo actual -una edición, un correo- y
 que toca el código que de verdad manda los correos. Se deja para una
 mejora aparte en vez de forzarla en la misma pieza que el filtro por tema.
 
-### 3.2 Alertas por palabra clave o por proveedor
-
-«Avísame cuando se hable de Mews, o de ransomware». Es la funcionalidad por
-la que un profesional deja su correo.
-
-No choca con la decisión de no hacer fichas de proveedor —«la pregunta de
-Mews, no la del hotel»—: aquí el proveedor no es una página que se publica,
-es un filtro que elige el lector.
-
-### 3.3 API pública de lectura, e `indice.json` documentado
+### 3.2 API pública de lectura, e `indice.json` documentado
 
 `api/candidatos.php` ya abrió el camino de la lectura por API. Un endpoint
 público de lo publicado, más documentar el `indice.json` que el buscador ya
@@ -104,7 +95,7 @@ escribir.
 Un widget embebible, en cambio, chocaría con el `X-Frame-Options: DENY` del
 `.htaccess`. El JSON no.
 
-### 3.4 `/radar.html`: la transparencia como producto
+### 3.3 `/radar.html`: la transparencia como producto
 
 `salud.php` ya reúne datos que ningún medio publica: cuántas fuentes
 vigila, cuántas duermen y por qué, cuánto entra y cuánto se descarta. Una
@@ -114,13 +105,13 @@ directivo escéptico —y no hay que calcular nada nuevo, solo pintarlo—.
 Con el mismo cuidado que ya tiene esa página: cuentas y fechas, nunca
 configuración.
 
-### 3.5 Buscador: resaltar y ordenar
+### 3.4 Buscador: resaltar y ordenar
 
 `buscarjs.php` hace las facetas bien. Le falta resaltar el término
 encontrado dentro del resultado y poder ordenar por fecha además de por
 relevancia.
 
-### 3.6 Hoja de estilo de impresión
+### 3.5 Hoja de estilo de impresión
 
 Un directivo imprime o exporta a PDF el resumen del día para una reunión.
 Con una estética de papel ya construida, es media hora de CSS y es de lo

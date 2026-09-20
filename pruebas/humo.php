@@ -646,23 +646,24 @@ comprobar('y los negativos', 1, (int) bd()->query('SELECT COUNT(*) FROM votos WH
 comprobar('publicar_mas_votados() no rompe contra la base real', [], publicar_mas_votados());
 
 // -----------------------------------------------------------------------------
-// Suscripcion por tema (§3.1 de docs/MEJORAS.md)
+// Suscripcion por tema (§3.1) y alerta por palabra o proveedor (§3.2) de
+// docs/MEJORAS.md
 //
-// Lo que no se puede probar sin base de datos: que la columna nueva de
-// suscriptores viaja entera hasta enviar_pendientes(), que es de donde la
-// lee cron/enviar.php para decidir el subconjunto de cada destinatario. El
-// filtro en si -envio_bits_para_tema()- ya es puro y lo prueba
-// pruebas/envio.php sin montar nada.
+// Lo que no se puede probar sin base de datos: que las dos columnas nuevas
+// de suscriptores viajan enteras hasta enviar_pendientes(), que es de donde
+// las lee cron/enviar.php para decidir el subconjunto de cada destinatario.
+// Los filtros en si -envio_bits_para_tema() y envio_bits_para_alerta()- ya
+// son puros y los prueba pruebas/envio.php sin montar nada.
 // -----------------------------------------------------------------------------
 
 require_once $raiz . '/lib/lista.php';
 require_once $raiz . '/cron/enviar.php';
 
-bd()->prepare("INSERT INTO suscriptores (email, estado, temas) VALUES (?, 'confirmado', ?)")
-    ->execute(['filtrado@humo.test', 'ciberseguridad,cumplimiento']);
+bd()->prepare("INSERT INTO suscriptores (email, estado, temas, alerta) VALUES (?, 'confirmado', ?, ?)")
+    ->execute(['filtrado@humo.test', 'ciberseguridad,cumplimiento', 'Mews,ransomware']);
 $sus_filtrado_id = (int) bd()->lastInsertId();
 
-bd()->prepare("INSERT INTO suscriptores (email, estado, temas) VALUES (?, 'confirmado', '')")
+bd()->prepare("INSERT INTO suscriptores (email, estado, temas, alerta) VALUES (?, 'confirmado', '', '')")
     ->execute(['todos@humo.test']);
 $sus_todos_id = (int) bd()->lastInsertId();
 
@@ -671,13 +672,19 @@ foreach (enviar_pendientes((int) $edicion['id'], 50) as $fila) {
     $por_id[(int) $fila['id']] = $fila;
 }
 
-comprobar('enviar_pendientes() trae al suscriptor con temas elegidos', true, isset($por_id[$sus_filtrado_id]));
+comprobar('enviar_pendientes() trae al suscriptor con temas y alerta elegidos', true, isset($por_id[$sus_filtrado_id]));
 comprobar(
     'con sus temas tal cual se guardaron al darse de alta',
     'ciberseguridad,cumplimiento',
     $por_id[$sus_filtrado_id]['temas'] ?? null
 );
-comprobar('y al que no eligio ninguno, con la columna vacia -"todos"-', '', $por_id[$sus_todos_id]['temas'] ?? null);
+comprobar(
+    'y su alerta tal cual se guardo',
+    'Mews,ransomware',
+    $por_id[$sus_filtrado_id]['alerta'] ?? null
+);
+comprobar('y al que no eligio ninguno, con temas vacio -"todos"-', '', $por_id[$sus_todos_id]['temas'] ?? null);
+comprobar('y con alerta vacia -sin filtrar por esto-', '', $por_id[$sus_todos_id]['alerta'] ?? null);
 
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 $bits_indice = $indice['bits'] ?? [];

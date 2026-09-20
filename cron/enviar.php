@@ -94,15 +94,19 @@ function enviar_lote(float $limite): array
 
         $suscriptor_id = (int) $quien['id'];
 
-        // El filtro de temas es cosa de quien lee, no una seleccion editorial
-        // aparte de la que ya describe el comentario de mas arriba: vease
-        // envio_bits_para_tema() en lib/envio.php.
+        // El filtro de temas y el de alerta son cosa de quien lee, no una
+        // seleccion editorial aparte de la que ya describe el comentario de
+        // mas arriba: vease envio_bits_para_tema() y envio_bits_para_alerta()
+        // en lib/envio.php. Los dos se encadenan -quien haya elegido ambos
+        // recibe la interseccion, no la union-, y ninguno cambia nada para
+        // quien no haya tocado ese selector.
         $bits_persona = envio_bits_para_tema($bits, (string) ($quien['temas'] ?? ''));
+        $bits_persona = envio_bits_para_alerta($bits_persona, (string) ($quien['alerta'] ?? ''));
 
         if (!$bits_persona) {
-            // Sus temas no han traido nada hoy: se da por enviado sin mandar
-            // un correo vacio, igual que un dia entero sin bits no se manda a
-            // nadie.
+            // Sus temas o su alerta no han traido nada hoy: se da por enviado
+            // sin mandar un correo vacio, igual que un dia entero sin bits no
+            // se manda a nadie.
             enviar_anotar((int) $edicion['id'], $suscriptor_id, true);
 
             continue;
@@ -185,13 +189,13 @@ function enviar_edicion_pendiente(): ?array
  * edicion. Esa tabla es la que permite mandar por tandas: sin ella, la pasada
  * siguiente volveria a empezar por el primero de la lista.
  *
- * 'temas' viaja aqui -no en una consulta aparte- porque enviar_lote() lo
- * necesita para cada destinatario antes de generar su correo: es lo que
- * decide que subconjunto de $bits le toca.
+ * 'temas' y 'alerta' viajan aqui -no en una consulta aparte- porque
+ * enviar_lote() los necesita para cada destinatario antes de generar su
+ * correo: son los que deciden que subconjunto de $bits le toca.
  */
 function enviar_pendientes(int $edicion_id, int $cuantos): array
 {
-    $sql = "SELECT s.id, s.email, s.temas
+    $sql = "SELECT s.id, s.email, s.temas, s.alerta
               FROM suscriptores s
               LEFT JOIN envios en ON en.suscriptor_id = s.id AND en.edicion_id = ?
              WHERE s.estado = 'confirmado'

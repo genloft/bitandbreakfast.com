@@ -135,7 +135,18 @@ $catalogo   = array_keys(bits_categorias());
 $elegidos   = array_values(array_intersect((array) ($_POST['temas'] ?? []), $catalogo));
 $temas      = count($elegidos) < count($catalogo) ? implode(',', $elegidos) : '';
 
-$resultado = correo_alta($email, $base . '/', $temas);
+// La alerta es texto libre -una sigla, un proveedor, una palabra suelta-,
+// asi que aqui no hay catalogo contra el que filtrar como con los temas.
+// Lo unico que hace falta es que no se cuele algo absurdamente largo: como
+// mucho diez terminos, y el conjunto recortado al ancho real de la columna
+// para que nunca falle la insercion, pase lo que pase con los terminos.
+$terminos = array_filter(array_map(
+    static fn (string $termino): string => mb_substr(trim($termino), 0, 25),
+    explode(',', (string) ($_POST['alerta'] ?? ''))
+), static fn (string $termino): bool => $termino !== '');
+$alerta   = mb_substr(implode(',', array_slice(array_values($terminos), 0, 10)), 0, 300);
+
+$resultado = correo_alta($email, $base . '/', $temas, $alerta);
 
 if (!$resultado['ok']) {
     api_responder($base, 'No ha podido ser', $resultado['mensaje'], 502);
