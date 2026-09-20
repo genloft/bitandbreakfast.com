@@ -64,7 +64,11 @@ function enviar_lote(float $limite): array
     // El cajon de un dia. Se manda lo que se descubrio ese dia, que es
     // exactamente lo que se enseño en la web, no una seleccion aparte: si el
     // correo trajera otra cosa que la pagina, habria dos ediciones distintas
-    // del mismo dia y una de las dos estaria mintiendo.
+    // del mismo dia y una de las dos estaria mintiendo. El filtro por tema de
+    // mas abajo no contradice esto: $bits sigue siendo la edicion entera y
+    // unica, igual para todos; lo unico que cambia entre destinatarios es
+    // cuanto de ese mismo conjunto ve cada uno, por su propia eleccion al
+    // suscribirse, no por un criterio editorial que decida por ellos.
     $dia = substr((string) $edicion['fecha_prevista'], 0, 10);
 
     $resumen['dia'] = $dia;
@@ -81,7 +85,6 @@ function enviar_lote(float $limite): array
 
     $base    = rtrim((string) config_opcional('sitio.url', ''), '/');
     $tanda   = max(1, (int) ajuste('envio_por_pasada', '25'));
-    $asunto  = envio_asunto($edicion, $bits);
     $secreto = (string) config('secretos.secreto_hmac');
 
     foreach (enviar_pendientes((int) $edicion['id'], $tanda) as $quien) {
@@ -90,6 +93,21 @@ function enviar_lote(float $limite): array
         }
 
         $suscriptor_id = (int) $quien['id'];
+
+        // El filtro de temas es cosa de quien lee, no una seleccion editorial
+        // aparte de la que ya describe el comentario de mas arriba: vease
+        // envio_bits_para_tema() en lib/envio.php.
+        $bits_persona = envio_bits_para_tema($bits, (string) ($quien['temas'] ?? ''));
+
+        if (!$bits_persona) {
+            // Sus temas no han traido nada hoy: se da por enviado sin mandar
+            // un correo vacio, igual que un dia entero sin bits no se manda a
+            // nadie.
+            enviar_anotar((int) $edicion['id'], $suscriptor_id, true);
+
+            continue;
+        }
+
         $baja = $base . '/api/baja.php?s=' . $suscriptor_id . '&t=' . lista_firma_baja($suscriptor_id);
 
         // Un enlace de voto por bit, firmado para este destinatario: sin esto,
@@ -97,7 +115,7 @@ function enviar_lote(float $limite): array
         // de otra persona.
         $votos_urls = [];
 
-        foreach ($bits as $bit) {
+        foreach ($bits_persona as $bit) {
             $votos_urls[(int) $bit['id']] = [
                 'si' => votos_url($base, (int) $bit['id'], $suscriptor_id, 1, $secreto),
                 'no' => votos_url($base, (int) $bit['id'], $suscriptor_id, -1, $secreto),
@@ -106,9 +124,9 @@ function enviar_lote(float $limite): array
 
         $envio = smtp_enviar($conf, [
             'para'   => (string) $quien['email'],
-            'asunto' => $asunto,
-            'texto'  => envio_texto($edicion, $bits, $base, $baja, $votos_urls),
-            'html'   => envio_html($edicion, $bits, $base, $baja, $votos_urls),
+            'asunto' => envio_asunto($edicion, $bits_persona),
+            'texto'  => envio_texto($edicion, $bits_persona, $base, $baja, $votos_urls),
+            'html'   => envio_html($edicion, $bits_persona, $base, $baja, $votos_urls),
             'cabeceras' => [
                 // Con esto, el cliente de correo ensena su propio boton de baja
                 // arriba del mensaje. Quien se quiere ir lo usa en vez de
@@ -166,10 +184,14 @@ function enviar_edicion_pendiente(): ?array
  * Confirmados, sin baja, sin demasiados rebotes y sin fila en envios para esta
  * edicion. Esa tabla es la que permite mandar por tandas: sin ella, la pasada
  * siguiente volveria a empezar por el primero de la lista.
+ *
+ * 'temas' viaja aqui -no en una consulta aparte- porque enviar_lote() lo
+ * necesita para cada destinatario antes de generar su correo: es lo que
+ * decide que subconjunto de $bits le toca.
  */
 function enviar_pendientes(int $edicion_id, int $cuantos): array
 {
-    $sql = "SELECT s.id, s.email
+    $sql = "SELECT s.id, s.email, s.temas
               FROM suscriptores s
               LEFT JOIN envios en ON en.suscriptor_id = s.id AND en.edicion_id = ?
              WHERE s.estado = 'confirmado'

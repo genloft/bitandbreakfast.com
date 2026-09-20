@@ -24,6 +24,36 @@ require_once __DIR__ . '/web.php';
 require_once __DIR__ . '/bits.php';
 
 /**
+ * El subconjunto de $bits que le toca a un destinatario, segun los temas que
+ * eligio al suscribirse.
+ *
+ * $temas es la columna 'temas' de suscriptores tal cual sale de la base: una
+ * cadena de slugs de bits_categorias() separados por comas, o vacia para
+ * "todos". No es una seleccion editorial aparte -la edicion sigue siendo una
+ * sola y la misma para todos los destinatarios-, es cuanto de esa misma
+ * edicion ve cada uno, por su propia eleccion.
+ *
+ * Pura -sin base de datos-, para poder probarla sin montar nada.
+ */
+function envio_bits_para_tema(array $bits, string $temas): array
+{
+    $elegidos = array_filter(explode(',', $temas));
+
+    if (!$elegidos) {
+        return $bits;
+    }
+
+    return array_values(array_filter(
+        $bits,
+        static fn (array $bit): bool => in_array(
+            bits_categoria_canonica((string) $bit['categoria']),
+            $elegidos,
+            true
+        )
+    ));
+}
+
+/**
  * El asunto: el titulo del dia, si alguien se lo ha puesto, o su titular.
  *
  * Sin emojis, sin "no te pierdas" y sin el nombre del boletin repetido: el

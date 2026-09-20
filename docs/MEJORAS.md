@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Suscripción por tema y por frecuencia (§3.1). La tabla `envios` y el envío por tandas ya soportan la mecánica; falta una columna más y un filtro en `cron/enviar.php`.
+1. Alertas por palabra clave o por proveedor (§3.2). Es la funcionalidad por la que un profesional deja su correo, y no choca con la decisión de no hacer fichas de proveedor.
 
 ## 2. Contenido para directivos
 
@@ -64,10 +64,23 @@ publicar un número.
 
 ### 3.1 Suscripción por tema y por frecuencia
 
-El alta es hoy todo o nada, y diaria. Un director de sistemas quiere
-Ciberseguridad y Cumplimiento, una vez por semana. La tabla `envios` y el
-envío por tandas ya soportan la mecánica: es una columna más en la lista de
-suscriptores y un filtro en `cron/enviar.php`.
+El alta era todo o nada, y diaria. Un director de sistemas quiere
+Ciberseguridad y Cumplimiento, no el resto.
+
+Hecho, con el buzon propio: quien se da de alta puede marcar los temas que
+le interesan -opcional, colapsado bajo «Elegir temas», sin marcar nada se
+sigue recibiendo todo, igual que hasta ahora-. `cron/enviar.php` manda a
+cada suscriptor el subconjunto de la edición que le toca según su
+elección, no una edición distinta: es la misma para todos, cada uno ve
+cuanto de ella pidió ver. Con MailerLite o Brevo el selector no aparece
+-esos dos proveedores llevan su propia lista y su propia segmentación,
+ajena a las tablas de este sitio-.
+
+Pendiente la frecuencia: «una vez por semana» exige agregar varios días de
+bits por suscriptor y llevar la cuenta de cuándo tocó el último envío
+semanal, algo bien distinto del modelo actual -una edición, un correo- y
+que toca el código que de verdad manda los correos. Se deja para una
+mejora aparte en vez de forzarla en la misma pieza que el filtro por tema.
 
 ### 3.2 Alertas por palabra clave o por proveedor
 

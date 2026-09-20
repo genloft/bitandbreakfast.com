@@ -1,6 +1,6 @@
 <?php
 /**
- * Bloque de suscripcion. Recibe $base y $alta_abierta.
+ * Bloque de suscripcion. Recibe $base, $alta_abierta y $alta_temas.
  *
  * Va al final de la pagina y no en una ventana emergente, y no interrumpe la
  * lectura: quien ha llegado hasta abajo ya sabe si le interesa. Un radar que
@@ -8,9 +8,16 @@
  *
  * Sin JavaScript: es un formulario que envia a /api/suscribir.php, y la
  * pagina de respuesta la pinta ese mismo endpoint.
+ *
+ * El selector de temas -$alta_temas- solo aparece con el buzon propio:
+ * MailerLite y Brevo llevan su propia lista, ajena a la columna 'temas' de
+ * suscriptores, y enseñar el selector igual seria prometer un filtro que no
+ * hace nada.
  */
 
 declare(strict_types=1);
+
+$alta_temas = $alta_temas ?? false;
 
 ?>
 <section class="alta" aria-labelledby="alta-titulo">
@@ -28,6 +35,24 @@ declare(strict_types=1);
                autocomplete="email" placeholder="tu@hotel.com" required>
         <button type="submit">Suscribirme</button>
       </div>
+
+      <?php if ($alta_temas): ?>
+        <?php // Colapsado por defecto: elegir es una opcion, no un requisito,
+              // y la mayoria no necesita tocar esto para suscribirse. Sin
+              // marcar nada se recibe todo, exactamente como hasta ahora. ?>
+        <details class="alta-temas">
+          <summary>Elegir temas (opcional)</summary>
+          <p class="letra-pequena">Sin marcar nada, recibes todos los temas cada día. Marca solo los que te interesan.</p>
+          <div class="alta-temas-lista">
+            <?php foreach (bits_categorias() as $slug => $nombre): ?>
+              <label class="alta-tema">
+                <input type="checkbox" name="temas[]" value="<?= web_e($slug) ?>">
+                <?= web_e($nombre) ?>
+              </label>
+            <?php endforeach; ?>
+          </div>
+        </details>
+      <?php endif; ?>
 
       <?php /* Trampa para robots: un campo que nadie ve y que nadie rellena. */ ?>
       <div class="trampa" aria-hidden="true">

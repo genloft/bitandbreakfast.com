@@ -1345,6 +1345,26 @@ h1 {
 .alta-fila button:hover { background: #b0241a; }
 .alta .letra-pequena { color: #918c85; }
 
+.alta-temas { margin: 1rem 0; max-width: 30rem; }
+.alta-temas summary { cursor: pointer; font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--papel); }
+.alta-temas .letra-pequena { margin: .6rem 0; }
+.alta-temas-lista { display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin-top: .3rem; }
+/* Selector mas especifico que ".alta-formulario label" a proposito: sin
+   esto, ese estilo -pensado para la etiqueta del campo de correo- ganaria
+   el empate y dejaria estas etiquetas en mayusculas y en bloque. */
+.alta-formulario .alta-tema {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin-bottom: 0;
+  font-size: .82rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #b9b4ac;
+}
+.alta-tema input { margin: 0; }
+
 .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 /* --- Pie -------------------------------------------------------------------------------- */
@@ -1469,4 +1489,6 @@ h1 {
     border-color: #c9c4b8;
     background: #e8e4da;
   }
+  .alta-temas summary,
+  .alta-formulario .alta-tema { color: #4a4438; }
 }

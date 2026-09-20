@@ -1074,3 +1074,38 @@ un MariaDB 10.6 para la de humo.
 - **La tabla `votos` llevaba desde la fase 6 alimentándose sin que nada
   la mostrara al público -solo `/salud.php`, hacia dentro-.** Este punto
   cierra ese hueco.
+- **§3.1 se resuelve solo a medias, a propósito: filtro por tema sí,
+  frecuencia semanal no.** El filtro reutiliza el modelo actual -una
+  edición, un correo- sin tocarlo: cada destinatario ve el subconjunto
+  de la misma edición que pidió ver, calculado en
+  `envio_bits_para_tema()` (pura, en `lib/envio.php`) a partir de la
+  columna `temas` de `suscriptores`. La frecuencia semanal es un modelo
+  distinto de verdad -agregar varios días por suscriptor, llevar la
+  cuenta de cuándo tocó el último envío semanal-, y forzarla en la misma
+  pieza que el filtro habría mezclado un cambio pequeño y bien acotado
+  con uno que toca de raíz el código que manda los correos de verdad.
+  Mejor dos PRs con su propio riesgo cada una que una que junte ambos.
+- **El comentario de `cron/enviar.php` que dice "no una selección
+  aparte" sigue siendo cierto con el filtro por tema.** Ese comentario
+  -de antes de este PR- habla de que el correo no puede traer una
+  edición distinta de la que ya se publicó en la web: sigue siendo
+  exactamente así. El filtro no crea una segunda edición ni un criterio
+  editorial nuevo, decide cuánto de la única edición que existe ve cada
+  destinatario, por la elección que ese destinatario hizo al
+  suscribirse. Se añadió una frase al propio comentario dejando esta
+  distinción explícita, para que quien lo lea después no la confunda
+  con una excepción a la regla.
+- **El selector de temas del alta solo aparece con el buzón propio.**
+  MailerLite y Brevo llevan su propia lista de suscriptores y su propia
+  segmentación, ajenas a la columna `temas` de la tabla `suscriptores`
+  de este sitio; enseñar el selector igual con esos proveedores sería
+  prometer un filtro que no hace nada. `cron/publicar.php` calcula
+  `$alta_temas` a partir de `correo_conf()['proveedor']` y se lo pasa a
+  `suscribir.php`, que decide con eso si pinta el `<details>` o no.
+- **La columna `temas` vive en una migración (024), no en
+  `sql/esquema.sql`.** La propia tabla `suscriptores` tampoco vive ahí
+  -entró por la migración 001-, así que añadirle una columna en el
+  esquema base habría sido inconsistente con cómo ya está tratada esa
+  tabla en todo el repositorio. Vacía significa "todos los temas", que
+  es también el valor por defecto: ninguna fila existente, ni ninguna
+  alta que no toque el selector, cambia de comportamiento.
