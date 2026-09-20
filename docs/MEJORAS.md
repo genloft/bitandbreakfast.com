@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Hoja de estilo de impresión (§3.5). Con la estética de papel ya construida, es media hora de CSS y es de lo más coherente con la marca que se puede hacer.
+1. Los puntos suspensivos perdidos (§4.7). Un degradado de dos píxeles hacia el papel, y deja de ser ambiguo si un «por qué importa» cortado está cortado o acaba ahí.
 
 ## 2. Contenido para directivos
 
@@ -110,12 +110,6 @@ configuración.
 `buscarjs.php` hace las facetas bien. Le falta resaltar el término
 encontrado dentro del resultado y poder ordenar por fecha además de por
 relevancia.
-
-### 3.5 Hoja de estilo de impresión
-
-Un directivo imprime o exporta a PDF el resumen del día para una reunión.
-Con una estética de papel ya construida, es media hora de CSS y es de lo
-más coherente con la marca que se puede hacer.
 
 ## 4. Diseño y usabilidad
 

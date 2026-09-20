@@ -1492,3 +1492,70 @@ h1 {
   .alta-temas summary,
   .alta-formulario .alta-tema { color: #4a4438; }
 }
+
+/* --- Impresion --------------------------------------------------------------
+   Un directivo imprime o exporta a PDF el resumen del dia para una reunion.
+   No es la pagina con estilo distinto: es la misma pagina sin lo que en papel
+   no sirve de nada -menu, buscador, botones de compartir y votar, el bloque
+   de alta- y sin lo que en papel solo gasta tinta -fondos oscuros, pastillas
+   de color solido-. El contenido -titulares, cuerpo, "por que importa",
+   quien lo cuenta- se queda igual. */
+@media print {
+  .saltar,
+  .cabecera-barra,
+  .cabecera-pie,
+  .panel,
+  .pie,
+  .alta,
+  .masleido,
+  .explorar,
+  .pie-acciones,
+  .trampa {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  a, a:visited { color: #000; text-decoration: underline; }
+
+  /* Los mismos filetes negros de siempre, no la sombra ni el fondo con
+     tinte que llevan en pantalla: en papel no aportan nada y gastan tinta
+     por gastarla. */
+  .etiqueta-categoria,
+  .etiqueta-analisis {
+    background: none;
+    color: #000;
+    border: 1px solid #000;
+  }
+
+  /* Lo que en pantalla sale en negativo -fondo negro, letra blanca- para
+     destacar, en papel es la tinta entera de la pagina: mismo contenido,
+     un marco en vez de un fondo solido. */
+  .bit-multifuente {
+    background: none;
+    color: #000;
+    border: 2px solid #000;
+  }
+  .bit-multifuente .por-que,
+  .bit-multifuente .etiqueta-categoria,
+  .bit-multifuente .etiqueta-analisis {
+    background: none;
+    color: #000;
+  }
+
+  /* Un <details> cerrado no imprime su contenido en la mayoria de
+     navegadores, y "que otros medios cuentan la misma noticia" es
+     precisamente el tipo de dato que vale la pena llevarse en papel. */
+  .fuentes-bit:not([open]) > :not(summary) {
+    display: block !important;
+  }
+  .fuentes-bit summary::-webkit-details-marker { display: none; }
+
+  /* Que un bit no se parta entre dos paginas por el medio de un parrafo. */
+  .bit, .cuadro-tarjeta, .fuentes-bit {
+    break-inside: avoid;
+  }
+}
