@@ -68,5 +68,13 @@ $filas = [
         </dd>
       </div>
     <?php endforeach; ?>
+    <?php if (isset($panel['revpar']) && $panel['revpar'] !== ''): ?>
+      <div class="panel-cifra">
+        <dt>RevPAR</dt>
+        <dd>
+          <span class="panel-total"><?= web_e($panel['revpar']) ?></span>
+        </dd>
+      </div>
+    <?php endif; ?>
   </dl>
 </div>

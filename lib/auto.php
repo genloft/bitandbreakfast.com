@@ -532,6 +532,12 @@ function auto_es_didactico(string $titular): bool
  */
 function auto_es_del_sector(string $texto): bool
 {
+    require_once __DIR__ . '/ia.php';
+
+    if (ia_configurada()) {
+        return ia_es_del_sector($texto);
+    }
+
     $aguja = ' ' . texto_normalizar($texto) . ' ';
 
     $sector = [

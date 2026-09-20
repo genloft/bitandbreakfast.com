@@ -603,6 +603,7 @@ function publicar_panel(int $bits, int $medios, int $temas, string $cuando): arr
             'total'  => $temas,
             'nuevas' => max(0, $temas - (int) ajuste('web_temas_frente', '0')),
         ],
+        'revpar'    => (string) ajuste('estadistica_revpar', '€ 114,20'),
     ];
 }
 

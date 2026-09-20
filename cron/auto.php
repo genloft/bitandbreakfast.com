@@ -26,6 +26,7 @@ require_once dirname(__DIR__) . '/lib/texto.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/auto.php';
 require_once dirname(__DIR__) . '/lib/puntuar.php';
+require_once dirname(__DIR__) . '/lib/ia.php';
 require_once dirname(__DIR__) . '/panel/datos.php';
 
 /**
@@ -412,10 +413,9 @@ function auto_escribir_bit(int $racimo_id, int $edicion_id, array $terminos, int
         datos_guardar_bit($bit_id, [
             'titular'   => texto_recortar($titular, BITS_TITULAR_MAX),
             'cuerpo'    => $cuerpo,
-            // El "por que importa" se queda vacio a proposito: es un juicio
-            // editorial y aqui no hay nadie para hacerlo. Inventarlo seria
-            // exactamente lo que este proyecto dice no hacer.
-            'por_que'   => '',
+            // El "por que importa" se redacta con IA si esta configurada.
+            // De lo contrario, se queda vacio como juicio editorial manual.
+            'por_que'   => ia_configurada() ? ia_redactar_por_que($titular, $cuerpo) : '',
             // El diccionario sabe de que va la noticia; la fuente solo sabe de
             // que suele ir. Se prefiere el primero y se cae al segundo.
             'categoria' => $categoria !== '' ? $categoria : auto_categoria($items),

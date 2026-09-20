@@ -55,14 +55,15 @@ function ingesta_lote(float $limite): array
 
     $resumen = ['fuentes' => 0, 'nuevos' => 0, 'errores' => 0, 'sin_cambios' => 0];
 
-    foreach ($fuentes as $fuente) {
-        // Si no queda presupuesto, se corta aqui: el puntero ya apunta a la
-        // ultima fuente terminada y la proxima pasada sigue desde ahi.
-        if (microtime(true) >= $limite) {
-            break;
-        }
+    $resultados_multi = feed_descargar_multi($fuentes);
 
-        $r = ingesta_fuente($fuente);
+    foreach ($fuentes as $fuente) {
+        $id = $fuente['id'];
+        $respuesta = $resultados_multi[$id] ?? null;
+
+        if (!$respuesta) continue;
+
+        $r = ingesta_fuente_multi($fuente, $respuesta);
 
         $resumen['fuentes']++;
         $resumen['nuevos'] += $r['nuevos'];
@@ -161,6 +162,61 @@ function ingesta_fuente(array $fuente): array
         // duerme la semana entera de golpe en vez de volver cada hora a que
         // nos repitan lo mismo. Si el medio cambia de idea, en siete dias se
         // entera este radar; mientras tanto, ni una peticion de mas.
+        ingesta_marcar_fallo(
+            $fuente,
+            $mensaje,
+            $e instanceof RobotsProhibido ? INGESTA_SUENO_ROBOTS : 0
+        );
+    }
+
+    $sql = 'INSERT INTO log_ingesta (fuente_id, inicio, fin, nuevos, resultado, mensaje)
+            VALUES (?, ?, UTC_TIMESTAMP(), ?, ?, ?)';
+    bd()->prepare($sql)->execute([$fuente['id'], $inicio, $nuevos, $resultado, $mensaje]);
+
+    return ['resultado' => $resultado, 'nuevos' => $nuevos, 'mensaje' => $mensaje];
+}
+
+/**
+ * Procesa una fuente usando una respuesta ya descargada por curl_multi.
+ */
+function ingesta_fuente_multi(array $fuente, array $respuesta): array
+{
+    $inicio    = gmdate('Y-m-d H:i:s');
+    $nuevos    = 0;
+    $resultado = 'ok';
+    $mensaje   = '';
+
+    bd()->prepare('UPDATE fuentes SET ultimo_intento = UTC_TIMESTAMP() WHERE id = ?')
+        ->execute([$fuente['id']]);
+
+    try {
+        if (!robots_permite($fuente['url_feed'])) {
+            throw new RobotsProhibido('robots.txt prohibe la descarga de este feed');
+        }
+
+        if ($respuesta['codigo'] === 304 || ($respuesta['codigo'] >= 200 && $respuesta['codigo'] < 300 && empty(trim($respuesta['cuerpo'])))) {
+            $resultado = 'sin_cambios';
+            ingesta_marcar_ok($fuente['id'], $respuesta);
+        } elseif ($respuesta['codigo'] < 200 || $respuesta['codigo'] >= 400) {
+            throw new RuntimeException(
+                'HTTP ' . $respuesta['codigo'] . ($respuesta['error'] !== '' ? ' - ' . $respuesta['error'] : '')
+            );
+        } else {
+            $entradas = feed_parsear($respuesta['cuerpo'], $fuente['url_feed']);
+
+            if (!$entradas) {
+                throw new RuntimeException('el feed responde pero no contiene entradas legibles');
+            }
+
+            foreach ($entradas as $entrada) {
+                $nuevos += ingesta_guardar_item($fuente, $entrada) ? 1 : 0;
+            }
+
+            ingesta_marcar_ok($fuente['id'], $respuesta);
+        }
+    } catch (Throwable $e) {
+        $resultado = 'error';
+        $mensaje   = texto_recortar($e->getMessage(), 480);
         ingesta_marcar_fallo(
             $fuente,
             $mensaje,

@@ -159,6 +159,95 @@ function feed_peticion(string $url, ?string $etag, ?string $last_modified, strin
 }
 
 /**
+ * Descarga multiples feeds simultaneamente usando curl_multi.
+ * Devuelve un array indexado por el ID de la fuente.
+ */
+function feed_descargar_multi(array $fuentes): array
+{
+    $agente = feed_agente();
+    $mh = curl_multi_init();
+    $peticiones = [];
+    $resultados = [];
+
+    foreach ($fuentes as $fuente) {
+        $id = $fuente['id'];
+        $url = $fuente['url_feed'];
+        $ch = curl_init();
+        
+        $cabeceras = ['Accept: application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.8'];
+        if (!empty($fuente['etag'])) {
+            $cabeceras[] = 'If-None-Match: ' . $fuente['etag'];
+        }
+        if (!empty($fuente['last_modified'])) {
+            $cabeceras[] = 'If-Modified-Since: ' . $fuente['last_modified'];
+        }
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS      => 5,
+            CURLOPT_TIMEOUT        => (int) (config('rastreador.timeout') ?? 10),
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_USERAGENT      => $agente,
+            CURLOPT_HTTPHEADER     => $cabeceras,
+            CURLOPT_ENCODING       => '',
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_NOPROGRESS     => false,
+            CURLOPT_HEADERFUNCTION => function ($ch_local, $linea) use (&$peticiones, $id) {
+                $trozos = explode(':', $linea, 2);
+                if (count($trozos) === 2) {
+                    $peticiones[$id]['recibidas'][strtolower(trim($trozos[0]))] = trim($trozos[1]);
+                }
+                return strlen($linea);
+            }
+        ]);
+        
+        curl_multi_add_handle($mh, $ch);
+        $peticiones[$id] = [
+            'ch' => $ch,
+            'url' => $url,
+            'recibidas' => []
+        ];
+    }
+
+    $activo = null;
+    do {
+        $mrc = curl_multi_exec($mh, $activo);
+    } while ($mrc === CURLM_CALL_MULTI_PERFORM);
+
+    while ($activo && $mrc === CURLM_OK) {
+        if (curl_multi_select($mh) === -1) {
+            usleep(100);
+        }
+        do {
+            $mrc = curl_multi_exec($mh, $activo);
+        } while ($mrc === CURLM_CALL_MULTI_PERFORM);
+    }
+
+    foreach ($peticiones as $id => $req) {
+        $ch = $req['ch'];
+        $cuerpo = curl_multi_getcontent($ch);
+        $error = curl_error($ch);
+        $codigo = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        
+        $resultados[$id] = [
+            'codigo' => $codigo,
+            'cuerpo' => $cuerpo !== false ? $cuerpo : '',
+            'etag' => $req['recibidas']['etag'] ?? null,
+            'last_modified' => $req['recibidas']['last-modified'] ?? null,
+            'error' => $error ?: ''
+        ];
+        curl_multi_remove_handle($mh, $ch);
+        curl_close($ch);
+    }
+    
+    curl_multi_close($mh);
+    return $resultados;
+}
+
+/**
  * Convierte el XML de un feed en una lista plana de entradas.
  *
  * Cada entrada devuelve: guid, url, titulo, resumen, autor y publicado
