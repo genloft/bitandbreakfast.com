@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. La reserva agéntica merece cobertura propia (§2.4). El tema del año para un director comercial.
+1. `/calendario.html`: los eventos del sector (§2.2). Evergreen, verificable con fecha y sede, y de lo primero que un directivo busca al empezar el ejercicio.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -85,18 +85,6 @@ desarrollo y las fuentes secundarias solo dan una cifra aproximada
 ("inferior al 15 %", sin precisar) que no llega al nivel de precisión que
 exige esta página. Falta comprobarlo contra la tabla original antes de
 publicar un número.
-
-### 2.4 La reserva agéntica merece cobertura propia
-
-El tema del año para un director comercial, y hoy cae disuelto en
-«Distribución y OTAs»: Booking y Expedia dentro de ChatGPT, el Agentic
-Commerce Protocol de OpenAI y Stripe, el Agent Payments Protocol de Google,
-y OpenAI retirando Instant Checkout de las transacciones de viaje en marzo
-de 2026.
-
-La pregunta que hay debajo —«¿desaparece mi canal directo?»— da para una
-categoría propia o, como mínimo, para una página explicativa permanente en
-Recursos.
 
 ## 3. Funcionalidades
 

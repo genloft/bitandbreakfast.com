@@ -2,11 +2,11 @@
 /**
  * Mantenimiento diario: lo que no hace falta mirar cada cinco minutos.
  *
- * Dos avisos, el mismo mecanismo para los dos: si /estadisticas.html lleva
- * mas de CIFRAS_CADUCIDAD_DIAS sin que una persona la revise, o si
- * /cumplimiento.html ha llegado a la fecha pendiente mas proxima de su
- * propia tabla, manda un aviso por el mismo buzon que ya usa el cron para
- * su propio parte.
+ * Tres avisos, el mismo mecanismo para los tres: si /estadisticas.html o
+ * /agentica.html llevan mas de su plazo fijo sin que una persona los
+ * revise, o si /cumplimiento.html ha llegado a la fecha pendiente mas
+ * proxima de su propia tabla, manda un aviso por el mismo buzon que ya usa
+ * el cron para su propio parte.
  *
  * No intenta traer las cifras solas. La mayoria de las fuentes que cita esa
  * pagina -RateGain, IBM, AEPD, las encuestas de viajeros- son informes y
@@ -29,6 +29,7 @@ require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
 require_once dirname(__DIR__) . '/lib/cumplimiento.php';
+require_once dirname(__DIR__) . '/lib/agentica.php';
 
 /**
  * Punto de entrada que llama cron/tareas.php cada dia a partir de las 05:00
@@ -43,6 +44,7 @@ function mantenimiento_diario(float $limite): array
     return [
         'cifras_aviso'       => mantenimiento_avisar_cifras_caducadas(),
         'cumplimiento_aviso' => mantenimiento_avisar_cumplimiento_caducado(),
+        'agentica_aviso'     => mantenimiento_avisar_agentica_caducada(),
     ];
 }
 
@@ -160,6 +162,63 @@ function mantenimiento_avisar_cumplimiento_caducado(): bool
     }
 
     ajuste_guardar('cumplimiento_aviso_revisado', $revisado);
+
+    return true;
+}
+
+/**
+ * Manda el aviso de caducidad de /agentica.html si toca, y deja constancia
+ * de para que revision se ha mandado.
+ *
+ * Mismo patron exacto que mantenimiento_avisar_cifras_caducadas(), con el
+ * plazo mas corto de AGENTICA_CADUCIDAD_DIAS: los protocolos de reserva
+ * agentica cambian de mes en mes.
+ */
+function mantenimiento_avisar_agentica_caducada(): bool
+{
+    $revisado     = agentica_revisado();
+    $ultimo_aviso = (string) ajuste('agentica_aviso_revisado', '');
+
+    if (!agentica_caducadas($revisado, gmdate('Y-m-d'), $ultimo_aviso)) {
+        return false;
+    }
+
+    $conf = correo_conf();
+
+    if (!correo_configurado($conf) || $conf['proveedor'] !== 'propio') {
+        return false;
+    }
+
+    $destino = trim((string) ajuste('cron_aviso_correo', ''));
+    $destino = $destino !== '' ? $destino : (string) $conf['usuario'];
+
+    if (!correo_valido($destino)) {
+        return false;
+    }
+
+    $dias = (int) floor((time() - (strtotime($revisado . ' UTC') ?: time())) / 86400);
+
+    $envio = smtp_enviar($conf, [
+        'para'   => $destino,
+        'asunto' => 'Bit & Breakfast: /agentica.html lleva ' . $dias . ' días sin revisar',
+        'texto'  => "La página /agentica.html se revisó por última vez el $revisado.\n\n"
+            . "Han pasado $dias días. Toca comprobar si MCP, ACP, UCP o AP2 han cambiado de "
+            . "alcance, si ha entrado un protocolo nuevo o si algún dato citado -la retirada de "
+            . "Instant Checkout, el lanzamiento de UCP for Lodging- ha quedado desfasado, y "
+            . "actualizar plantillas/web/agentica.php -y la fecha en lib/agentica.php-.\n",
+        'cabeceras' => [
+            'Auto-Submitted: auto-generated',
+            'Precedence: bulk',
+        ],
+    ]);
+
+    if (!$envio['ok']) {
+        error_log('Bit & Breakfast, aviso de Agentica caducada: ' . $envio['mensaje']);
+
+        return false;
+    }
+
+    ajuste_guardar('agentica_aviso_revisado', $revisado);
 
     return true;
 }

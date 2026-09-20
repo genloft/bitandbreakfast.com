@@ -24,6 +24,7 @@ require_once __DIR__ . '/lib/correo.php';
 require_once __DIR__ . '/lib/traducir.php';
 require_once __DIR__ . '/lib/cifras.php';
 require_once __DIR__ . '/lib/cumplimiento.php';
+require_once __DIR__ . '/lib/agentica.php';
 
 date_default_timezone_set('UTC');
 
@@ -326,6 +327,18 @@ $informe = [
             cifras_revisado(),
             gmdate('Y-m-d', $ahora),
             (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'cifras_aviso_revisado'", '')
+        ),
+    ],
+    // Mismo control que 'cifras', para /agentica.html, con un plazo mas
+    // corto: los protocolos de reserva agentica cambian de mes en mes.
+    'agentica' => [
+        'revisado'         => agentica_revisado(),
+        'dias_sin_revisar' => (int) floor(($ahora - (strtotime(agentica_revisado() . ' UTC') ?: $ahora)) / 86400),
+        'caduca_en_dias'   => AGENTICA_CADUCIDAD_DIAS,
+        'caducada'         => agentica_caducadas(
+            agentica_revisado(),
+            gmdate('Y-m-d', $ahora),
+            (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'agentica_aviso_revisado'", '')
         ),
     ],
     // Mismo control que 'cifras', para /cumplimiento.html. La diferencia

@@ -954,3 +954,31 @@ un MariaDB 10.6 para la de humo.
   sean específicos de hoteles; filtrarlos del JSON solo porque
   `/estadisticas.html` los pinta con una nota aclaratoria habría sido
   esconder un dato válido, no limpiar el fichero.
+- **La reserva agéntica (§2.4) es una página en Recursos, no una categoría
+  nueva del catálogo de temas.** Una categoría habría exigido reclasificar
+  bits ya publicados y repartir de nuevo el diccionario -el mismo trabajo
+  que costó separar ciberseguridad de cumplimiento-, apostando fuerte por
+  un terreno que todavía cambia de mes en mes: MCP a mediados de 2026, ACP
+  retirado de viajes en marzo de 2026 tras solo seis meses, UCP ampliado a
+  alojamiento en mayo de 2026. El propio `docs/MEJORAS.md` ya dejaba esta
+  salida como mínimo aceptable, y reutiliza entradas del glosario que ya
+  existían (MCP, ACP, Agentic booking) en vez de duplicar definiciones.
+- **`AGENTICA_CADUCIDAD_DIAS` es 90, no los 120 de `CIFRAS_CADUCIDAD_DIAS`.**
+  Mismo patrón exacto que `lib/cifras.php` -fecha de revisión fija, aviso
+  por correo, bloque en `/salud.php`-, con un plazo más corto porque los
+  protocolos de reserva agéntica cambian de mes en mes, no de trimestre en
+  trimestre como una encuesta del INE.
+- **"¿Desaparece mi canal directo?" se contesta con los propios tropiezos
+  del sector, no con una opinión.** La retirada de Instant Checkout de
+  OpenAI en viajes -el caso más citado fue que un chat no gestiona tarifa
+  dinámica, cancelación ni una incidencia postventa- es la prueba de que
+  ningún protocolo actual sustituye a un motor de reservas propio; se cruza
+  con la cifra ya publicada en Cifras -el canal directo iguala a las OTAs
+  por primera vez- para responder sin alarmismo ni negacionismo.
+- **UCP y AP2 de Google, no solo "Agent Payments Protocol" como decía
+  `docs/MEJORAS.md` al pie de la letra.** AP2 es la capa de pago dentro de
+  UCP (Universal Commerce Protocol), y es UCP -ampliado a alojamiento en
+  mayo de 2026 con Amadeus, Booking.com, Expedia, Hilton, Marriott y
+  Trip.com como socios- el que de verdad compite por la reserva de hotel;
+  citar solo AP2 habría dejado fuera la pieza más relevante para un
+  director comercial.
