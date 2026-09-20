@@ -1010,3 +1010,22 @@ un MariaDB 10.6 para la de humo.
   evento de una sola fecha habría sido inventar una fecha que no existe.
   Un término medio explícito -una fila, con las cuatro fechas escritas-
   es más honesto que cualquiera de los dos extremos.
+- **`sitemap.xml` (§1.5) usa tres fuentes de fecha distintas para
+  `<lastmod>`, según lo que cada página realmente promete.** Cifras,
+  Cumplimiento, Reserva agéntica y Calendario ya llevan su propia fecha
+  de revisión a mano -`cifras_revisado()` y equivalentes-, así que
+  `<lastmod>` es exactamente esa fecha, no una aproximación. Tendencias
+  no se revisa a mano: se recalcula entera con cada bit nuevo, así que
+  su fecha real es la del bit más reciente (`$dias[0]['dia']`), no la
+  del último toque a la plantilla. El glosario no lleva ninguna fecha de
+  revisión propia -no caduca como las demás, crece cuando entra una
+  sigla nueva-, así que se usa `filemtime()` de `lib/glosario.php`: el
+  mismo criterio que ya usa `publicar_firma_plantillas()` para detectar
+  cambios de plantilla, razonado igual -"un despliegue por Git reescribe
+  el fichero y la cambia"-. Las fichas de tema y de medio llevan el día
+  del bit más reciente de cada una, calculado en `publicar_temas()` y
+  `publicar_medios()` con `MAX(b.dia)`. La portada, `temas.html`,
+  `medios.html`, `sobre.html`, `buscar.html` y `archivo.html` se quedan
+  sin `<lastmod>` a propósito: ninguna tiene una fecha propia que no sea
+  inventada, y el propio documento solo pedía fecha para las cinco
+  categorías que sí la tienen.

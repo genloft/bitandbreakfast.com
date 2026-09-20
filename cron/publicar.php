@@ -474,17 +474,20 @@ function publicar_barrer(string $carpeta, array $vivos, bool $vaciar = false): i
  * Solo los que tienen algo: una lista de once temas de los que ocho estan
  * vacios no invita a explorar, informa de lo que falta.
  *
- * @return array Filas con 'slug', 'nombre' y 'bits'.
+ * @return array Filas con 'slug', 'nombre', 'bits' y 'ultimo' -el dia del
+ *               bit mas reciente de ese tema, para el lastmod de su ficha
+ *               en sitemap.xml-.
  */
 function publicar_temas(): array
 {
-    $sql = "SELECT b.categoria, COUNT(*) AS bits
+    $sql = "SELECT b.categoria, COUNT(*) AS bits, MAX(b.dia) AS ultimo
               FROM bits b
              WHERE b.estado = 'publicado'
              GROUP BY b.categoria";
 
     $catalogo = bits_categorias();
     $cuenta   = [];
+    $ultimos  = [];
 
     foreach (bd()->query($sql) ?: [] as $fila) {
         // Los bits viejos llevan el nombre viejo de su categoria: se suman al
@@ -496,6 +499,12 @@ function publicar_temas(): array
         }
 
         $cuenta[$slug] = ($cuenta[$slug] ?? 0) + (int) $fila['bits'];
+
+        $ultimo = substr((string) $fila['ultimo'], 0, 10);
+
+        if ($ultimo !== '' && $ultimo > ($ultimos[$slug] ?? '')) {
+            $ultimos[$slug] = $ultimo;
+        }
     }
 
     arsort($cuenta);
@@ -503,7 +512,12 @@ function publicar_temas(): array
     $temas = [];
 
     foreach ($cuenta as $slug => $bits) {
-        $temas[] = ['slug' => $slug, 'nombre' => $catalogo[$slug] ?? $slug, 'bits' => $bits];
+        $temas[] = [
+            'slug'   => $slug,
+            'nombre' => $catalogo[$slug] ?? $slug,
+            'bits'   => $bits,
+            'ultimo' => $ultimos[$slug] ?? '',
+        ];
     }
 
     return $temas;
@@ -843,11 +857,13 @@ function publicar_bits_medio(string $nombre): array
  * el enlace: contar todos los del racimo daria numeros mas altos y menos
  * ciertos, porque el lector no ha leido a los demas.
  *
- * @return array Filas con 'nombre' y 'bits'.
+ * @return array Filas con 'nombre', 'bits' y 'ultimo' -el dia del bit mas
+ *               reciente de ese medio, para el lastmod de su ficha en
+ *               sitemap.xml-.
  */
 function publicar_medios(): array
 {
-    $sql = "SELECT f.nombre, f.url_sitio, COUNT(DISTINCT b.id) AS bits
+    $sql = "SELECT f.nombre, f.url_sitio, COUNT(DISTINCT b.id) AS bits, MAX(b.dia) AS ultimo
               FROM bits b
               JOIN items i     ON i.id = (
                     SELECT i2.id FROM items i2
@@ -864,8 +880,11 @@ function publicar_medios(): array
     // El slug se calcula aqui y no en la plantilla: lo usan la ficha, el
     // enlace y el barrido de carpetas, y tienen que coincidir los tres.
     foreach ($medios as $indice => $medio) {
-        $medios[$indice]['slug'] = web_slug_medio((string) $medio['nombre']);
-        $medios[$indice]['url']  = (string) ($medio['url_sitio'] ?? '');
+        $medios[$indice]['slug']   = web_slug_medio((string) $medio['nombre']);
+        $medios[$indice]['url']    = (string) ($medio['url_sitio'] ?? '');
+        // El dia del bit mas reciente de ese medio, para el lastmod de su
+        // ficha en sitemap.xml.
+        $medios[$indice]['ultimo'] = substr((string) ($medio['ultimo'] ?? ''), 0, 10);
     }
 
     return $medios;

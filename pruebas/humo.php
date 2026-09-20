@@ -447,6 +447,53 @@ comprobar(
     str_contains((string) file_get_contents($publico . '/sitemap.xml'), '/cumplimiento.html')
 );
 
+// §1.5 de docs/MEJORAS.md: cada URL con una fecha real que darle lleva su
+// propio <lastmod>, no solo las fichas de dia.
+$sitio_prueba = 'https://ejemplo.test';
+$sitemap_xml = simplexml_load_string((string) file_get_contents($publico . '/sitemap.xml'));
+
+comprobar('el sitemap es XML valido', true, $sitemap_xml !== false);
+
+$lastmod_por_url = [];
+foreach ($sitemap_xml->url as $url) {
+    $lastmod_por_url[(string) $url->loc] = isset($url->lastmod) ? (string) $url->lastmod : null;
+}
+
+comprobar(
+    'estadisticas.html lleva el mismo lastmod que cifras_revisado()',
+    cifras_revisado(),
+    $lastmod_por_url[$sitio_prueba . '/estadisticas.html'] ?? null
+);
+comprobar(
+    'cumplimiento.html lleva el mismo lastmod que cumplimiento_revisado()',
+    cumplimiento_revisado(),
+    $lastmod_por_url[$sitio_prueba . '/cumplimiento.html'] ?? null
+);
+comprobar('tendencias.html lleva algun lastmod', true, !empty($lastmod_por_url[$sitio_prueba . '/tendencias.html']));
+comprobar('glosario.html lleva algun lastmod', true, !empty($lastmod_por_url[$sitio_prueba . '/glosario.html']));
+comprobar(
+    'agentica.html lleva el mismo lastmod que agentica_revisado()',
+    agentica_revisado(),
+    $lastmod_por_url[$sitio_prueba . '/agentica.html'] ?? null
+);
+comprobar(
+    'calendario.html lleva el mismo lastmod que calendario_revisado()',
+    calendario_revisado(),
+    $lastmod_por_url[$sitio_prueba . '/calendario.html'] ?? null
+);
+comprobar(
+    'la ficha del tema pms-crs lleva el dia de su bit mas reciente',
+    true,
+    !empty($lastmod_por_url[web_url_tema($sitio_prueba, 'pms-crs')] ?? null)
+);
+comprobar(
+    'la portada, temas.html y medios.html se quedan sin lastmod inventado',
+    true,
+    ($lastmod_por_url[$sitio_prueba . '/'] ?? null) === null
+        && ($lastmod_por_url[$sitio_prueba . '/temas.html'] ?? null) === null
+        && ($lastmod_por_url[$sitio_prueba . '/medios.html'] ?? null) === null
+);
+
 // cifras.json: las mismas cifras de la pagina, en JSON valido.
 comprobar('escribe cifras.json', true, is_file($publico . '/cifras.json'));
 
@@ -465,7 +512,7 @@ comprobar('escribe el glosario', true, is_file($publico . '/glosario.html'));
 comprobar(
     'y enlaza un termino con el tema que le corresponde',
     true,
-    str_contains((string) file_get_contents($publico . '/glosario.html'), web_url_tema('https://ejemplo.test', 'pms-crs'))
+    str_contains((string) file_get_contents($publico . '/glosario.html'), web_url_tema($sitio_prueba, 'pms-crs'))
 );
 comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
 comprobar('y el de medios', true, is_file($publico . '/medios.html'));

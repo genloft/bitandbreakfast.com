@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. `sitemap.xml` solo lleva `lastmod` en los días (§1.5). Los datos ya los calcula `publicar_pendiente()`; falta pasarlos al resto de páginas del sitemap, Calendario y Reserva agéntica incluidas.
+1. Contraste insuficiente en el texto pequeño (§1.4). Un solo valor de color en `estilo.php`, y deja de incumplir WCAG AA.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -28,14 +28,6 @@ usa en rótulos grandes: se usa a `.68rem` en `.pie-bit .datos`,
 
 Bajarlo a algo del orden de `#6b6862` lo resuelve sin tocar la estética.
 `--apagado: #5f5c57` está bien (5,95:1) y no hay que moverlo.
-
-### 1.5 `sitemap.xml` solo lleva `lastmod` en los días
-
-`plantillas/web/sitemap.php` pone `<lastmod>` en las fichas de día y en nada
-más. Temas, medios, Cifras, Tendencias y Glosario van sin fecha, así que un
-rastreador no tiene forma de saber cuáles revisitar —que es justo lo que el
-propio comentario de cabecera de ese fichero dice que un sitemap existe para
-contar—. Los datos ya los calcula `publicar_pendiente()`.
 
 ## 2. Contenido para directivos
 
