@@ -22,5 +22,6 @@ declare(strict_types=1);
 
   <p class="letra-pequena">Bit &amp; Breakfast es un radar, no un agregador:
   filtra duro y enseña poco. Cada bit enlaza a su fuente original, y ninguno
-  se publica sin que lo haya leído una persona.</p>
+  se publica sin pasar el mismo filtro de puntuación y comprobación -a mano
+  o en modo automático, como explica <a href="<?= web_e($base) ?>/sobre.html">Qué es</a>-.</p>
 </footer>

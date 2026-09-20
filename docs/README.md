@@ -670,3 +670,20 @@ un MariaDB 10.6 para la de humo.
   sin decir por qué. El botón no promete una cifra -la cola solo enseña
   como mucho sesenta- para no anunciar un número que podría no ser el
   real: la cifra de verdad la da el aviso de después.
+- **El pie ya no promete lo que el modo automático desmiente.** Decía
+  "ninguno se publica sin que lo haya leído una persona", y con
+  `auto_publicar` activo eso es falso -`/sobre.html`, dos párrafos más
+  abajo, ya lo decía bien: "Los elige la puntuación, no una persona"-. El
+  modo automático es una decisión defendible y está explicada; lo que no
+  se sostenía era que el pie siguiera prometiendo lo contrario en todas
+  las páginas. Ahora dice que todo pasa el mismo filtro de puntuación y
+  comprobación, a mano o en modo automático, y enlaza a `/sobre.html`
+  para quien quiera el porqué completo.
+- **`/sobre.html` se puso al día con dos decisiones que ya había tomado
+  el resto del sitio.** "Medio centenar largo de fuentes" venía de antes
+  de `publicar_radar_total()` (commit #30): ahora usa la misma cifra real
+  que ya enseña `/medios.html`. Y la frase sobre no traducir nunca
+  -"traducir sería dejar de decir lo que dijo la fuente"- se escribió
+  antes de que el sitio empezara a traducir con DeepL: la regla nueva ya
+  estaba bien explicada en este README, pero esta página, que es la que
+  lee quien llega por un enlace suelto, se había quedado con la vieja.

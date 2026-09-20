@@ -14,6 +14,7 @@ $version_js = $version_js ?? '0';
 
 $enlace_activo = 'sobre';
 $alta_abierta  = $alta_abierta ?? false;
+$radar         = $radar ?? ['total' => 0, 'por_region' => []];
 
 ?><!doctype html>
 <html lang="es">
@@ -46,7 +47,7 @@ $alta_abierta  = $alta_abierta ?? false;
   </header>
 
   <div class="texto pagina">
-    <p>Bit &amp; Breakfast rastrea cada hora medio centenar largo de fuentes de
+    <p>Bit &amp; Breakfast rastrea cada hora <?= $radar['total'] > 0 ? (int) $radar['total'] . ' fuentes activas' : 'un catálogo de fuentes' ?> de
     tecnología hotelera: prensa del sector, páginas de estado de los
     proveedores, registros de cambios, boletines oficiales y rondas de
     financiación. Agrupa las noticias que cuentan lo mismo, las puntúa y deja
@@ -62,10 +63,13 @@ $alta_abierta  = $alta_abierta ?? false;
     párrafo es el resumen que publica la propia fuente, sin reescribir y sin
     adornos. Todo lo que lees aquí se puede comprobar pulsando el enlace.</p>
 
-    <p><strong>Todo en español.</strong> No porque se traduzca —traducir sería
-    dejar de decir lo que dijo la fuente—, sino porque entra solo lo que alguien
-    cuenta en español. Se pierde alguna primicia internacional y se sabe; a
-    cambio no hay una sola línea aquí que no puedas leer.</p>
+    <p><strong>Todo en español, y se dice cuándo es traducido.</strong> Lo que
+    ya contó alguien -en cualquier idioma- se traduce con DeepL si hace falta,
+    pero solo después de pasar todas las puertas: nunca se traduce el
+    artículo entero, solo el titular y el resumen, y cada bit traducido lo
+    dice en su propia cara -«Traducido del inglés»-, sin dejar de enlazar a
+    la fuente original en su idioma. No se inventa una noticia que nadie ha
+    contado, y no hay una sola línea aquí que no puedas leer.</p>
 
     <h2>Qué es un bit</h2>
 
