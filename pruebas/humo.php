@@ -736,6 +736,12 @@ comprobar(
     str_contains($portada, 'Leer el original en')
 );
 
+comprobar(
+    'el enlace al original abre en pestana nueva, sin perder la propia pagina',
+    true,
+    (bool) preg_match('~<h2 id="titular-\d+"[^>]*>\s*<a href="[^"]+" rel="nofollow noopener" target="_blank"~', $portada)
+);
+
 comprobar('cada bit se puede compartir por WhatsApp', true, str_contains($portada, 'https://wa.me/?text='));
 comprobar('y por LinkedIn', true, str_contains($portada, 'https://www.linkedin.com/sharing/share-offsite/?url='));
 

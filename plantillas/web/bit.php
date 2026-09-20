@@ -97,13 +97,21 @@ $secreto  = $secreto ?? '';
           // Pasa por el contador propio, que redirige al original: asi se
           // sabe que se lee de verdad sin mandar a nadie a un tercero por el
           // camino. Sin secreto configurado, el enlace es directo.
+          //
+          // Y target="_blank" en los tres enlaces que llevan al original -aqui,
+          // el boton "externo" del pie y cada fuente del desplegable "N fuentes
+          // lo cuentan"-: abrirlo en una pestana nueva es lo que hace que esta
+          // ficha se quede abierta de fondo en vez de perderse en cuanto se
+          // pulsa. Para un lector que va abriendo varias, es la diferencia
+          // entre "atras" veinte veces y no tocar el boton nunca; para el
+          // sitio, cada pestana que sigue abierta es una sesion mas larga.
           $enlace = !empty($bit['url'])
               ? web_url_clic($base, (int) $bit['id'], $secreto, (string) $bit['url'])
               : '';
         ?>
         <h2 id="titular-<?= (int) $bit['id'] ?>" itemprop="headline">
           <?php if ($enlace !== ''): ?>
-            <a href="<?= web_e($enlace) ?>" rel="nofollow noopener"><?= web_e($bit['titular']) ?></a>
+            <a href="<?= web_e($enlace) ?>" rel="nofollow noopener" target="_blank"><?= web_e($bit['titular']) ?></a>
           <?php else: ?>
             <?= web_e($bit['titular']) ?>
           <?php endif; ?>
@@ -168,7 +176,7 @@ $secreto  = $secreto ?? '';
 
         <span class="pie-acciones">
           <?php if ($enlace !== ''): ?>
-            <a class="icono-boton" href="<?= web_e($enlace) ?>" rel="nofollow noopener"
+            <a class="icono-boton" href="<?= web_e($enlace) ?>" rel="nofollow noopener" target="_blank"
                aria-label="Leer el original en <?= web_e($bit['fuente'] ?? 'la fuente') ?>">
               <?= web_icono_ui('externo') ?>
             </a>
@@ -211,7 +219,7 @@ $secreto  = $secreto ?? '';
           <ul>
           <?php foreach ($suyas as $fuente): ?>
             <li>
-              <a href="<?= web_e($fuente['url']) ?>" rel="nofollow noopener"><?= web_e($fuente['fuente']) ?></a>
+              <a href="<?= web_e($fuente['url']) ?>" rel="nofollow noopener" target="_blank"><?= web_e($fuente['fuente']) ?></a>
               <span class="datos">
                 <?= web_e($ambitos[$fuente['region']] ?? $fuente['region']) ?>
                 <span class="punto">·</span>
