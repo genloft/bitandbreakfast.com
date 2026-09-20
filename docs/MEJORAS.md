@@ -11,8 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Tipografía autoalojada y modo oscuro (§4.1 y §4.2). El salto visual.
-2. Boletín de vulnerabilidades KEV (§2.1). Lo que hace que un director de sistemas se suscriba.
+1. Boletín de vulnerabilidades KEV (§2.1). Lo que hace que un director de sistemas se suscriba.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -205,26 +204,6 @@ Con una estética de papel ya construida, es media hora de CSS y es de lo
 más coherente con la marca que se puede hacer.
 
 ## 4. Diseño y usabilidad
-
-### 4.1 Modo oscuro
-
-`estilo.php` declara `color-scheme: light` y nada más. Invertir papel y
-tinta bajo `prefers-color-scheme: dark` es barato y es lo primero que nota
-quien abre la web de noche desde el móvil. Las variables ya están todas en
-`:root`: es redefinirlas, no reescribir la hoja.
-
-### 4.2 La tipografía se rompe en Android y en Linux
-
-La identidad del sitio depende de `--titular: "Arial Narrow", "Helvetica
-Neue"`. En Android y en Linux no existe ninguna de las dos y cae a Arial
-sin condensar, así que una parte grande de las visitas no ve el periódico
-que está diseñado: ve un blog.
-
-La salida que no rompe el «cero dependencias» es una condensada variable
-autoalojada, subconjunto latino, del orden de 25 KB en woff2: mismo origen,
-el Content-Security-Policy no se toca y no es Google Fonts —que es lo que
-la regla prohíbe, y por un buen motivo—. Es el mayor salto visual
-disponible por el menor esfuerzo.
 
 ### 4.3 La portada es demasiado larga
 

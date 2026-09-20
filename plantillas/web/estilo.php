@@ -27,14 +27,34 @@
  *   - Cero dependencias: ni fuentes de Google, ni iconos, ni reset de nadie.
  *     La politica de seguridad del sitio no permite cargar nada de fuera.
  *
- * Sobre las familias: no hay fuente incrustada a proposito. Las pilas eligen
- * la mejor de cada sistema -Arial Narrow y Helvetica Neue estan en Mac y en
- * Windows- y quedan bien en los tres sin pedirle al lector que descargue nada.
+ * Sobre las familias: Arial Narrow y Helvetica Neue -las condensadas del
+ * viejo --titular- solo estan en Mac y en Windows. En Android y en Linux no
+ * existe ninguna de las dos, y la pila caia a Arial sin condensar: un
+ * periodico maquetado para caber, mostrado con la letra de una hoja de
+ * calculo. La solucion no es una fuente de Google -eso es justo lo que la
+ * politica de seguridad prohibe, cargar algo de fuera-, es una propia,
+ * servida desde el propio origen: Big Shoulders (SIL Open Font License, en
+ * plantillas/web/fuentes/), la misma familia condensada que ya usa
+ * lib/imagen_social.php para las tarjetas que se comparten. Un solo corte
+ * -negrita, el unico peso que --titular usa en toda esta hoja-, recortado al
+ * latino y sin hinting: 18 KB en woff2, menos que un icono de los que este
+ * sitio ya ha decidido no llevar.
  */
 
 declare(strict_types=1);
 
 ?>
+/* Un solo corte, autoalojado: negrita es el unico peso que --titular pide en
+   toda esta hoja, y font-display: swap ensena el rotulo con la fuente de
+   respaldo mientras esta llega, en vez de dejarlo en blanco. */
+@font-face {
+  font-family: "BB Titular";
+  src: url("fuentes/BigShoulders-Titular-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
 
@@ -58,9 +78,12 @@ declare(strict_types=1);
   --acento:  #d02b1f;
 
   /* Condensada para rotulos y titulares: es la letra de los periodicos
-     precisamente porque cabe mas en menos sitio. Arial Narrow esta en Windows
-     y en Mac; Helvetica Neue cierra en Mac; el resto es red de seguridad. */
-  --titular: "Arial Narrow", "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
+     precisamente porque cabe mas en menos sitio. BB Titular -autoalojada,
+     @font-face arriba- va primero porque es la unica que se ve igual en
+     Windows, Mac, Android y Linux; Arial Narrow y Helvetica Neue quedan como
+     respaldo por si el fichero no llega a cargar, y el resto es red de
+     seguridad. */
+  --titular: "BB Titular", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
   --ui:      ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
              Inter, Helvetica, Arial, sans-serif;
   /* El cuerpo pasa de serif a sans. La serif es mas bonita en una columna
@@ -81,7 +104,10 @@ declare(strict_types=1);
      generoso. */
   --lectura: 46rem;
   --gutter:  clamp(.9rem, 3vw, 1.6rem);
+
+  color-scheme: light dark;
 }
+
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -791,17 +817,17 @@ h1 {
 .bit-multifuente .etiqueta-categoria { background: var(--papel); color: var(--tinta); }
 .bit-multifuente .etiqueta-categoria:hover { background: var(--acento); color: var(--papel); }
 .bit-multifuente .etiqueta-idioma { color: var(--papel); }
-.bit-multifuente .etiqueta-fecha { color: #cfcac2; }
+.bit-multifuente .etiqueta-fecha { color: var(--filete-fino); }
 .bit-multifuente .etiqueta-fecha:hover { color: var(--papel); }
 .bit-multifuente .por-que { background: rgba(244, 242, 238, .14); color: var(--papel); }
 .bit-multifuente .menciona,
 .bit-multifuente .menciona a,
 .bit-multifuente .pie-bit .datos,
 .bit-multifuente .fuentes-bit summary,
-.bit-multifuente .titular-fuente { color: #cfcac2; }
+.bit-multifuente .titular-fuente { color: var(--filete-fino); }
 .bit-multifuente .pie-bit { border-top-color: rgba(244, 242, 238, .3); }
 .bit-multifuente .pie-fuente { color: var(--papel); }
-.bit-multifuente .icono-boton { color: #cfcac2; }
+.bit-multifuente .icono-boton { color: var(--filete-fino); }
 .bit-multifuente .icono-boton:hover, .bit-multifuente .icono-boton:focus-visible { color: var(--papel); }
 .bit-multifuente .icono-boton::after { background: var(--papel); color: var(--tinta); }
 .bit-multifuente .fuentes-bit li { border-top-color: rgba(244, 242, 238, .2); }
@@ -1366,4 +1392,56 @@ h1 {
 
   .rejilla-fichas { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
   .logo-bloque { letter-spacing: -.025em; }
+}
+
+/* Modo oscuro: invertir papel y tinta, no reescribir la hoja. Las variables
+   ya estaban todas en :root para esto -.bit-multifuente y .alta ya pintaban
+   "al reves" con var(--tinta)/var(--papel), así que en modo oscuro siguen
+   siendo lo contrario del fondo de la página, solo que ahora ese fondo es
+   oscuro-. Lo unico que no se resuelve solo redefiniendo son los colores
+   fijos que no vivian en una variable: el barrido del sello y el interior
+   de la caja de alta, pensados a mano para un fondo negro concreto. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --papel:   #16140f;
+    --tarjeta: #1c1911;
+    --tinta:   #f0ede6;
+    --texto:   #d8d4c9;
+    --apagado: #a39d8f;
+    --suave:   #8b8477;
+    --filete:  #f0ede6;
+    --filete-fino: #3a352c;
+    --realce:  #2a251c;
+
+    /* Mas claro que en papel -el mismo rojo sobre un fondo oscuro pierde
+       intensidad, y este acento marca la ultima hora y lo que esta activo,
+       no puede quedarse apagado-, pero sin pasarse: tambien es el fondo del
+       boton de alta, con texto blanco encima, y un rojo muy claro deja ese
+       texto casi sin contraste. */
+    --acento: #e8462e;
+  }
+
+  /* El barrido del sello es un tramo del circulo un poco mas claro que el
+     resto -mas oscuro que claro, dice el comentario de mas abajo-, para dar
+     sensacion de brillo girando. En papel, tinta es casi negro y el tramo es
+     un gris muy oscuro; aqui tinta es casi blanco, y el tramo tiene que ser
+     un poco mas apagado que blanco, no mas oscuro que negro. */
+  .sello-marca {
+    background: conic-gradient(from var(--angulo-sello),
+                var(--tinta) 0deg, var(--tinta) 300deg, #d6d2c8 330deg, var(--tinta) 360deg);
+  }
+
+  /* La caja de alta sigue pintandose "al reves" del fondo -ahora clara sobre
+     una pagina oscura-, pero estos colores estaban fijados a mano para una
+     caja oscura -campos casi negros, texto gris claro- y no siguen a la
+     variable. Se recalculan para la caja clara que toca en este modo. */
+  .alta p,
+  .alta-formulario label { color: #4a4438; }
+  .alta .letra-pequena { color: #57503f; }
+  .alta-fila input {
+    border-color: #c9c4b8;
+    background: #e8e4da;
+  }
 }
