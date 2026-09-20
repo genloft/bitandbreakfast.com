@@ -27,6 +27,17 @@ return [
         'zona_horaria' => 'Europe/Madrid',
     ],
 
+    // Para /legal.html. Los tres son opcionales: sin ellos, la pagina se
+    // publica igual, con el contacto por correo como unico dato -mejor eso
+    // que inventar una identidad que no se puede comprobar-, pero la LSSI
+    // exige identificar a quien responde del sitio, asi que conviene
+    // rellenarlos antes de publicar de cara al publico.
+    'legal' => [
+        'titular'        => '',  // persona o empresa responsable del sitio
+        'identificacion' => '',  // NIF o CIF
+        'domicilio'      => '',  // domicilio a efectos de notificaciones
+    ],
+
     'rastreador' => [
         // Prefijo Mozilla/5.0 (compatible; ...) porque es el formato que
         // reconocen los filtros antibot de varias fuentes buenas. El nombre

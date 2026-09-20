@@ -881,3 +881,48 @@ un MariaDB 10.6 para la de humo.
   conceptos que no son privativos de la tecnología hotelera: forzarles un
   tema habría sido una etiqueta menos precisa que no ponerles ninguna,
   el mismo criterio que ya regía para API y KPI antes de esta ampliación.
+- **`/legal.html`: la identidad del responsable sale de `config('legal')`,
+  nunca de un dato inventado en la plantilla.** Este proyecto no tiene en
+  ningún sitio del código el nombre, el NIF ni el domicilio de quien lo
+  edita -y no le corresponde a quien escribe la plantilla decidirlos-, así
+  que `plantillas/web/legal.php` los lee de tres claves de configuración
+  nuevas (`legal.titular`, `legal.identificacion`, `legal.domicilio`),
+  todas opcionales. Sin rellenar, la página se publica igual pero lo dice
+  -"todavía no tiene rellenos los datos de identificación"- y deja el
+  contacto por correo como única vía, en vez de fingir una identidad que
+  nadie ha confirmado. **Hay que rellenar esas tres claves antes de que el
+  sitio reciba visitas de verdad**: la LSSI exige identificar a quien
+  responde de un sitio en español, y esta página no lo hace sola.
+- **La sección de cookies dice que la web pública no instala ninguna
+  cookie porque es verdad, no porque tocara escribirlo así.** Se comprobó
+  contra el código, no se asumió: `grep` por todo `plantillas/`, `lib/`,
+  `api/` y `panel/` encontró un único `setcookie()` en `lib/panel.php`, la
+  sesión del panel de administración, que un lector de la web pública ni
+  ve ni recibe. La sección de datos personales sigue el mismo criterio -se
+  verificó línea por línea, no se copió un texto genérico de política de
+  privacidad-: `api/suscribir.php` no guarda el correo en la base propia
+  -viaja directo al proveedor configurado-, `api/ir.php` no guarda ni IP ni
+  identificador para los clics, y los votos y el límite de altas por IP
+  usan un HMAC de la dirección, nunca la dirección en sí.
+- **La base legal para publicar fragmentos de otros medios se describe sin
+  afirmar que el sitio ya cumple con ella del todo.** El artículo 32.2 del
+  Texto Refundido de la Ley de Propiedad Intelectual -el mismo que en 2014
+  forzó el cierre de Google News en España, conocido como "canon AEDE"- sí
+  permite a un agregador poner a disposición fragmentos no significativos
+  de contenido periódico sin pedir autorización previa, pero a cambio de
+  una remuneración equitativa e irrenunciable a los editores, gestionada
+  por una entidad de gestión de derechos: citar la fuente y enlazarla no
+  exime de esa remuneración, son dos cosas distintas. `/legal.html`
+  explica el mecanismo -la excepción existe y este sitio encaja en su
+  descripción- sin declarar que ya se ha liquidado esa remuneración,
+  porque eso es una gestión real con una entidad real que no consta en
+  ningún sitio de este repositorio y no le corresponde a esta redacción
+  inventar que ya está resuelta. Es una decisión de negocio del dueño del
+  sitio, no una que se pueda dar por buena escribiendo un párrafo.
+- **`/legal.html` lleva `noindex, follow` y no entra en `sitemap.xml`.**
+  No aporta nada a quien busca tecnología hotelera -es la única página del
+  sitio pensada para cumplir un trámite, no para leerse-, y Google
+  desaconseja expresamente listar en el sitemap una página marcada
+  `noindex`: son dos señales contradictorias sobre la misma URL. El
+  `follow` se queda para que el rastreador sí siga el enlace desde el pie
+  hacia el resto del sitio.

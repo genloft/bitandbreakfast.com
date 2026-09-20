@@ -331,6 +331,11 @@ function publicar_pendiente(float $limite): array
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
+        $publico . '/legal.html',
+        publicar_plantilla('legal', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
         $publico . '/feed.xml',
         publicar_plantilla('feed', [
             'rio'  => $rio,

@@ -344,6 +344,15 @@ function inst_plantilla_config(array $datos): string
             'zona_horaria' => 'Europe/Madrid',
         ],
 
+        // Para /legal.html. Rellenalos antes de publicar de cara al publico:
+        // la LSSI exige identificar a quien responde del sitio, y sin esto
+        // la pagina se publica igual pero solo con el contacto por correo.
+        'legal' => [
+            'titular'        => '',
+            'identificacion' => '',
+            'domicilio'      => '',
+        ],
+
         'rastreador' => [
             'user_agent'    => {$agente},
             'timeout'       => 10,

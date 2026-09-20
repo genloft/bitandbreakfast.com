@@ -455,6 +455,18 @@ comprobar(
 comprobar('escribe el indice de temas', true, is_file($publico . '/temas.html'));
 comprobar('y el de medios', true, is_file($publico . '/medios.html'));
 
+// El aviso legal: sin identidad configurada en la prueba, tiene que caer en
+// el aviso de contacto por correo en vez de inventar un titular.
+comprobar('escribe el aviso legal', true, is_file($publico . '/legal.html'));
+
+$legal = (string) file_get_contents($publico . '/legal.html');
+
+comprobar('sin identidad configurada, lo dice en vez de inventarla', true, str_contains($legal, 'todavía no tiene rellenos'));
+comprobar('y aun asi deja un contacto', true, str_contains($legal, 'mailto:'));
+comprobar('explica la base legal de citar fragmentos', true, str_contains($legal, 'artículo 32.2'));
+comprobar('declara que la web publica no usa cookies de rastreo', true, str_contains($legal, 'no instala ninguna cookie'));
+comprobar('el pie enlaza al aviso legal', true, str_contains($sobre, '/legal.html'));
+
 // Las dos paginas de indice eran las unicas de todo el sitio sin enlace de
 // autodescubrimiento al RSS general: un lector de feeds que las visitara no
 // tenia forma de encontrarlo desde ahi.

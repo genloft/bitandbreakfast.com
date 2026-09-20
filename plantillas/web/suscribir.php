@@ -36,7 +36,9 @@ declare(strict_types=1);
       </div>
 
       <p class="letra-pequena">Te llegará un correo para confirmar. Si no lo
-      confirmas, no te apuntamos. Puedes darte de baja desde cualquier envío.</p>
+      confirmas, no te apuntamos. Puedes darte de baja desde cualquier envío.
+      Más sobre qué se hace con tu correo en el
+      <a href="<?= web_e($base) ?>/legal.html">aviso legal</a>.</p>
     </form>
 
   <?php else: ?>
