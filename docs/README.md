@@ -705,3 +705,27 @@ un MariaDB 10.6 para la de humo.
   genérica para todo lo que no es un día, y una por día con el titular
   del bit más reciente de esa fecha; una por bit, dice el propio
   documento de mejoras, es el final del camino, no el principio.
+- **`/cumplimiento.html`: el calendario normativo, investigado de cero,
+  no copiado del documento de mejoras.** El propio `docs/MEJORAS.md` que
+  proponía esta página traía fechas ya desactualizadas -Verifactu decía
+  "1 ene 2026 / 1 jul 2026", y un Real Decreto-ley de diciembre de 2025
+  (el RDL 15/2025) ya lo había aplazado a 2027 antes de escribirse ese
+  documento-, así que la tabla se rehizo entera con fuentes oficiales
+  buscadas una por una -AEAT, Ministerio del Interior, EUR-Lex, la propia
+  Comisión Europea-, no copiada de la propuesta. El caso de NIS2 cambió
+  más que la fecha: para cuando se escribió esta página, la Comisión ya
+  había llevado a España ante el Tribunal de Justicia de la UE (8 de
+  julio de 2026) por no transponerla, y encima el sector hotelero ni
+  siquiera está en la lista de sectores que cubre la directiva europea
+  -"cadenas de más de 50 empleados" no es una afirmación que se pudiera
+  sostener sin más comprobación-, así que la entrada dice exactamente esa
+  incertidumbre en vez de una cifra inventada.
+- **Los datos de `/cumplimiento.html` viven en `lib/cumplimiento.php`, no
+  en la plantilla.** Distinto de `$grupos` en `estadisticas.php`, que sí
+  vive en la plantilla: aquí `cron/mantenimiento.php` necesita las
+  fechas de cada norma para calcular cuándo avisar, no solo una fecha de
+  revisión suelta -la caducidad de esta página no es un plazo fijo como
+  en Cifras, es la fecha pendiente más próxima de su propia tabla-, así
+  que la tabla entera tenía que poder leerse sin ejecutar la plantilla.
+  `cumplimiento_normas()` es la única fuente de la verdad; la plantilla y
+  `cron/mantenimiento.php` la leen igual.

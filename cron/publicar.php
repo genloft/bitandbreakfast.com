@@ -29,6 +29,7 @@
  *   robots.txt
  *   sitemap.xml         direcciones para Google, con lastmod por dia
  *   estadisticas.html   cuadro de mandos con cifras externas -no de esta base-
+ *   cumplimiento.html   calendario normativo, con fecha y fuente en cada norma
  *   tendencias.html     que tema sube y cual baja, con los datos propios
  *   glosario.html       las siglas del sector, explicadas una vez
  *
@@ -44,6 +45,7 @@ require_once dirname(__DIR__) . '/lib/web.php';
 require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
+require_once dirname(__DIR__) . '/lib/cumplimiento.php';
 require_once dirname(__DIR__) . '/lib/imagen_social.php';
 
 /**
@@ -299,6 +301,11 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/estadisticas.html',
         publicar_plantilla('estadisticas', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/cumplimiento.html',
+        publicar_plantilla('cumplimiento', $comunes)
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(

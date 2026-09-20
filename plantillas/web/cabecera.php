@@ -17,9 +17,9 @@
  * es de las primeras cosas que se preguntan al volver a un agregador. Al lado
  * del nombre son parte de la cabecera, no un mensaje.
  *
- * El menu agrupa Cifras, Tendencias y Glosario bajo un desplegable
- * ("Recursos"): son paginas de consulta, no de lectura diaria, y puestas al
- * mismo nivel que Portada o Temas la barra crecio a diez enlaces. Un
+ * El menu agrupa Cifras, Cumplimiento, Tendencias y Glosario bajo un
+ * desplegable ("Recursos"): son paginas de consulta, no de lectura diaria, y
+ * puestas al mismo nivel que Portada o Temas la barra crecio a diez enlaces. Un
  * <details> nativo -sin una linea de JS- porque no hay nada que un script
  * haga aqui mejor que el navegador solo.
  *
@@ -37,7 +37,7 @@
 declare(strict_types=1);
 
 $enlace_activo = $enlace_activo ?? '';
-$en_recursos   = in_array($enlace_activo, ['cifras', 'tendencias', 'glosario'], true);
+$en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias', 'glosario'], true);
 
 ?>
 <header class="cabecera" itemscope itemtype="https://schema.org/WebSite">
@@ -66,6 +66,7 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'tendencias', 'glosario'], 
         <summary<?= $en_recursos ? ' aria-current="page"' : '' ?>>Recursos</summary>
         <div class="menu-recursos-lista">
           <a href="<?= web_e($base) ?>/estadisticas.html"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>>Cifras</a>
+          <a href="<?= web_e($base) ?>/cumplimiento.html"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>>Cumplimiento</a>
           <a href="<?= web_e($base) ?>/tendencias.html"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>>Tendencias</a>
           <a href="<?= web_e($base) ?>/glosario.html"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>>Glosario</a>
         </div>

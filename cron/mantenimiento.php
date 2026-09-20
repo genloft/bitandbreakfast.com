@@ -2,9 +2,11 @@
 /**
  * Mantenimiento diario: lo que no hace falta mirar cada cinco minutos.
  *
- * Hoy hace una cosa sola: si /estadisticas.html lleva mas de
- * CIFRAS_CADUCIDAD_DIAS sin que una persona la revise, manda un aviso por el
- * mismo buzon que ya usa el cron para su propio parte.
+ * Dos avisos, el mismo mecanismo para los dos: si /estadisticas.html lleva
+ * mas de CIFRAS_CADUCIDAD_DIAS sin que una persona la revise, o si
+ * /cumplimiento.html ha llegado a la fecha pendiente mas proxima de su
+ * propia tabla, manda un aviso por el mismo buzon que ya usa el cron para
+ * su propio parte.
  *
  * No intenta traer las cifras solas. La mayoria de las fuentes que cita esa
  * pagina -RateGain, IBM, AEPD, las encuestas de viajeros- son informes y
@@ -26,17 +28,22 @@ require_once dirname(__DIR__) . '/lib/db.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/smtp.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
+require_once dirname(__DIR__) . '/lib/cumplimiento.php';
 
 /**
  * Punto de entrada que llama cron/tareas.php cada dia a partir de las 05:00
  * UTC. El $limite lo reciben todas las tareas por la misma firma, pero esta
  * no lo necesita: es una comprobacion de fechas, no un lote con puntero.
  *
- * @return array ['cifras_aviso' => bool] Si se ha mandado el aviso ahora.
+ * @return array ['cifras_aviso' => bool, 'cumplimiento_aviso' => bool] Si se
+ *               ha mandado cada aviso ahora.
  */
 function mantenimiento_diario(float $limite): array
 {
-    return ['cifras_aviso' => mantenimiento_avisar_cifras_caducadas()];
+    return [
+        'cifras_aviso'       => mantenimiento_avisar_cifras_caducadas(),
+        'cumplimiento_aviso' => mantenimiento_avisar_cumplimiento_caducado(),
+    ];
 }
 
 /**
@@ -94,6 +101,65 @@ function mantenimiento_avisar_cifras_caducadas(): bool
     }
 
     ajuste_guardar('cifras_aviso_revisado', $revisado);
+
+    return true;
+}
+
+/**
+ * Manda el aviso de caducidad de /cumplimiento.html si toca, y deja
+ * constancia de para que revision se ha mandado.
+ *
+ * Mismo patron exacto que mantenimiento_avisar_cifras_caducadas(), con una
+ * diferencia: el limite no es un plazo fijo, es la fecha pendiente mas
+ * proxima de cumplimiento_fechas() -calculada en cumplimiento_limite_revision(),
+ * la misma funcion que usa la propia pagina para enseñar esa fecha-.
+ */
+function mantenimiento_avisar_cumplimiento_caducado(): bool
+{
+    $revisado = cumplimiento_revisado();
+    $hoy      = gmdate('Y-m-d');
+    $limite   = cumplimiento_limite_revision(cumplimiento_fechas(), $hoy, $revisado);
+
+    $ultimo_aviso = (string) ajuste('cumplimiento_aviso_revisado', '');
+
+    if (!cumplimiento_caducadas($limite, $hoy, $ultimo_aviso, $revisado)) {
+        return false;
+    }
+
+    $conf = correo_conf();
+
+    if (!correo_configurado($conf) || $conf['proveedor'] !== 'propio') {
+        return false;
+    }
+
+    $destino = trim((string) ajuste('cron_aviso_correo', ''));
+    $destino = $destino !== '' ? $destino : (string) $conf['usuario'];
+
+    if (!correo_valido($destino)) {
+        return false;
+    }
+
+    $envio = smtp_enviar($conf, [
+        'para'   => $destino,
+        'asunto' => 'Bit & Breakfast: /cumplimiento.html ha llegado a su fecha de revisión',
+        'texto'  => "La página /cumplimiento.html se revisó por última vez el $revisado.\n\n"
+            . "Su fecha de revisión era el $limite -la fecha pendiente más próxima de su propia "
+            . "tabla-. Toca comprobar si esa norma ha cambiado de plazo, si ya se ha resuelto un "
+            . "trámite en curso o si ha aparecido una norma nueva que añadir, y actualizar "
+            . "cumplimiento_normas() y la fecha de revisión en lib/cumplimiento.php.\n",
+        'cabeceras' => [
+            'Auto-Submitted: auto-generated',
+            'Precedence: bulk',
+        ],
+    ]);
+
+    if (!$envio['ok']) {
+        error_log('Bit & Breakfast, aviso de Cumplimiento caducado: ' . $envio['mensaje']);
+
+        return false;
+    }
+
+    ajuste_guardar('cumplimiento_aviso_revisado', $revisado);
 
     return true;
 }

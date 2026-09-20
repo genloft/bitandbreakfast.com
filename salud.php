@@ -23,6 +23,7 @@ require_once __DIR__ . '/lib/auto.php';
 require_once __DIR__ . '/lib/correo.php';
 require_once __DIR__ . '/lib/traducir.php';
 require_once __DIR__ . '/lib/cifras.php';
+require_once __DIR__ . '/lib/cumplimiento.php';
 
 date_default_timezone_set('UTC');
 
@@ -325,6 +326,20 @@ $informe = [
             cifras_revisado(),
             gmdate('Y-m-d', $ahora),
             (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'cifras_aviso_revisado'", '')
+        ),
+    ],
+    // Mismo control que 'cifras', para /cumplimiento.html. La diferencia
+    // -aquí no hay un plazo fijo, la caducidad es la fecha pendiente más
+    // próxima de la propia tabla normativa- vive en cumplimiento_limite_revision(),
+    // no aquí: esto solo enseña el resultado.
+    'cumplimiento' => [
+        'revisado'         => cumplimiento_revisado(),
+        'limite_revision'  => cumplimiento_limite_revision(cumplimiento_fechas(), gmdate('Y-m-d', $ahora), cumplimiento_revisado()),
+        'caducada'         => cumplimiento_caducadas(
+            cumplimiento_limite_revision(cumplimiento_fechas(), gmdate('Y-m-d', $ahora), cumplimiento_revisado()),
+            gmdate('Y-m-d', $ahora),
+            (string) salud_valor("SELECT valor FROM ajustes WHERE clave = 'cumplimiento_aviso_revisado'", ''),
+            cumplimiento_revisado()
         ),
     ],
     'contenido' => [

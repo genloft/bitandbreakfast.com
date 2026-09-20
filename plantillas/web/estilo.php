@@ -1157,6 +1157,22 @@ h1 {
 
 .cuadro-revision { margin: 1rem 0 0; }
 
+/* --- Cumplimiento: mismo cuadro, con el estado marcado en el borde -------
+   Reutiliza .cuadro/.cuadro-tarjeta entero -misma reticula, misma tarjeta-;
+   lo unico propio es el color del borde izquierdo, que dice de un vistazo
+   si una norma cuenta atras, ya esta vigente, sigue en tramite o ni
+   siquiera aplica a un hotel. */
+
+.cumplimiento-lista { list-style: none; padding: 0; }
+
+.cumplimiento-norma { border-left: 4px solid var(--filete-fino); }
+.cumplimiento-plazo { border-left-color: var(--acento); }
+.cumplimiento-vigente { border-left-color: var(--tinta); }
+.cumplimiento-tramite,
+.cumplimiento-contexto { border-left-color: var(--suave); }
+
+.cumplimiento-norma .cuadro-detalle + .cuadro-detalle { margin-top: .5rem; }
+
 /* --- Fuentes de Cifras --------------------------------------------------------------
    La bibliografia de la pagina de arriba, con el mismo peso que las cifras
    que sostiene: un nombre grande que enlaza, y debajo quien es. */
