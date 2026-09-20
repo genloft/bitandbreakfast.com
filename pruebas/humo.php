@@ -954,6 +954,21 @@ comprobar('lo que cuentan varios medios sale en negativo', true, str_contains($p
 comprobar('con las tres cuentas', 3, substr_count($portada, 'class="panel-cifra"'));
 comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));
 
+// El buscador en vivo de la cabecera: con clases del sitio, no con estilos
+// sueltos ni un emoji de lupa, y el guion que consulta indice.json escribe
+// enlaces reales -/d/<fecha>/#bit-<id>-, no la pagina "bit.html" que nunca
+// existio.
+comprobar('el buscador de cabecera usa las clases del sitio', true, str_contains($portada, 'class="cabecera-buscar-forma"'));
+comprobar('la caja de resultados tambien', true, str_contains($portada, 'id="resultados-dinamicos" class="cabecera-resultados"'));
+comprobar('sin el emoji de lupa suelto', false, str_contains($portada, '🔍'));
+
+$dinamico_js = (string) file_get_contents($publico . '/dinamico.js');
+
+comprobar('el indice llega como {etiquetas, bits}, no como array plano', true, str_contains($dinamico_js, 'datos.bits'));
+comprobar('cada resultado enlaza al dia real del bit', true, str_contains($dinamico_js, "'/d/' + encodeURIComponent(bit.w) + '/#bit-'"));
+comprobar('y no a una pagina "bit.html" que no existe', false, str_contains($dinamico_js, 'bit.html'));
+comprobar('el indice se pide siempre en la raiz, no por ruta relativa', true, str_contains($dinamico_js, "fetch('/indice.json'"));
+
 comprobar(
     'y tambien lo lleva una ficha de tema',
     true,

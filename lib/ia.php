@@ -12,7 +12,7 @@ require_once __DIR__ . '/db.php';
 
 function ia_conf(): array
 {
-    $ruta = (string) (config('rutas']['config'] ?? dirname(__DIR__) . '/config');
+    $ruta = (string) config_opcional('rutas.config', dirname(__DIR__) . '/config');
     $fichero = $ruta . '/ia.php';
 
     if (is_file($fichero)) {
