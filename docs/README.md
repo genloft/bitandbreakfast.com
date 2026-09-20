@@ -1054,3 +1054,23 @@ un MariaDB 10.6 para la de humo.
   que ya existía y que antes solo se veía leyendo la ficha entera hasta
   el final. Enlaza al propio párrafo (`href="#por-que-<id>"`) en vez de
   duplicar el texto, así que nunca puede quedar desincronizada de él.
+- **«Lo más útil» (§3.3, renumerado) reutiliza entero el marcado de «Lo
+  más leído» -`.masleido`, `.masleido-lista`, `.masleido-numero`,
+  `.masleido-cuerpo`-, sin una sola línea de CSS nueva.** La forma es
+  idéntica -un número, un titular que enlaza, la fuente debajo-; lo
+  único que cambia es de dónde sale el orden. Va primero en la portada,
+  antes de «Lo más leído»: un voto es la opinión de alguien que ya ha
+  leído el bit entero, un clic solo dice que un titular llamó la
+  atención, y el propio documento decía que el primero "dice mucho más"
+  que el segundo.
+- **`publicar_mas_votados()` puntúa por voto neto (`SUM(valor)`), no por
+  número de votos.** Un bit con cinco votos a favor y cuatro en contra
+  tiene más actividad que uno con dos a favor y ninguno en contra, pero
+  el segundo es el que de verdad ha sido útil; puntuar por recuento
+  bruto habría destacado polémica, no utilidad. Mismas dos reglas que
+  `publicar_mas_leidos()` -fuera de `publicar_firma()`, y sin ranking
+  por debajo de tres bits con puntuación de al menos dos-, con la tabla
+  `votos` en vez de `clics`.
+- **La tabla `votos` llevaba desde la fase 6 alimentándose sin que nada
+  la mostrara al público -solo `/salud.php`, hacia dentro-.** Este punto
+  cierra ese hueco.

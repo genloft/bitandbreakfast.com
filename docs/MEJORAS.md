@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Enseñar los votos (§3.3). Se recogen desde el commit #17 y no se ven en ninguna parte; las dos reglas que hacen falta ya las tiene `mas_leido.php`.
+1. Suscripción por tema y por frecuencia (§3.1). La tabla `envios` y el envío por tandas ya soportan la mecánica; falta una columna más y un filtro en `cron/enviar.php`.
 
 ## 2. Contenido para directivos
 
@@ -78,17 +78,7 @@ No choca con la decisión de no hacer fichas de proveedor —«la pregunta de
 Mews, no la del hotel»—: aquí el proveedor no es una página que se publica,
 es un filtro que elige el lector.
 
-### 3.3 Enseñar los votos
-
-Se recogen desde el commit #17 y no se ven en ninguna parte. «Lo más útil»
-(voto) y «lo más leído» (clic) son dos señales distintas, y la primera dice
-mucho más que la segunda.
-
-Aplican las mismas dos reglas que ya tiene `mas_leido.php`: fuera de
-`publicar_firma()`, para no regenerar el sitio cada vez que alguien vota, y
-un mínimo por debajo del cual no se pinta nada.
-
-### 3.4 API pública de lectura, e `indice.json` documentado
+### 3.3 API pública de lectura, e `indice.json` documentado
 
 `api/candidatos.php` ya abrió el camino de la lectura por API. Un endpoint
 público de lo publicado, más documentar el `indice.json` que el buscador ya
@@ -101,7 +91,7 @@ escribir.
 Un widget embebible, en cambio, chocaría con el `X-Frame-Options: DENY` del
 `.htaccess`. El JSON no.
 
-### 3.5 `/radar.html`: la transparencia como producto
+### 3.4 `/radar.html`: la transparencia como producto
 
 `salud.php` ya reúne datos que ningún medio publica: cuántas fuentes
 vigila, cuántas duermen y por qué, cuánto entra y cuánto se descarta. Una
@@ -111,13 +101,13 @@ directivo escéptico —y no hay que calcular nada nuevo, solo pintarlo—.
 Con el mismo cuidado que ya tiene esa página: cuentas y fechas, nunca
 configuración.
 
-### 3.6 Buscador: resaltar y ordenar
+### 3.5 Buscador: resaltar y ordenar
 
 `buscarjs.php` hace las facetas bien. Le falta resaltar el término
 encontrado dentro del resultado y poder ordenar por fecha además de por
 relevancia.
 
-### 3.7 Hoja de estilo de impresión
+### 3.6 Hoja de estilo de impresión
 
 Un directivo imprime o exporta a PDF el resumen del día para una reunión.
 Con una estética de papel ya construida, es media hora de CSS y es de lo
