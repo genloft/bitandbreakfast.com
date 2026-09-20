@@ -791,6 +791,16 @@ comprobar(
     str_contains($portada, 'Por qu&eacute; importa') || str_contains($portada, 'Por qué importa')
 );
 
+// §2.1 de docs/MEJORAS.md: el criterio humano ya no se distingue solo
+// leyendo la ficha entera, hay una etiqueta que lo señala junto a la
+// categoria y enlaza al mismo parrafo.
+comprobar('y una etiqueta que lo señala sin leer la ficha entera', true, str_contains($portada, 'etiqueta-analisis'));
+comprobar(
+    'que enlaza al parrafo de "por que importa" de ese mismo bit',
+    true,
+    str_contains($portada, '"#por-que-' . $bit_id . '"') && str_contains($portada, 'id="por-que-' . $bit_id . '"')
+);
+
 // El cuerpo llega de un textarea: si alguna vez saliera sin escapar, esto lo
 // caza antes que un lector.
 // Los proveedores ya no tienen ficha: se nombran y se enlazan al buscador.

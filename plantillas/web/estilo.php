@@ -739,6 +739,17 @@ h1 {
 .etiqueta-fecha { color: var(--apagado); text-decoration: none; }
 .etiqueta-fecha:hover { color: var(--tinta); }
 
+/* La unica etiqueta que no describe el bit -de cuando es, de que tema-, sino
+   que apunta a un juicio humano dentro de el: mismo fondo que .por-que, para
+   que se note que son la misma cosa antes incluso de seguir el enlace. */
+.etiqueta-analisis {
+  padding: .12rem .4rem;
+  background: var(--realce);
+  color: var(--tinta);
+  text-decoration: none;
+}
+.etiqueta-analisis:hover { background: var(--acento); color: var(--papel); }
+
 .menciona { margin: .5rem 0 0; font-size: .78rem; color: var(--apagado); }
 .menciona a { color: var(--apagado); }
 
@@ -825,6 +836,8 @@ h1 {
 .bit-multifuente .etiqueta-fecha { color: var(--filete-fino); }
 .bit-multifuente .etiqueta-fecha:hover { color: var(--papel); }
 .bit-multifuente .por-que { background: rgba(244, 242, 238, .14); color: var(--papel); }
+.bit-multifuente .etiqueta-analisis { background: rgba(244, 242, 238, .14); color: var(--papel); }
+.bit-multifuente .etiqueta-analisis:hover { background: var(--acento); color: var(--papel); }
 .bit-multifuente .menciona,
 .bit-multifuente .menciona a,
 .bit-multifuente .pie-bit .datos,

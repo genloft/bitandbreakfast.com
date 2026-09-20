@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. El «por qué importa» vacío es la mayor deuda de contenido (§2.1). Es la pregunta que un directivo hace siempre, y el sitio hoy no la contesta.
+1. Enseñar los votos (§3.3). Se recogen desde el commit #17 y no se ven en ninguna parte; las dos reglas que hacen falta ya las tiene `mas_leido.php`.
 
 ## 2. Contenido para directivos
 
@@ -22,17 +22,25 @@ cubren ese hueco, y ninguna obliga a inventar nada.
 ### 2.1 El «por qué importa» vacío es la mayor deuda de contenido
 
 El modo automático lo deja en blanco a propósito, y el motivo es correcto:
-es un juicio editorial. Pero para un directivo ese es el producto. Tres
-salidas, compatibles las tres con no inventar:
+es un juicio editorial. Pero para un directivo ese es el producto.
+
+Hecho: en la web pública, un bit con «por qué importa» y uno sin él ya no
+se distinguen solo leyéndolos enteros. `plantillas/web/bit.php` señala con
+una etiqueta -junto a la categoría, no al fondo del texto- cuáles llevan
+ese juicio humano añadido, con un enlace directo al párrafo.
+
+Pendientes las otras dos salidas, las dos del lado del panel, no de la web
+pública -y las dos siguen siendo tarea de una persona, no algo que este
+sitio pueda automatizar sin dejar de cumplir su propia regla de no
+inventar-:
 
 - Un parte semanal escrito a mano. Cinco líneas: lo que cambió, lo que
   caduca, la cifra, la vulnerabilidad, el evento. La infraestructura de
   correo por tandas ya está entera.
-- Rellenarlo solo en los bits multifuente, los que ya se pintan en negativo
-  (`.bit-multifuente`). Son dos o tres al día, no cuarenta.
-- Marcar en portada cuáles lo llevan, para que se note que hay criterio
-  humano donde lo hay. Ahora mismo un bit con «por qué importa» y uno sin
-  él se distinguen solo leyéndolos enteros.
+- Señalar en el panel -no en la web pública- cuáles bits multifuente
+  (`.bit-multifuente`) siguen sin «por qué importa», para que quien cura
+  la edición sepa dónde falta ese juicio sin tener que abrir cada uno.
+  Son dos o tres al día, no cuarenta.
 
 ### 2.2 Cifras: digitalización de la hostelería española
 

@@ -33,6 +33,14 @@
  * negro, letra blanca- (.bit-multifuente): es la señal mas fuerte que
  * tiene esta ficha de "esto es importante de verdad", y una fila mas en el
  * pie no se veia lo bastante.
+ *
+ * "Por qué importa" (.por-que) es el unico campo que el modo automatico deja
+ * en blanco a proposito -es un juicio editorial, y ahi no hay nadie que lo
+ * haga-, pero vivia solo dentro del cuerpo: un bit con criterio humano
+ * anadido y uno sin el se distinguian solo leyendo la ficha entera. La
+ * etiqueta "Con analisis" (.etiqueta-analisis), junto a la categoria,
+ * enlaza a ese mismo parrafo -no anade texto nuevo, solo lo hace visible
+ * donde ya se mira primero-.
  */
 
 declare(strict_types=1);
@@ -130,6 +138,16 @@ $secreto  = $secreto ?? '';
             </a>
           <?php endif; ?>
           <a class="etiqueta etiqueta-categoria" href="<?= web_e(web_url_tema($base, $tema)) ?>"><?= web_e($categorias[$tema] ?? $bit['categoria']) ?></a>
+          <?php if (trim((string) $bit['por_que']) !== ''): ?>
+            <?php // La unica senal de que aqui hay un juicio humano -el modo
+                  // automatico deja este campo vacio a proposito- vivia solo
+                  // dentro del cuerpo, asi que un bit con "por que importa" y
+                  // uno sin el se distinguian solo leyendo la ficha entera.
+                  // Esta etiqueta lo hace visible donde ya se mira primero, sin
+                  // escribir ningun analisis nuevo: solo senala el que ya
+                  // existe. ?>
+            <a class="etiqueta etiqueta-analisis" href="#por-que-<?= (int) $bit['id'] ?>">Con análisis</a>
+          <?php endif; ?>
           <?php // El tipo y la madurez se quedan fuera de la portada: en un
                 // titular no anaden nada y convierten la linea de arriba en
                 // una fila de tres cosas iguales. Siguen en el dato del bit
@@ -149,7 +167,7 @@ $secreto  = $secreto ?? '';
         <div class="texto" itemprop="articleBody"><?= web_parrafos((string) $bit['cuerpo']) ?></div>
 
         <?php if (trim((string) $bit['por_que']) !== ''): ?>
-          <p class="por-que"><strong>Por qué importa.</strong> <?= web_e($bit['por_que']) ?></p>
+          <p class="por-que" id="por-que-<?= (int) $bit['id'] ?>"><strong>Por qué importa.</strong> <?= web_e($bit['por_que']) ?></p>
         <?php endif; ?>
 
         <?php $menciona = web_proveedores($bit['proveedores'] ?? null); ?>
