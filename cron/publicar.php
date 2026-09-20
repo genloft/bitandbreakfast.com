@@ -102,6 +102,7 @@ function publicar_pendiente(float $limite): array
     $radar  = publicar_radar_total();
     $resumen_dias = publicar_resumen_dias();
     $mas_leidos   = publicar_mas_leidos();
+    $mas_votados  = publicar_mas_votados();
     $tendencias   = publicar_tendencias();
 
     $publicados = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'")->fetchColumn();
@@ -154,6 +155,7 @@ function publicar_pendiente(float $limite): array
         'radar'        => $radar,
         'resumen'      => $resumen_dias,
         'mas_leidos'   => $mas_leidos,
+        'mas_votados'  => $mas_votados,
         'tendencias'   => $tendencias,
         'panel'        => $panel,
         'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
@@ -693,6 +695,53 @@ function publicar_mas_leidos(int $dias = 7, int $tope = 6): array
              GROUP BY b.id
             HAVING clics >= 2
              ORDER BY clics DESC, b.id DESC
+             LIMIT ?";
+
+    $st = bd()->prepare($sql);
+    $st->bindValue(1, max(1, $dias), PDO::PARAM_INT);
+    $st->bindValue(2, max(1, $tope), PDO::PARAM_INT);
+    $st->execute();
+
+    $filas = $st->fetchAll();
+
+    return count($filas) >= 3 ? $filas : [];
+}
+
+/**
+ * Los bits mejor votados de los ultimos siete dias, segun el "¿te ha
+ * servido esto?" que lleva cada bit del correo.
+ *
+ * La tabla `votos` existe desde la fase 6 y hasta ahora no la leia nadie.
+ * A diferencia de un clic -que solo dice que un titular llamo la
+ * atencion-, un voto es la opinion de alguien que ya ha leido el bit
+ * entero, y por eso pesa mas: no es una cuenta, es una puntuacion neta
+ * -a favor menos en contra-, y un bit con mas votos en contra que a favor
+ * no entra en la lista aunque tenga mucho movimiento.
+ *
+ * Mismas dos reglas que publicar_mas_leidos(): fuera de publicar_firma()
+ * -es una foto que se congela hasta la proxima vez que haya algo nuevo que
+ * publicar, no en cada voto-, y sin tres bits con puntuacion de al menos
+ * dos no hay ranking, hay ruido.
+ *
+ * @return array Filas con 'id', 'titular', 'categoria', 'dia', 'fuente', 'url' y 'puntuacion'.
+ */
+function publicar_mas_votados(int $dias = 7, int $tope = 6): array
+{
+    $sql = "SELECT b.id, b.titular, b.categoria, b.dia, SUM(v.valor) AS puntuacion,
+                   (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente,
+                   (SELECT i.url FROM items i
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS url
+              FROM votos v
+              JOIN bits b ON b.id = v.bit_id
+             WHERE v.creado >= (NOW() - INTERVAL ? DAY)
+               AND b.estado = 'publicado'
+             GROUP BY b.id
+            HAVING puntuacion >= 2
+             ORDER BY puntuacion DESC, b.id DESC
              LIMIT ?";
 
     $st = bd()->prepare($sql);

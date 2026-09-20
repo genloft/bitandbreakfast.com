@@ -22,7 +22,7 @@
  * antes la llevaba una sola vez por grupo.
  *
  * Recibe $rio -tramos con 'dia' y 'bits'-, $dias, $fuentes, $mas_leidos,
- * $tendencias y $base.
+ * $mas_votados, $tendencias y $base.
  *
  * HTML estatico: ni script, ni estilo en linea, ni una peticion a terceros.
  * La politica de seguridad del sitio es 'self' y esta pagina es la razon de
@@ -39,6 +39,7 @@ $fuentes    = $fuentes ?? [];
 $temas      = $temas ?? [];
 $medios     = $medios ?? [];
 $mas_leidos = $mas_leidos ?? [];
+$mas_votados = $mas_votados ?? [];
 $tendencias = $tendencias ?? [];
 $secreto    = $secreto ?? '';
 $alta_abierta = $alta_abierta ?? false;
@@ -168,6 +169,10 @@ require_once __DIR__ . '/iconos.php';
     <?php endif; ?>
 
   </article>
+
+  <?php // El voto pesa mas que el clic -es la opinion de quien ya ha leido
+        // el bit entero, no solo el titular-, por eso va primero. ?>
+  <?php require __DIR__ . '/mas_votado.php'; ?>
 
   <?php require __DIR__ . '/mas_leido.php'; ?>
 

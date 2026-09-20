@@ -638,6 +638,13 @@ comprobar('y /salud.php contaria el total igual', 2, (int) bd()->query('SELECT C
 comprobar('y los positivos', 1, (int) bd()->query('SELECT COUNT(*) FROM votos WHERE valor > 0')->fetchColumn());
 comprobar('y los negativos', 1, (int) bd()->query('SELECT COUNT(*) FROM votos WHERE valor < 0')->fetchColumn());
 
+// §3.3 de docs/MEJORAS.md: publicar_mas_votados() contra la base real. Con
+// un solo bit votado -y con puntuacion neta de 0, un voto a favor y otro en
+// contra- no llega ni al minimo de puntuacion ni al de tres bits, asi que
+// el ranking se queda vacio: esto comprueba que el SQL corre de verdad
+// contra el esquema, no solo que el umbral funciona en abstracto.
+comprobar('publicar_mas_votados() no rompe contra la base real', [], publicar_mas_votados());
+
 $indice = json_decode((string) file_get_contents($publico . '/indice.json'), true);
 $bits_indice = $indice['bits'] ?? [];
 
