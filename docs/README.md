@@ -1043,3 +1043,14 @@ un MariaDB 10.6 para la de humo.
   encabezado sin contenido; las secciones siguientes no se
   renumeraron -tocar cada referencia cruzada por un hueco en la
   numeración habría sido más riesgo que beneficio-.
+- **§2.1 traía tres salidas para el «por qué importa» vacío, y solo se
+  implementó una: la etiqueta «Con análisis» en `bit.php`.** Las otras
+  dos -un parte semanal escrito a mano, y señalar en el panel qué bits
+  multifuente siguen sin ese campo- piden que una persona escriba texto
+  nuevo, no que este sitio lo automatice: hacerlo de otra forma sería
+  que el modo automático empezara a inventar el mismo juicio editorial
+  que la propia regla del sitio le prohíbe. La etiqueta, en cambio, no
+  añade ningún texto: solo hace visible, junto a la categoría, un campo
+  que ya existía y que antes solo se veía leyendo la ficha entera hasta
+  el final. Enlaza al propio párrafo (`href="#por-que-<id>"`) en vez de
+  duplicar el texto, así que nunca puede quedar desincronizada de él.
