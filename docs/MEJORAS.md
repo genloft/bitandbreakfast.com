@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Los puntos suspensivos perdidos (§4.7). Un degradado de dos píxeles hacia el papel, y deja de ser ambiguo si un «por qué importa» cortado está cortado o acaba ahí.
+1. Toda la celda debería ser zona de clic (§4.6). Ahora solo lo son el titular y los iconos del pie; en móvil, un objetivo de toque del tamaño de la celda cambia por completo la sensación de uso.
 
 ## 2. Contenido para directivos
 
@@ -148,14 +148,7 @@ Ahora solo lo son el titular y los iconos del pie. En móvil, un objetivo de
 toque del tamaño de la celda cambia por completo la sensación de uso, y en
 una retícula de celdas con filete el gesto es obvio.
 
-### 4.7 Los puntos suspensivos perdidos
-
-El `max-height` de respaldo de `.por-que` corta limpio, pero sin decir que
-hay más —está documentado en el README y aceptado a conciencia—. Un
-degradado de dos píxeles hacia el papel resuelve la ambigüedad entre «está
-cortado» y «acaba ahí» sin recuperar el problema del recorte sucio.
-
-### 4.8 Las cifras del radar, separadas del nombre
+### 4.7 Las cifras del radar, separadas del nombre
 
 «Actualizado hace X, N noticias» es la pregunta de quien vuelve, y en
 `cabecera.php` compite tipográficamente con el nombre del sitio. Un filete

@@ -1168,3 +1168,19 @@ un MariaDB 10.6 para la de humo.
   y una llave de más o de menos no rompe `php -l` -es solo texto dentro
   de una cadena-, así que no lo habría cazado ninguna otra prueba de
   esta lista.
+- **El degradado de "por qué importa" (§4.7) funde hacia el color de su
+  propia caja -`var(--realce)`, o el `rgba` de `.bit-multifuente`-, no
+  hacia `--papel` como decía la lectura literal del punto en
+  `docs/MEJORAS.md`.** El texto no vive sobre el papel de la página:
+  vive dentro de una caja con su propio fondo, y fundir hacia un color
+  distinto del de esa caja habría dejado una costura visible justo en
+  el borde del recorte. Fundir hacia el mismo color que ya pinta el
+  resto de la caja -sea cual sea, en cualquier modo o variante- es lo
+  que de verdad hace que el texto "se apague" en vez de cortarse.
+- **El degradado vive en un `::after` de dos píxeles con
+  `position: absolute`, no en un `background` con varias paradas de
+  color en el propio bloque de texto.** Con `overflow: hidden` en el
+  contenedor, un pseudo-elemento absoluto queda recortado exactamente
+  igual que el texto, así que el degradado se ve siempre pegado al
+  borde real del recorte por poco que cambie el contenido, sin tener
+  que calcular a mano dónde cae ese borde.
