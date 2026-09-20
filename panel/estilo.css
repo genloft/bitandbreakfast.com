@@ -189,6 +189,12 @@ button[disabled] { opacity: .4; cursor: not-allowed; }
 .items a { color: var(--tinta); }
 
 .peligro { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--borde); }
+.peligro { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.peligro input[type="text"] { width: 14rem; font-size: .85rem; }
+
+/* Lo ya descartado no se puede volver a decidir aqui: mas apagado que la
+   cola de verdad, para que no compita por la atencion con lo que si lo pide. */
+.descartados li { opacity: .7; }
 
 /* --- Edicion ------------------------------------------------------------- */
 
