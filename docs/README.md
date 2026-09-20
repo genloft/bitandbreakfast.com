@@ -1184,3 +1184,25 @@ un MariaDB 10.6 para la de humo.
   igual que el texto, así que el degradado se ve siempre pegado al
   borde real del recorte por poco que cambie el contenido, sin tener
   que calcular a mano dónde cae ese borde.
+- **Toda la celda es zona de clic (§4.6) con el truco del "enlace
+  estirado", no envolviendo la ficha entera en un `<a>`.** Envolverla
+  habría sido HTML inválido -un `<a>` no puede contener otro `<a>`, y
+  la ficha lleva media docena: categoría, fecha, compartir, votar,
+  medio, "menciona"-. En su lugar, `.bit` es el contenedor posicionado
+  y el titular lleva un `::after` con `inset: 0` que se estira hasta
+  cubrir la celda entera; cada control propio de la ficha -`.etiquetas`,
+  `.menciona`, `.pie-acciones`, `.fuentes-bit`- sube de plano con
+  `position: relative; z-index: 1` para seguir siendo su propio
+  objetivo de toque en vez de desaparecer bajo el titular.
+- **Se verificó en un navegador de verdad, no solo leyendo el CSS.**
+  Se renderizó `bit.php` con datos sintéticos -incluida una ficha
+  multifuente con "N fuentes lo cuentan"- contra la hoja de estilo real,
+  se abrió con Playwright y Chromium, y se comprobó con clics reales:
+  tocar el número, el nombre de la fuente o "por qué importa" navega al
+  titular; tocar la categoría, un icono de compartir, la ficha de un
+  medio o un enlace dentro de "N fuentes lo cuentan" va a su propio
+  destino; y el `<summary>` de "N fuentes lo cuentan" sigue abriendo y
+  cerrando el desplegable sin navegar a ningún sitio. `pruebas/humo.php`
+  solo comprueba después que esas reglas siguen en la hoja publicada:
+  la prueba de verdad de esta mejora fue la del navegador, no una
+  comprobación de texto.
