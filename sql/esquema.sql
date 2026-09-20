@@ -27,6 +27,11 @@ CREATE TABLE fuentes (
   tipo                ENUM('prensa','changelog','estado','empleo','financiacion',
                            'normativa','investigacion','ferias','general')
                                         NOT NULL DEFAULT 'prensa',
+  -- 'manual' es para las pocas fuentes que no trae el rastreador de RSS/Atom
+  -- generico -hoy solo CISA KEV, alimentada por cron/kev.php-: existen para
+  -- que items.fuente_id tenga donde apuntar, pero la ronda de ingesta tiene
+  -- que dejarlas en paz, porque no son un feed que sepa leer.
+  gestion             ENUM('rss','manual') NOT NULL DEFAULT 'rss',
   idioma              CHAR(2)           NOT NULL DEFAULT 'en',
   region              ENUM('es','eu','global') NOT NULL DEFAULT 'global',
   categoria_defecto   VARCHAR(40)       NOT NULL DEFAULT 'tecnologia-general',

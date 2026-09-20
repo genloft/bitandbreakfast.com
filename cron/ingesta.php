@@ -34,9 +34,10 @@ require_once dirname(__DIR__) . '/lib/texto.php';
  */
 const INGESTA_SUENO_ROBOTS = 168;
 
-const INGESTA_DESPIERTAS = 'SELECT * FROM fuentes
+const INGESTA_DESPIERTAS = "SELECT * FROM fuentes
                              WHERE activa = 1
-                               AND (dormida_hasta IS NULL OR dormida_hasta <= UTC_TIMESTAMP())';
+                               AND gestion = 'rss'
+                               AND (dormida_hasta IS NULL OR dormida_hasta <= UTC_TIMESTAMP())";
 
 /**
  * Ejecuta un lote de ingesta.

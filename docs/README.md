@@ -772,3 +772,49 @@ un MariaDB 10.6 para la de humo.
   general: un bloque `@media` no "gana" solo por estar en una media query
   activa, si algo después en el mismo fichero apunta al mismo selector con la
   misma especificidad.
+- **El boletín de vulnerabilidades KEV se guarda como un item normal, no
+  como una tabla propia.** `cron/kev.php` cruza el catálogo de CISA contra
+  `proveedores`/`proveedor_alias` y, cuando una entrada menciona a uno,
+  llama a la misma `ingesta_guardar_item()` que usa la ingesta de RSS. A
+  partir de ahí `cron/procesar.php` y `cron/auto.php` no saben ni les
+  importa de dónde ha salido: lo agrupan, lo puntúan y lo publican con las
+  mismas puertas que cualquier otra noticia, incluida la de que hable de
+  hoteles. Encaja con la arquitectura tal cual estaba, que es justo lo que
+  pedía `docs/MEJORAS.md`.
+- **Esa fuente no es un feed RSS, y por eso `fuentes` tiene una columna
+  `gestion`.** `items.fuente_id` exige una fila en `fuentes`, pero el KEV es
+  un JSON con su propia forma, no XML: si la fuente se dejara `activa = 1`
+  sin más, el rastreador genérico la cogería en su turno, descargaría el
+  catálogo entero como si fuera un feed roto y la dormiría para siempre. La
+  columna `gestion` (`rss` | `manual`) es lo que separa "el rastreador
+  genérico puede tocar esto" de "esto lo alimenta su propia tarea";
+  `INGESTA_DESPIERTAS` ahora exige `gestion = 'rss'`. La fuente sigue con
+  `activa = 1` -sigue siendo verdad que se vigila-, y `cron/kev.php` respeta
+  esa columna: apagarla a mano desde el panel para la tarea de verdad, el
+  mismo control que ya tenía cualquier otra fuente.
+- **La primera pasada del KEV no cruza el catálogo histórico entero.** CISA
+  lleva más de mil quinientas entradas desde 2021, casi todas ya parcheadas
+  hace años. Convertirlas todas en avisos el día que se activa esta tarea
+  enterraría las noticias de ese día bajo un vertedero de CVEs viejas, así
+  que `kev_puntero_inicial()` pone el puntero al día en silencio -salta
+  directo a la fecha más reciente del catálogo- y solo entra, de ahí en
+  adelante, lo que CISA añada de nuevo. El puntero en sí no es un id
+  incremental como el de la ingesta -aquí solo hay un fichero, no
+  doscientas fuentes-: es una fecha más la lista de CVE ya vistos de ese
+  mismo día, para poder reanudar a medias un día con muchas entradas nuevas
+  sin dejar huecos ni repetir trabajo. `lib/kev.php` recorre siempre de más
+  antigua a más nueva -aunque CISA sirve el catálogo al revés- para que un
+  corte por presupuesto de tiempo deje siempre un tramo continuo hecho,
+  nunca un hueco en medio que la siguiente pasada dé por visto sin estarlo.
+- **El titular del aviso va en inglés, con la palabra "hotel" a la fuerza.**
+  El texto de CISA nunca dice "hotel": habla de "Oracle" o de "SiteMinder",
+  no de para qué sirven. La puerta del sector de `auto.php`
+  (`auto_es_del_sector()`, deliberadamente barata: busca la palabra en el
+  texto) descartaría un aviso real de una vulnerabilidad en un PMS exactamente
+  igual que descarta una de Chrome. `kev_categoria_legible()` añade esa
+  palabra a partir de la categoría que ya tiene el proveedor en
+  `sql/semilla_proveedores.sql` -un dato verificado de antemano, no una
+  suposición sobre esta vulnerabilidad concreta-, y lo hace en inglés porque
+  el resto del titular también lo está -es el texto de CISA, sin traducir
+  todavía-: así el bit entero pasa por el mismo traductor que cualquier otra
+  fuente en inglés, en vez de dejar una frase en español a medio traducir.

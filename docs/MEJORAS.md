@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Boletín de vulnerabilidades KEV (§2.1). Lo que hace que un director de sistemas se suscriba.
+1. Fichas de tema enriquecidas (§2.2). Es donde cae el tráfico de búsqueda.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -43,23 +43,7 @@ El sitio contesta hoy «¿qué ha pasado?». Un director general, de sistemas o
 de revenue necesita «¿qué significa y qué tengo que hacer?». Varias piezas
 cubren ese hueco, y ninguna obliga a inventar nada.
 
-### 2.1 Boletín de vulnerabilidades del stack hotelero
-
-El diferenciador real, y automatizable sin inventar una línea: cruzar el
-catálogo KEV de CISA —JSON público, sin clave, vulnerabilidades explotadas
-de verdad— contra las tablas `proveedores` y `proveedor_alias`, que ya
-existen y ya son la mitad del agrupador.
-
-El resultado es un aviso que ningún medio hotelero español da: «hay una
-vulnerabilidad explotada activamente en un producto que probablemente está
-en tu PMS». Cada aviso enlaza a su CVE, así que se puede comprobar, que es
-la condición que este sitio se pone a sí mismo para publicar cualquier
-cosa.
-
-Encaja con la arquitectura tal cual está: una tarea más en
-`cron/tareas.php`, con puntero y por lotes, como la ingesta.
-
-### 2.2 El «por qué importa» vacío es la mayor deuda de contenido
+### 2.1 El «por qué importa» vacío es la mayor deuda de contenido
 
 El modo automático lo deja en blanco a propósito, y el motivo es correcto:
 es un juicio editorial. Pero para un directivo ese es el producto. Tres
@@ -74,7 +58,7 @@ salidas, compatibles las tres con no inventar:
   humano donde lo hay. Ahora mismo un bit con «por qué importa» y uno sin
   él se distinguen solo leyéndolos enteros.
 
-### 2.3 Fichas de tema enriquecidas
+### 2.2 Fichas de tema enriquecidas
 
 `plantillas/web/tema.php` pinta hoy una lista de titulares: doce páginas
 finas. Encima de esa lista caben, con datos que ya existen:
@@ -87,7 +71,7 @@ finas. Encima de esa lista caben, con datos que ya existen:
 
 Mismo dato, cuatro veces más útil, y es donde cae el tráfico de búsqueda.
 
-### 2.4 `/calendario.html`: los eventos del sector
+### 2.3 `/calendario.html`: los eventos del sector
 
 FITURTECHY (21-23 de enero, IFEMA), HIP (16-18 de febrero, décimo
 aniversario, con Global CEOs Summit), TIS (6-8 de octubre, FIBES Sevilla),
@@ -97,7 +81,7 @@ es de lo primero que un directivo busca al empezar el ejercicio.
 Mismo patrón de mantenimiento que Cifras: revisión a mano y aviso al
 caducar.
 
-### 2.5 Glosario: de veinte términos a unos cincuenta
+### 2.4 Glosario: de veinte términos a unos cincuenta
 
 `plantillas/web/glosario.php` tiene veinte entradas y le faltan justo las
 que más se están usando ahora:
@@ -113,7 +97,7 @@ que más se están usando ahora:
 
 Cada uno enlazando a su tema, como ya hacen los que hay.
 
-### 2.6 Cifras: dos grupos que faltan, y uno automatizable de verdad
+### 2.5 Cifras: dos grupos que faltan, y uno automatizable de verdad
 
 Faltan dos datos que un directivo mira siempre: mix de canal directo frente
 a OTA y digitalización de la hostelería española.
@@ -128,7 +112,7 @@ raspar—.
 Y un `cifras.json` junto a la página: es lo que hace que otros citen estos
 datos en vez de rehacerlos.
 
-### 2.7 La reserva agéntica merece cobertura propia
+### 2.6 La reserva agéntica merece cobertura propia
 
 El tema del año para un director comercial, y hoy cae disuelto en
 «Distribución y OTAs»: Booking y Expedia dentro de ChatGPT, el Agentic
