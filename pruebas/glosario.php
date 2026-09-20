@@ -12,7 +12,7 @@ require_once dirname(__DIR__) . '/lib/bits.php';
 
 $terminos = glosario_terminos();
 
-comprobar('hay al menos veinte terminos', true, count($terminos) >= 20);
+comprobar('hay al menos cuarenta y cinco terminos', true, count($terminos) >= 45);
 
 $categorias_validas = array_keys(bits_categorias());
 
@@ -44,12 +44,41 @@ comprobar(
     array_column(glosario_por_tema('pms-crs'), 'sigla')
 );
 
-comprobar('un tema sin ningun termino devuelve una lista vacia', [], glosario_por_tema('sostenibilidad-energia'));
+comprobar('un tema sin ningun termino devuelve una lista vacia', [], glosario_por_tema('inversion-mercado'));
+comprobar('igual que el generico, que tampoco tiene ninguno', [], glosario_por_tema('tecnologia-general'));
 
 comprobar(
     'un termino con tema null no aparece al pedir la cadena vacia',
     false,
     in_array('API', array_column(glosario_por_tema(''), 'sigla'), true)
 );
+
+comprobar(
+    'los protocolos de reserva agentica -MCP, ACP y agentic booking- caen en distribucion-otas',
+    true,
+    count(array_intersect(
+        ['MCP', 'ACP', 'Agentic booking'],
+        array_column(glosario_por_tema('distribucion-otas'), 'sigla')
+    )) === 3
+);
+
+comprobar(
+    'las seis normas nuevas -NIS2, AI Act, EAA, Verifactu, SES.Hospedajes, CSRD- caen en cumplimiento junto a RGPD',
+    true,
+    count(array_intersect(
+        ['NIS2', 'AI Act', 'EAA', 'Verifactu', 'SES.Hospedajes', 'CSRD', 'RGPD'],
+        array_column(glosario_por_tema('cumplimiento'), 'sigla')
+    )) === 7
+);
+
+$por_sigla = array_column(glosario_terminos(), 'tema', 'sigla');
+
+foreach (['CDP', 'Middleware', 'iPaaS', 'Webhook', 'SSO'] as $sigla) {
+    comprobar(
+        "$sigla es generico, sin tema, igual que API y KPI",
+        null,
+        array_key_exists($sigla, $por_sigla) ? $por_sigla[$sigla] : 'NO ENCONTRADO'
+    );
+}
 
 resumen_pruebas('Pruebas de lib/glosario.php');
