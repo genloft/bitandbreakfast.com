@@ -54,6 +54,61 @@ function envio_bits_para_tema(array $bits, string $temas): array
 }
 
 /**
+ * El subconjunto de $bits que menciona alguno de los terminos de una
+ * alerta -una sigla, un proveedor, una palabra suelta-, tal como el
+ * propio lector los escribio al suscribirse.
+ *
+ * "Mews" y "ransomware" se tratan igual: no hay una lista aparte de
+ * proveedores y otra de palabras clave, porque para quien escribe la
+ * alerta son la misma cosa, un termino que le importa. Un termino
+ * coincide si aparece, sin distinguir mayusculas, en el titular o el
+ * cuerpo del bit, o dentro del nombre de uno de los proveedores que ese
+ * bit ya trae identificados -asi "Oracle" encuentra un bit sobre "Oracle
+ * Hospitality" aunque el cuerpo no repita el nombre completo-.
+ *
+ * $alerta es la columna 'alerta' de suscriptores tal cual sale de la
+ * base: terminos separados por comas, o vacia para no filtrar por esto.
+ *
+ * Pura -sin base de datos-, para poder probarla sin montar nada.
+ */
+function envio_bits_para_alerta(array $bits, string $alerta): array
+{
+    $terminos = array_values(array_filter(array_map(
+        static fn (string $termino): string => mb_strtolower(trim($termino), 'UTF-8'),
+        explode(',', $alerta)
+    )));
+
+    if (!$terminos) {
+        return $bits;
+    }
+
+    return array_values(array_filter(
+        $bits,
+        static function (array $bit) use ($terminos): bool {
+            $texto = mb_strtolower(
+                (string) ($bit['titular'] ?? '') . ' ' . (string) ($bit['cuerpo'] ?? ''),
+                'UTF-8'
+            );
+            $proveedores = web_proveedores($bit['proveedores'] ?? null);
+
+            foreach ($terminos as $termino) {
+                if (str_contains($texto, $termino)) {
+                    return true;
+                }
+
+                foreach ($proveedores as $proveedor) {
+                    if (str_contains(mb_strtolower((string) $proveedor['nombre'], 'UTF-8'), $termino)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    ));
+}
+
+/**
  * El asunto: el titulo del dia, si alguien se lo ha puesto, o su titular.
  *
  * Sin emojis, sin "no te pierdas" y sin el nombre del boletin repetido: el

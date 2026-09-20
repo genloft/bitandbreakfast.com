@@ -52,6 +52,15 @@ $alta_temas = $alta_temas ?? false;
             <?php endforeach; ?>
           </div>
         </details>
+
+        <details class="alta-temas">
+          <summary>Avisarme de palabras o proveedores (opcional)</summary>
+          <p class="letra-pequena">«Mews, ransomware» te avisa solo de los bits que los mencionen. Sin escribir nada, no se filtra por esto.</p>
+          <label for="alta-alerta">Palabras o proveedores, separados por comas</label>
+          <div class="alta-fila">
+            <input id="alta-alerta" name="alerta" type="text" placeholder="Mews, ransomware">
+          </div>
+        </details>
       <?php endif; ?>
 
       <?php /* Trampa para robots: un campo que nadie ve y que nadie rellena. */ ?>

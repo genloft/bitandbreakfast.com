@@ -400,12 +400,13 @@ function correo_peticion(array $carga): array
  * Da de alta una direccion. Es la unica funcion que usa api/suscribir.php.
  *
  * $temas -slugs de bits_categorias() separados por comas, vacio para todos-
- * solo tiene efecto con el buzon propio: MailerLite y Brevo llevan su propia
+ * y $alerta -terminos libres separados por comas, vacio para ninguno- solo
+ * tienen efecto con el buzon propio: MailerLite y Brevo llevan su propia
  * lista y su propia segmentacion, ajena a las tablas de este sitio.
  *
  * @return array ['ok' => bool, 'mensaje' => string]
  */
-function correo_alta(string $email, string $url_vuelta = '', string $temas = ''): array
+function correo_alta(string $email, string $url_vuelta = '', string $temas = '', string $alerta = ''): array
 {
     $conf = correo_conf();
 
@@ -414,7 +415,7 @@ function correo_alta(string $email, string $url_vuelta = '', string $temas = '')
     }
 
     if ($conf['proveedor'] === 'propio') {
-        return correo_alta_propia($email, $conf, $url_vuelta, $temas);
+        return correo_alta_propia($email, $conf, $url_vuelta, $temas, $alerta);
     }
 
     [$codigo, $cuerpo] = correo_peticion(correo_carga_alta($email, $conf, $url_vuelta));
