@@ -1229,3 +1229,24 @@ un MariaDB 10.6 para la de humo.
   funcionaba; se corrigió moviendo el bloque de excepción después de
   todas las animaciones que anula, y `pruebas/humo.php` ahora comprueba
   esa posición relativa en el CSS publicado para que no se repita.
+- **Se quitó un widget flotante de suscripción en vez de restilizarlo.**
+  Llegó fuera de este proceso -directo a `main`, sin PR ni pruebas- y
+  contradecía un principio que el propio `suscribir.php` ya documentaba:
+  el alta va al final de la página y nunca en una ventana emergente,
+  porque una caja fija que tapa contenido para pedir el correo se
+  contradice a sí misma. Además duplicaba peor lo que ya existía: su
+  formulario posteaba a `/api/suscribir.php` sin la trampa para robots
+  ni el selector de temas del formulario real, y `suscribir.php` ya se
+  incluye en las diecisiete plantillas de página, así que quitarlo no
+  le resta a nadie la posibilidad de suscribirse.
+- **El buscador en vivo de la cabecera (`dinamicojs.php`) tampoco llegó
+  por este proceso, y no funcionaba.** `indice.json` se sirve como
+  `{etiquetas, bits}` desde que el buscador principal (`buscarjs.php`)
+  ganó facetas; el guion de cabecera seguía tratándolo como si fuera un
+  array plano y por tanto `indice.length` era siempre `undefined`, así
+  que la búsqueda nunca pintaba nada. Se reescribió con las mismas
+  reglas que `buscarjs.php` -mismo `fetch('/indice.json')`, misma
+  normalización de texto, misma URL de resultado
+  `/d/<fecha>/#bit-<id>`- y se le quitaron los estilos en línea y el
+  emoji de lupa a favor de las clases del sitio y el icono `lupa` que
+  ya existía sin usar en `iconos.php`.

@@ -1518,37 +1518,6 @@ h1 {
 }
 .alta-tema input { margin: 0; }
 
-.flotante-newsletter {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  background: var(--tinta);
-  color: var(--papel);
-  padding: 1rem;
-  border: 2px solid var(--filete);
-  z-index: 1000;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-.flotante-newsletter label, .flotante-newsletter button {
-  color: var(--papel);
-}
-
-.flotante-newsletter input {
-  padding: 0.3rem;
-  border: 1px solid var(--filete-fino);
-  background: var(--papel);
-  color: var(--tinta);
-}
-
-.flotante-newsletter button {
-  background: var(--acento);
-  border: none;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  font-weight: bold;
-}
-
 .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 /* --- Pie -------------------------------------------------------------------------------- */

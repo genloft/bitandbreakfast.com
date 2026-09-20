@@ -1,6 +1,16 @@
 <?php
 /**
  * Pie comun de la web publicada. Recibe $base.
+ *
+ * No lleva su propio formulario de alta: cada pagina ya incluye
+ * suscribir.php, cuyo propio docblock explica por que -al final de la
+ * pagina, nunca en una ventana emergente- es la unica forma de pedir el
+ * correo que este sitio quiere usar. Hubo un widget flotante fijo en la
+ * esquina, con su propio formulario suelto a /api/suscribir.php -sin la
+ * trampa para robots ni el selector de temas del formulario real-, y
+ * contradecia ese principio en la primera pagina que se abriera. Se quita
+ * en vez de arreglarse, porque no aportaba nada que suscribir.php no
+ * ofreciera ya mejor.
  */
 
 declare(strict_types=1);
@@ -23,16 +33,6 @@ declare(strict_types=1);
     <a href="<?= web_e($base) ?>/legal.html">Aviso legal</a>
     <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
   </nav>
-
-  <div class="flotante-newsletter">
-    <form method="post" action="<?= web_e($base) ?>/api/suscribir.php">
-      <label for="flotante-email"><strong>Suscríbete a la newsletter</strong></label>
-      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-        <input id="flotante-email" name="email" type="email" placeholder="Tu correo electrónico" required>
-        <button type="submit">Alta</button>
-      </div>
-    </form>
-  </div>
 
   <p class="letra-pequena">Bit &amp; Breakfast es un radar, no un agregador:
   filtra duro y enseña poco. Cada bit enlaza a su fuente original, y ninguno
