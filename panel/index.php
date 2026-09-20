@@ -10,7 +10,9 @@
  * El flujo del curador es este y no tiene mas:
  *
  *   cola    - los racimos candidatos ordenados por puntuacion. Se descartan
- *             o se convierten en bit.
+ *             (uno a uno o de golpe) o se convierten en bit. Debajo, los
+ *             descartados recientes con su motivo: por que esto no llego a
+ *             ser un bit.
  *   bit     - se escribe el bit y se aprueba.
  *   edicion - los bits aprobados se ordenan y la edicion se cierra.
  *   fuentes - el catalogo de donde viene todo lo anterior.
@@ -83,6 +85,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $racimo_id = (int) ($_POST['racimo_id'] ?? 0);
             datos_descartar_racimo($racimo_id, (string) ($_POST['motivo'] ?? 'sin interés'));
             panel_avisar('Racimo descartado.');
+            panel_ir('cola');
+            // no continua
+
+        case 'descartar_cola':
+            $motivo_lote = trim((string) ($_POST['motivo'] ?? ''));
+
+            // A mano, un motivo vacio se rellena solo con "sin interes": es
+            // una decision, una a la vez. Vaciar la cola entera es una
+            // decision mas grande y no se hace sin decir por que.
+            if ($motivo_lote === '') {
+                panel_avisar('Escribe un motivo antes de vaciar la cola entera.', 'error');
+                panel_ir('cola');
+            }
+
+            $vaciados = datos_descartar_cola($motivo_lote);
+            panel_avisar($vaciados > 0
+                ? sprintf(
+                    'Cola vaciada: %d candidato%s descartado%s.',
+                    $vaciados,
+                    $vaciados === 1 ? '' : 's',
+                    $vaciados === 1 ? '' : 's'
+                )
+                : 'La cola ya estaba vacía.');
             panel_ir('cola');
             // no continua
 
@@ -452,8 +477,9 @@ switch ($pagina) {
         // no continua
 
     default:
-        $cola  = datos_cola();
-        $vista = 'cola';
+        $cola        = datos_cola();
+        $descartados = datos_descartados();
+        $vista       = 'cola';
 }
 
 require dirname(__DIR__) . '/plantillas/panel/marco.php';

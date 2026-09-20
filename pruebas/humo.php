@@ -1107,4 +1107,79 @@ comprobar(
     (int) bd()->query('SELECT activa FROM fuentes WHERE id = ' . (int) $fuente_nueva_id)->fetchColumn()
 );
 
+// -----------------------------------------------------------------------------
+// Vaciar la cola de golpe, y el motivo de lo descartado
+//
+// Lo que importa comprobar no es solo que vacia: es que no toca lo que ya
+// tiene un bit. Un WHERE estado='candidato' a secas se llevaria por delante
+// bits en borrador o aprobados que siguen esperando su edicion, porque
+// datos_crear_bit() no cambia el estado del racimo. Por eso el racimo de
+// $fuente_a -publicado hace rato- es la comprobacion que importa de verdad
+// aqui, no un detalle de relleno.
+// -----------------------------------------------------------------------------
+
+$fuente_e = humo_fuente('Humo Lote Uno', 'prensa', 5, 'es');
+$fuente_f = humo_fuente('Humo Lote Dos', 'prensa', 5, 'es');
+
+$item_e = humo_item(
+    $fuente_e,
+    'Un proveedor de channel manager lanza una nueva integracion con PMS',
+    'Resumen suficiente para pasar el filtro de palabras minimas exigido en esta prueba.',
+    'es'
+);
+$item_f = humo_item(
+    $fuente_f,
+    'Una cadena hotelera anuncia un acuerdo de franquicia en el Caribe',
+    'Otro resumen distinto, tambien suficiente para pasar el mismo filtro de palabras.',
+    'es'
+);
+
+procesar_lote(microtime(true) + 20);
+
+$racimo_e = (int) humo_item_leer($item_e)['racimo_id'];
+$racimo_f = (int) humo_item_leer($item_f)['racimo_id'];
+
+comprobar('los dos titulares sin relacion abren racimo propio', true, $racimo_e !== $racimo_f);
+
+$ids_en_cola = array_column(datos_cola(), 'id');
+
+comprobar(
+    'los dos racimos nuevos entran en la cola',
+    true,
+    in_array($racimo_e, $ids_en_cola, true) && in_array($racimo_f, $ids_en_cola, true)
+);
+
+$antes_de_vaciar = count(datos_cola());
+$vaciados        = datos_descartar_cola('vaciado de prueba');
+
+comprobar('vaciar la cola descarta exactamente lo que habia en ella', $antes_de_vaciar, $vaciados);
+comprobar('la cola queda vacia despues de vaciarla', 0, count(datos_cola()));
+
+comprobar(
+    'el racimo ya publicado no se toca al vaciar la cola',
+    'publicado',
+    datos_racimo((int) $a['racimo_id'])['estado']
+);
+
+$racimo_vaciado = datos_racimo($racimo_e);
+
+comprobar('el racimo vaciado queda descartado', 'descartado', $racimo_vaciado['estado'] ?? '');
+comprobar('con el motivo que se escribio en el formulario', 'vaciado de prueba', $racimo_vaciado['motivo_descarte'] ?? '');
+
+comprobar(
+    'sus items tambien quedan descartados',
+    'descartado',
+    (string) bd()->query('SELECT estado FROM items WHERE id = ' . (int) $item_e)->fetchColumn()
+);
+
+$descartados_recientes = array_column(datos_descartados(), 'id');
+
+comprobar(
+    'lo recien vaciado aparece en los descartados recientes',
+    true,
+    in_array($racimo_e, $descartados_recientes, true) && in_array($racimo_f, $descartados_recientes, true)
+);
+
+comprobar('vaciar una cola ya vacia no descarta nada', 0, datos_descartar_cola('sin nada que vaciar'));
+
 resumen_pruebas('Prueba de humo: esquema, semillas, procesado, curacion, automatico y web');

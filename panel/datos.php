@@ -110,6 +110,71 @@ function datos_descartar_racimo(int $id, string $motivo): void
 }
 
 /**
+ * Descarta de golpe todos los racimos que siguen en la cola -mismo criterio
+ * que datos_cola(): candidatos que todavia no tienen bit-. Para cuando se ha
+ * acumulado un backlog que ya no interesa revisar racimo a racimo.
+ *
+ * El JOIN contra bits no es un detalle: un racimo con un bit ya escrito sigue
+ * en estado 'candidato' hasta que la edicion se cierra (datos_crear_bit() no
+ * lo toca), asi que un simple WHERE estado='candidato' descartaria tambien
+ * bits en borrador o ya aprobados que estan esperando su edicion, no solo lo
+ * que de verdad sigue sin decidir.
+ *
+ * @return int Cuantos racimos se han descartado.
+ */
+function datos_descartar_cola(string $motivo): int
+{
+    $ids = array_map('intval', bd()->query(
+        "SELECT r.id
+           FROM racimos r
+           LEFT JOIN bits b ON b.racimo_id = r.id
+          WHERE r.estado = 'candidato'
+            AND b.id IS NULL"
+    )->fetchAll(PDO::FETCH_COLUMN));
+
+    if (!$ids) {
+        return 0;
+    }
+
+    $motivo_final = texto_recortar($motivo, 110);
+    $marcas       = implode(',', array_fill(0, count($ids), '?'));
+
+    bd()->prepare("UPDATE racimos SET estado = 'descartado', motivo_descarte = ? WHERE id IN ($marcas)")
+        ->execute([$motivo_final, ...$ids]);
+
+    bd()->prepare("UPDATE items SET estado = 'descartado' WHERE racimo_id IN ($marcas)")
+        ->execute($ids);
+
+    return count($ids);
+}
+
+/**
+ * Los ultimos racimos descartados, con su motivo.
+ *
+ * La cola solo enseña lo que sigue pendiente de decidir; esto enseña que
+ * paso con lo que ya no lo esta, que es justo la pregunta de quien ve pocos
+ * bits llegar a una edicion y no sabe por que. El motivo ya se guardaba desde
+ * siempre -a mano o con el prefijo "automatico:" que pone cron/auto.php-,
+ * solo faltaba un sitio del panel donde leerlo racimo a racimo: hasta ahora
+ * solo se veia agregado, como el motivo mas frecuente de cada fuente en
+ * plantillas/panel/fuentes.php.
+ */
+function datos_descartados(int $limite = 30): array
+{
+    $sql = "SELECT id, titulo_representativo, motivo_descarte, ultimo_visto
+              FROM racimos
+             WHERE estado = 'descartado'
+             ORDER BY ultimo_visto DESC
+             LIMIT ?";
+
+    $st = bd()->prepare($sql);
+    $st->bindValue(1, $limite, PDO::PARAM_INT);
+    $st->execute();
+
+    return $st->fetchAll();
+}
+
+/**
  * Crea un bit en borrador a partir de un racimo.
  *
  * El titular y el cuerpo se rellenan con lo que hay: el titular del racimo y

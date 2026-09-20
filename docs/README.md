@@ -646,3 +646,27 @@ un MariaDB 10.6 para la de humo.
   -104 de España, 38 de Europa y 45 de alcance global-; aquí solo
   aparecen las que ya han contado algo que pasó el filtro". Mismo hecho
   de siempre, ahora con la cifra real en vez de una vaguedad.
+- **Por qué un racimo no llega a un bit ya se guardaba; solo faltaba
+  dónde leerlo.** `racimos.motivo_descarte` se escribe desde el
+  principio, a mano al descartar o con el prefijo "automatico:" que
+  pone `cron/auto.php`, pero antes de esto solo se veía agregado -el
+  motivo más frecuente por fuente, en `plantillas/panel/fuentes.php`-.
+  `datos_descartados()` en `panel/datos.php` lo enseña racimo a racimo,
+  debajo de la cola: la pregunta de quien ve pocos bits llegar a una
+  edición y no sabe por qué tiene ahora una respuesta sin abrir la base
+  de datos.
+- **Vaciar la cola es una decisión, y se pide un motivo para tomarla.**
+  `datos_descartar_cola()` descarta de golpe todo lo que sigue en la
+  cola, para cuando se ha acumulado un backlog que ya no interesa
+  revisar racimo a racimo. Reutiliza el mismo criterio que `datos_cola()`
+  -candidatos sin bit todavía, no un `WHERE estado='candidato'` a
+  secas-, porque un racimo con un bit ya escrito se queda en
+  `'candidato'` hasta que su edición se cierra: sin ese filtro, vaciar
+  la cola se llevaría por delante bits en borrador o aprobados que
+  solo están esperando su turno. El motivo es obligatorio en este
+  formulario -a diferencia del descarte de uno en uno, que si se deja
+  en blanco pone "sin interés"- porque descartar sesenta candidatos de
+  una vez es una decisión más grande que descartar uno, y no se toma
+  sin decir por qué. El botón no promete una cifra -la cola solo enseña
+  como mucho sesenta- para no anunciar un número que podría no ser el
+  real: la cifra de verdad la da el aviso de después.
