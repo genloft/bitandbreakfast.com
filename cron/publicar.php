@@ -47,6 +47,7 @@ require_once dirname(__DIR__) . '/lib/bits.php';
 require_once dirname(__DIR__) . '/lib/correo.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
 require_once dirname(__DIR__) . '/lib/cumplimiento.php';
+require_once dirname(__DIR__) . '/lib/glosario.php';
 require_once dirname(__DIR__) . '/lib/imagen_social.php';
 
 /**

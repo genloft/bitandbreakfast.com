@@ -9,6 +9,7 @@
 
 require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/cifras.php';
+require_once dirname(__DIR__) . '/lib/bits.php';
 
 comprobar(
     'por debajo del umbral, no avisa',
@@ -93,5 +94,49 @@ comprobar(
     1,
     (int) preg_match('/^\d+,\d$/', cifras_valor_ia_espana())
 );
+
+// --- cifras_grupos() y cifras_por_tema() -------------------------------------
+
+$grupos = cifras_grupos();
+
+comprobar('hay al menos diez grupos en el cuadro de mandos', true, count($grupos) >= 10);
+
+$categorias_validas = array_keys(bits_categorias());
+
+foreach ($grupos as $indice => $grupo) {
+    foreach (['tema', 'categoria', 'cifras'] as $campo) {
+        comprobar("el grupo $indice trae el campo '$campo'", true, array_key_exists($campo, $grupo));
+    }
+
+    comprobar("el grupo $indice trae al menos una cifra", true, count($grupo['cifras']) > 0);
+
+    if ($grupo['categoria'] !== null) {
+        comprobar(
+            "la categoria del grupo $indice está en bits_categorias()",
+            true,
+            in_array($grupo['categoria'], $categorias_validas, true)
+        );
+    }
+
+    foreach ($grupo['cifras'] as $cifra) {
+        foreach (['ambito', 'valor', 'detalle', 'fuente', 'fecha'] as $campo) {
+            comprobar("cada cifra del grupo $indice trae '$campo'", true, array_key_exists($campo, $cifra));
+        }
+    }
+}
+
+comprobar(
+    'IA en los hoteles aparece al pedir ia-aplicada',
+    true,
+    in_array('IA en los hoteles', array_column(cifras_por_tema('ia-aplicada'), 'tema'), true)
+);
+
+comprobar(
+    'la vara de medir de fondo -IA en la empresa- no aparece en ningun tema hotelero',
+    false,
+    in_array('IA en la empresa, en general', array_column(cifras_por_tema('ia-aplicada'), 'tema'), true)
+);
+
+comprobar('un tema sin ningun grupo devuelve una lista vacia', [], cifras_por_tema('sostenibilidad-energia'));
 
 resumen_pruebas('Pruebas de lib/cifras.php');

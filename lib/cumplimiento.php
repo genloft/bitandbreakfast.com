@@ -64,6 +64,7 @@ function cumplimiento_normas(): array
         [
             'norma'   => 'NIS2',
             'ambito'  => 'Directiva (UE) 2022/2555',
+            'temas'   => ['ciberseguridad', 'cumplimiento'],
             'fecha'   => '2024-10-17',
             'estado'  => 'tramite',
             'texto'   => 'España debía transponerla el 17 de octubre de 2024 y, casi dos años después, sigue sin hacerlo.',
@@ -75,6 +76,7 @@ function cumplimiento_normas(): array
         [
             'norma'   => 'SES.Hospedajes',
             'ambito'  => 'Real Decreto 933/2021',
+            'temas'   => ['cumplimiento'],
             'fecha'   => '2024-12-02',
             'estado'  => 'vigente',
             'texto'   => 'Obligatorio y sancionable desde el 2 de diciembre de 2024.',
@@ -86,6 +88,7 @@ function cumplimiento_normas(): array
         [
             'norma'   => 'Accesibilidad digital',
             'ambito'  => 'European Accessibility Act, Directiva (UE) 2019/882',
+            'temas'   => ['cumplimiento', 'distribucion-otas'],
             'fecha'   => '2025-06-28',
             'estado'  => 'vigente',
             'texto'   => 'En vigor desde el 28 de junio de 2025.',
@@ -97,6 +100,10 @@ function cumplimiento_normas(): array
         [
             'norma'   => 'Reglamento de alquiler de corta duración',
             'ambito'  => 'Reglamento (UE) 2024/1028',
+            // Vacío a propósito: la propia entrada dice que no aplica a
+            // hoteles, así que no debería aparecer en la ficha de ningún
+            // tema hotelero -solo en /cumplimiento.html, por contexto-.
+            'temas'   => [],
             'fecha'   => '2026-05-20',
             'estado'  => 'contexto',
             'texto'   => 'Aplicable desde el 20 de mayo de 2026.',
@@ -108,6 +115,7 @@ function cumplimiento_normas(): array
         [
             'norma'   => 'AI Act',
             'ambito'  => 'Reglamento (UE) 2024/1689',
+            'temas'   => ['ia-aplicada', 'cumplimiento'],
             'fecha'   => '2026-08-02',
             'fecha_cuenta_atras' => '2027-12-02',
             'estado'  => 'plazo',
@@ -120,6 +128,7 @@ function cumplimiento_normas(): array
         [
             'norma'   => 'Verifactu',
             'ambito'  => 'RD 1007/2023 + RD 254/2025, aplazado por el RDL 15/2025',
+            'temas'   => ['cumplimiento'],
             'fecha'   => '2027-01-01',
             'fecha_cuenta_atras' => '2027-01-01',
             'estado'  => 'plazo',
@@ -130,6 +139,18 @@ function cumplimiento_normas(): array
             'url'     => 'https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/nota-informativa-ampliacion-plazo-adaptacion-facturacion.html',
         ],
     ];
+}
+
+/**
+ * Las normas de la tabla que tocan a un tema concreto, en el mismo orden
+ * cronológico que cumplimiento_normas().
+ */
+function cumplimiento_por_tema(string $categoria): array
+{
+    return array_values(array_filter(
+        cumplimiento_normas(),
+        static fn (array $norma): bool => in_array($categoria, $norma['temas'] ?? [], true)
+    ));
 }
 
 /**

@@ -596,6 +596,25 @@ comprobar(
     )
 );
 
+// La ficha de tema enriquecida: descripcion evergreen, siglas del glosario
+// que enlazan de vuelta -CRS y PMS son justo los dos terminos de pms-crs-,
+// y ningun bloque vacio cuando el tema no tiene ni normas ni cifras propias.
+$ficha_pms_crs = (string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs'));
+
+comprobar('la ficha trae la descripcion evergreen del tema', true, str_contains($ficha_pms_crs, 'channel manager'));
+comprobar('y enlaza de vuelta al glosario', true, str_contains($ficha_pms_crs, '/glosario.html#crs'));
+comprobar('con las dos siglas que le tocan', true, str_contains($ficha_pms_crs, '/glosario.html#pms'));
+comprobar(
+    'pero no pinta un bloque de cumplimiento vacio -pms-crs no tiene ninguna norma asociada-',
+    false,
+    str_contains($ficha_pms_crs, '/cumplimiento.html#')
+);
+comprobar(
+    'ni uno de cifras vacio -pms-crs tampoco tiene ningun grupo asociado-',
+    false,
+    str_contains($ficha_pms_crs, '/estadisticas.html#')
+);
+
 comprobar('escribe el feed', true, is_file($publico . '/feed.xml'));
 comprobar('escribe la hoja de estilo', true, is_file($publico . '/estilo.css'));
 

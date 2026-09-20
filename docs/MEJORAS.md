@@ -11,7 +11,7 @@ haciendo se borra de aquí y se cuenta, como todo lo demás, en las
 
 Orden recomendado si hay que elegir cinco:
 
-1. Fichas de tema enriquecidas (§2.2). Es donde cae el tráfico de búsqueda.
+1. Glosario: de veinte términos a unos cincuenta (§2.3). Amplía justo lo que ya demostró valer la pena.
 
 ## 1. Lo que resta credibilidad hoy
 
@@ -58,20 +58,7 @@ salidas, compatibles las tres con no inventar:
   humano donde lo hay. Ahora mismo un bit con «por qué importa» y uno sin
   él se distinguen solo leyéndolos enteros.
 
-### 2.2 Fichas de tema enriquecidas
-
-`plantillas/web/tema.php` pinta hoy una lista de titulares: doce páginas
-finas. Encima de esa lista caben, con datos que ya existen:
-
-- 150 palabras evergreen de qué es el tema y por qué importa;
-- las siglas del glosario que pertenecen a ese tema —`glosario.php` ya
-  enlaza cada término a su tema, falta el camino de vuelta—;
-- los hitos normativos de ese tema (`/cumplimiento.html`);
-- las cifras de ese tema (`/estadisticas.html`).
-
-Mismo dato, cuatro veces más útil, y es donde cae el tráfico de búsqueda.
-
-### 2.3 `/calendario.html`: los eventos del sector
+### 2.2 `/calendario.html`: los eventos del sector
 
 FITURTECHY (21-23 de enero, IFEMA), HIP (16-18 de febrero, décimo
 aniversario, con Global CEOs Summit), TIS (6-8 de octubre, FIBES Sevilla),
@@ -81,7 +68,7 @@ es de lo primero que un directivo busca al empezar el ejercicio.
 Mismo patrón de mantenimiento que Cifras: revisión a mano y aviso al
 caducar.
 
-### 2.4 Glosario: de veinte términos a unos cincuenta
+### 2.3 Glosario: de veinte términos a unos cincuenta
 
 `plantillas/web/glosario.php` tiene veinte entradas y le faltan justo las
 que más se están usando ahora:
@@ -97,7 +84,7 @@ que más se están usando ahora:
 
 Cada uno enlazando a su tema, como ya hacen los que hay.
 
-### 2.5 Cifras: dos grupos que faltan, y uno automatizable de verdad
+### 2.4 Cifras: dos grupos que faltan, y uno automatizable de verdad
 
 Faltan dos datos que un directivo mira siempre: mix de canal directo frente
 a OTA y digitalización de la hostelería española.
@@ -112,7 +99,7 @@ raspar—.
 Y un `cifras.json` junto a la página: es lo que hace que otros citen estos
 datos en vez de rehacerlos.
 
-### 2.6 La reserva agéntica merece cobertura propia
+### 2.5 La reserva agéntica merece cobertura propia
 
 El tema del año para un director comercial, y hoy cae disuelto en
 «Distribución y OTAs»: Booking y Expedia dentro de ChatGPT, el Agentic

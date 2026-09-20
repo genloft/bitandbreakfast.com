@@ -10,6 +10,7 @@
 
 require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/cumplimiento.php';
+require_once dirname(__DIR__) . '/lib/bits.php';
 
 // --- cumplimiento_dias_hasta -------------------------------------------------
 
@@ -98,8 +99,10 @@ comprobar('hay al menos una norma en el calendario', true, count($normas) > 0);
 
 $estados_validos = ['plazo', 'vigente', 'tramite', 'contexto'];
 
+$categorias_validas = array_keys(bits_categorias());
+
 foreach ($normas as $indice => $norma) {
-    foreach (['norma', 'ambito', 'fecha', 'estado', 'texto', 'aplica', 'detalle', 'fuente', 'url'] as $campo) {
+    foreach (['norma', 'ambito', 'fecha', 'estado', 'texto', 'aplica', 'detalle', 'fuente', 'url', 'temas'] as $campo) {
         comprobar("la norma $indice trae el campo '$campo'", true, array_key_exists($campo, $norma));
     }
 
@@ -108,6 +111,12 @@ foreach ($normas as $indice => $norma) {
         true,
         in_array($norma['estado'], $estados_validos, true)
     );
+
+    comprobar("los temas de la norma $indice son un array", true, is_array($norma['temas']));
+
+    foreach ($norma['temas'] as $tema) {
+        comprobar("el tema '$tema' de la norma $indice está en bits_categorias()", true, in_array($tema, $categorias_validas, true));
+    }
 
     comprobar(
         "la fecha de la norma $indice tiene forma de fecha",
@@ -138,5 +147,27 @@ comprobar(
     $fechas_norma,
     cumplimiento_fechas()
 );
+
+// --- cumplimiento_por_tema() --------------------------------------------------
+
+comprobar(
+    'NIS2 aparece en ciberseguridad',
+    true,
+    in_array('NIS2', array_column(cumplimiento_por_tema('ciberseguridad'), 'norma'), true)
+);
+
+comprobar(
+    'Verifactu no aparece en ciberseguridad',
+    false,
+    in_array('Verifactu', array_column(cumplimiento_por_tema('ciberseguridad'), 'norma'), true)
+);
+
+comprobar(
+    'el alquiler de corta duracion -no aplica a hoteles- no aparece en ningun tema',
+    false,
+    in_array('Reglamento de alquiler de corta duración', array_column(cumplimiento_por_tema('cumplimiento'), 'norma'), true)
+);
+
+comprobar('un tema sin ninguna norma devuelve una lista vacia', [], cumplimiento_por_tema('sostenibilidad-energia'));
 
 resumen_pruebas('Pruebas de lib/cumplimiento.php');
