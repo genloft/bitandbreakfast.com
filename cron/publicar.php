@@ -24,6 +24,7 @@
  *   buscar.html         el explorador, mas indice.json
  *   estilo.css          la hoja del sitio
  *   favicon.svg         el sello, en un fichero aparte
+ *   fuentes/            la tipografia de --titular, copiada tal cual
  *   og-generica.png      la tarjeta que se comparte, para todo lo que no es un dia
  *   d/<AAAA-MM-DD>/og.png  la tarjeta de ese dia, con su titular de cabeza
  *   robots.txt
@@ -112,6 +113,16 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir($publico . '/buscar.js', publicar_plantilla('buscarjs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/favicon.svg', publicar_plantilla('favicon', [])) ? 1 : 0;
+
+    // La tipografia de --titular: un fichero binario, no una plantilla, asi
+    // que se copia tal cual en vez de pasar por publicar_plantilla(). Vive
+    // junto al resto de plantillas/web/ y no en publico/ para que un
+    // despliegue limpio -publico/ no esta en el repositorio- la traiga sola,
+    // igual que trae iconos.php o cabecera.php.
+    $ficheros += publicar_escribir(
+        $publico . '/fuentes/BigShoulders-Titular-Bold.woff2',
+        (string) file_get_contents(__DIR__ . '/../plantillas/web/fuentes/BigShoulders-Titular-Bold.woff2')
+    ) ? 1 : 0;
 
     // La tarjeta generica que se comparte desde cualquier pagina que no sea
     // un dia -og-image tiene que ser PNG de verdad, ninguna red social

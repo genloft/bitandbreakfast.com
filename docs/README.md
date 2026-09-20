@@ -729,3 +729,46 @@ un MariaDB 10.6 para la de humo.
   que la tabla entera tenía que poder leerse sin ejecutar la plantilla.
   `cumplimiento_normas()` es la única fuente de la verdad; la plantilla y
   `cron/mantenimiento.php` la leen igual.
+- **La tipografía autoalojada es un solo corte estático, no la variable
+  entera.** `docs/MEJORAS.md` pedía "una condensada variable autoalojada".
+  Big Shoulders (SIL Open Font License) es de verdad variable -ejes `opsz` y
+  `wght`-, pero un repaso de todos los usos de `var(--titular)` en
+  `estilo.php` -con `awk`, no a ojo- confirmó que ninguno pide un peso
+  distinto de 700: siempre negrita. Cargar el eje `wght` completo son bytes
+  que nadie va a usar nunca. `plantillas/web/fuentes/BigShoulders-Titular-Bold.woff2`
+  es esa variable fijada a `wght=700, opsz=36` con `fontTools.varLib.instancer`
+  y subconjuntada al latino -18 KB-, no la fuente variable sin tocar. Sigue
+  siendo autoalojada -mismo origen, el CSP no se toca- y sigue sin ser Google
+  Fonts -eso se descargó una vez de `raw.githubusercontent.com/google/fonts`
+  para construir el fichero, no lo carga el navegador de ahí-. El problema
+  que resuelve es real y medible en este mismo entorno: sin ella, `--titular`
+  cae a Arial sin condensar en cualquier Linux o Android sin Arial Narrow
+  instalada -exactamente lo que enseñan las capturas hechas con el Chromium
+  de este sandbox, que tampoco la tiene-.
+- **El modo oscuro redefine variables, no reescribe reglas.** `.bit-multifuente`
+  y `.alta` ya pintaban "al revés" con `var(--tinta)`/`var(--papel)` antes de
+  esto, así que en `prefers-color-scheme: dark` basta con invertir esas
+  variables en `:root` para que seas coherentes en los dos sentidos. Lo único
+  que no se resuelve solo redefiniendo son los colores que estaban fijados a
+  mano para un caso concreto y no vivían en una variable: el barrido del
+  sello (`.sello-marca`, pensado para un tramo "más claro que el resto" sobre
+  tinta casi negra) y el interior de la caja de alta (`.alta p`,
+  `.alta-formulario label`, `.alta .letra-pequena`, `.alta-fila input`,
+  pensados para una caja oscura sobre página clara que en modo oscuro pasa a
+  ser una caja clara sobre página oscura). Esos cinco sitios llevan su propio
+  bloque dentro de `@media (prefers-color-scheme: dark)`. De paso se corrigió
+  un bug ya existente: `.bit-multifuente .etiqueta-fecha`, `.titular-fuente` e
+  `.icono-boton` tenían `color: #cfcac2` fijo en vez de `var(--filete-fino)`,
+  así que no habrían cambiado de tono en modo oscuro. Cada color nuevo se
+  comprobó contra WCAG AA (4,5:1 en texto) con una calculadora de contraste
+  hecha a mano, no a ojo.
+- **El bloque de modo oscuro vive al final de la hoja, no junto a `:root`.**
+  Colocarlo justo debajo del `:root` base rompía en silencio: hay reglas
+  incondicionales más abajo en el fichero -`.alta-fila input` entre ellas-
+  que fijan las mismas propiedades para el mismo selector, y en un empate de
+  especificidad gana el orden de aparición en el CSS, no si la media query es
+  cierta. El resultado, visto en una captura real en modo oscuro, era un
+  campo de alta con fondo oscuro sobre página oscura, ilegible. Recordatorio
+  general: un bloque `@media` no "gana" solo por estar en una media query
+  activa, si algo después en el mismo fichero apunta al mismo selector con la
+  misma especificidad.
