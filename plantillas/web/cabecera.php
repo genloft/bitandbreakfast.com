@@ -63,12 +63,21 @@
  * Recibe $base, $panel y, opcionalmente, $enlace_activo.
  *
  * Justo antes del <header> va el aviso de cookies -.aviso-cookies-,
- * empieza oculto y cookiesjs.php lo destapa al cargar la pagina. Vive
- * aqui, delante de todo, por la misma razon que el resto de esta
- * cabecera: es lo unico que comparten todas las paginas. No es un
- * position:fixed que tape nada: es un bloque normal que empuja el resto
- * hacia abajo mientras esta visible, y desaparece del todo -sin dejar
- * hueco- en cuanto se cierra o si nunca llego a mostrarse.
+ * empieza oculto y cookiesjs.php decide cuando destaparlo. Vive aqui,
+ * delante de todo, por la misma razon que el resto de esta cabecera: es
+ * lo unico que comparten todas las paginas. No es un position:fixed que
+ * tape nada: es un bloque normal que empuja el resto hacia abajo
+ * mientras esta visible, y desaparece del todo -sin dejar hueco- en
+ * cuanto se decide algo o si ya se habia decidido en una visita
+ * anterior.
+ *
+ * Lleva dos botones, Aceptar y Rechazar, con el mismo peso visual -sin
+ * truco de diseño que empuje hacia uno de los dos-: activan o no Google
+ * Analytics, la unica pieza de este sitio que instala una cookie de
+ * analitica. Mientras no se acepta, cookiesjs.php no inyecta ningun
+ * guion de Google -ni el Content-Security-Policy del servidor lo
+ * dejaria pasar sin ese dominio explicito-. El detalle completo, y como
+ * cambiar la decision despues, esta en /legal.html#cookies.
  */
 
 declare(strict_types=1);
@@ -80,10 +89,14 @@ $enlace_activo = $enlace_activo ?? '';
 ?>
 <div class="aviso-cookies" id="aviso-cookies" role="region" aria-label="Aviso de cookies" hidden>
   <div class="aviso-cookies-caja">
-    <p>Esta web no instala ninguna cookie no esencial: nada de analítica,
-    publicidad ni rastreo de terceros.
+    <p>Usamos Google Analytics para saber cuánta gente lee esto y qué se
+    lee más, pero solo si lo aceptas: mientras no lo hagas, no se carga
+    ningún guion de Google ni se instala ninguna cookie de analítica.
     <a href="<?= web_e($base) ?>/legal.html#cookies">Más detalles</a>.</p>
-    <button type="button" class="aviso-cookies-cerrar" aria-label="Cerrar este aviso">&times;</button>
+    <div class="aviso-cookies-botones">
+      <button type="button" id="aviso-cookies-rechazar" class="aviso-cookies-boton aviso-cookies-boton--rechazar">Rechazar</button>
+      <button type="button" id="aviso-cookies-aceptar" class="aviso-cookies-boton aviso-cookies-boton--aceptar">Aceptar</button>
+    </div>
   </div>
 </div>
 

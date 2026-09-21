@@ -105,9 +105,14 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 
-    # Politica restrictiva: la web no carga nada de terceros. El buscador del
-    # archivo y los votos van en ficheros .js propios, nunca en linea.
-    Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    # Politica restrictiva: la web no carga nada de terceros, salvo la
+    # unica excepcion explicita -Google Analytics, y solo tras aceptar
+    # el aviso de cookies: cookiesjs.php no inyecta su guion hasta ese
+    # clic-. El buscador del archivo y los votos van en ficheros .js
+    # propios, nunca en linea. googletagmanager.com sirve el guion de
+    # medicion; *.google-analytics.com y *.analytics.google.com reciben
+    # los envios que hace ese guion una vez cargado.
+    Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
 
     # El instalador lleva su hoja de estilos dentro del propio fichero, para
     # poder ejecutarse aunque todavia no haya nada publicado. Se le permite

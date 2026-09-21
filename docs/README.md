@@ -1386,3 +1386,47 @@ un MariaDB 10.6 para la de humo.
   `cookies.js` se publica y se carga siempre, sin condición -a
   diferencia de `flotante.js`, atado a `$alta_abierta`-, porque el
   aviso está en toda página, no solo cuando el alta está abierta.
+- **Google Analytics, a petición expresa y tras avisar del conflicto
+  por segunda vez.** El punto anterior de esta misma lista deja
+  escrito, dos veces, que este sitio no lleva rastreadores de
+  terceros -"no hay donde esconder un rastreador aunque se quisiera"-.
+  Se avisó del conflicto exacto antes de tocar nada: instalar Analytics
+  contradice ese texto, contradice el `Content-Security-Policy` tal
+  como estaba, y necesita consentimiento real, no el aviso meramente
+  informativo que se acababa de construir. La respuesta fue explícita:
+  añadirlo completo y bien hecho. Esto es lo que cambia con eso:
+  - El aviso de `.aviso-cookies` deja de ser informativo y pasa a
+    tener dos botones reales, "Aceptar" y "Rechazar", del mismo tamaño
+    y peso visual -sin truco de diseño que empuje hacia uno de los
+    dos-. Mientras no se acepta, `cookies.js` no inyecta ningún guion
+    de Google: ni en el HTML que sirve el servidor -ese guion no
+    aparece en ninguna plantilla- ni por JavaScript hasta ese clic.
+  - El `Content-Security-Policy` del `.htaccess` gana una única
+    excepción explícita: `script-src` permite
+    `googletagmanager.com` y `connect-src` -directiva nueva, antes caía
+    en el `default-src 'self'` que habría bloqueado los envíos de
+    Analytics- permite `google-analytics.com` y
+    `analytics.google.com`. Ningún otro dominio de terceros pasa.
+  - La decisión -aceptar o rechazar- se guarda en `localStorage`
+    (`bb-cookies-consentimiento`), nunca en una cookie, y sustituye a
+    la marca `bb-cookies-vista` de antes: si ya hay una decisión
+    guardada, el aviso ni se muestra, se aplica sola. Rechazar además
+    borra cualquier cookie `_ga*` que ya se hubiera instalado -por si
+    se había aceptado antes y se cambia de opinión-, no solo deja de
+    instalar más.
+  - `/legal.html#cookies` lleva los mismos botones -mismo id, misma
+    clase- para cambiar la decisión después de la primera visita, con
+    una línea de estado que dice si Analytics está activado o no en
+    ese momento. El texto de esa sección deja de decir "no instala
+    ninguna cookie" y pasa a explicar qué instala Analytics
+    (`_ga` y `_ga_<identificador>`, caducidad a los dos años según la
+    [documentación de Google](https://developers.google.com/analytics/devguides/collection/ga4/cookies-user-id)),
+    que los datos pueden procesarse fuera de la Unión Europea, y
+    enlaza a la política de privacidad de Google para el detalle que
+    este sitio no controla.
+  - El identificador de medición (`G-EFKDVWY725`) va escrito tal cual
+    en `cookiesjs.php`, no en `config()`: no es un secreto -es visible
+    en el código fuente de cualquier página que lo cargue, por diseño
+    de Google-, así que sacarlo a `config/config.php` -que ni siquiera
+    está en este repositorio- solo habría añadido un paso manual en el
+    servidor sin ganar nada a cambio.
