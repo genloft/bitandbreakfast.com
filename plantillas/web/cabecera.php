@@ -27,6 +27,13 @@
  * lleva sin tener que entrar. Mismo patron que los iconos de compartir del
  * pie de cada ficha, no uno nuevo que aprender.
  *
+ * Van en su propia fila -.cabecera-recursos-, no dentro del <nav> de arriba:
+ * debajo del filete que separa la barra de navegacion, y encima del nombre
+ * grande. Mezclados con "Portada" o "Buscar" quedaban aplastados por el
+ * padding de esos enlaces de texto y no se distinguian de un adorno mas del
+ * menu; en su propia fila son mas grandes y leen como lo que son, una
+ * segunda forma de moverse por el sitio.
+ *
  * Lleva microdatos de schema.org (WebSite, con su SearchAction hacia
  * /buscar.html), no JSON-LD -mismo motivo que en bit.php: un <script> en
  * linea cae bajo el script-src 'self' que el resto del sitio no rompe a
@@ -74,14 +81,6 @@ $enlace_activo = $enlace_activo ?? '';
       <a href="<?= web_e($base) ?>/medios.html"<?= $enlace_activo === 'medios' ? ' aria-current="page"' : '' ?>>Medios</a>
       <a href="<?= web_e($base) ?>/archivo.html"<?= $enlace_activo === 'archivo' ? ' aria-current="page"' : '' ?>>Archivo</a>
       <a href="<?= web_e($base) ?>/sobre.html"<?= $enlace_activo === 'sobre' ? ' aria-current="page"' : '' ?>>Qué es</a>
-      <span class="menu-recursos-iconos" role="group" aria-label="Recursos">
-        <a class="icono-boton" href="<?= web_e($base) ?>/estadisticas.html" aria-label="Cifras"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('cifras', 'icono icono-mini') ?></a>
-        <a class="icono-boton" href="<?= web_e($base) ?>/cumplimiento.html" aria-label="Cumplimiento"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>><?= web_icono('cumplimiento', 'icono icono-mini') ?></a>
-        <a class="icono-boton" href="<?= web_e($base) ?>/tendencias.html" aria-label="Tendencias"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('tendencias', 'icono icono-mini') ?></a>
-        <a class="icono-boton" href="<?= web_e($base) ?>/glosario.html" aria-label="Glosario"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('glosario', 'icono icono-mini') ?></a>
-        <a class="icono-boton" href="<?= web_e($base) ?>/agentica.html" aria-label="Reserva agéntica"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('agentica', 'icono icono-mini') ?></a>
-        <a class="icono-boton" href="<?= web_e($base) ?>/calendario.html" aria-label="Calendario"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('calendario', 'icono icono-mini') ?></a>
-      </span>
       <span class="menu-fin"></span>
       <a href="<?= web_e($base) ?>/buscar.html"<?= $enlace_activo === 'buscar' ? ' aria-current="page"' : '' ?>>Buscar</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>
@@ -93,6 +92,15 @@ $enlace_activo = $enlace_activo ?? '';
       </form>
       <div id="resultados-dinamicos" class="cabecera-resultados" hidden aria-live="polite"></div>
     </div>
+  </div>
+
+  <div class="cabecera-recursos" role="group" aria-label="Recursos">
+    <a class="icono-boton" href="<?= web_e($base) ?>/estadisticas.html" aria-label="Cifras"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('cifras') ?></a>
+    <a class="icono-boton" href="<?= web_e($base) ?>/cumplimiento.html" aria-label="Cumplimiento"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>><?= web_icono('cumplimiento') ?></a>
+    <a class="icono-boton" href="<?= web_e($base) ?>/tendencias.html" aria-label="Tendencias"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('tendencias') ?></a>
+    <a class="icono-boton" href="<?= web_e($base) ?>/glosario.html" aria-label="Glosario"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('glosario') ?></a>
+    <a class="icono-boton" href="<?= web_e($base) ?>/agentica.html" aria-label="Reserva agéntica"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('agentica') ?></a>
+    <a class="icono-boton" href="<?= web_e($base) ?>/calendario.html" aria-label="Calendario"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('calendario') ?></a>
   </div>
 
   <div class="cabecera-marca">

@@ -1316,3 +1316,12 @@ un MariaDB 10.6 para la de humo.
   pedir consentimiento para algo que no existe sería un gesto vacío,
   lo mismo que este proyecto ya descartó con `llms.txt` en §5 de
   `MEJORAS.md`-.
+- **Los iconos de "Recursos" se movieron a su propia fila, a petición
+  expresa, y crecieron.** Mezclados dentro del `<nav>` con "Portada" o
+  "Buscar" quedaban con el mismo `padding` pequeño que un enlace de
+  texto, del tamaño de un icono de compartir en el pie de una ficha.
+  `.cabecera-recursos` es una fila nueva, debajo del filete que cierra
+  `.cabecera-barra` y encima del nombre grande: `.icono-boton` crece de
+  1,9rem a 2,6rem y su dibujo de 1,05rem a 1,5rem, alineados a la
+  izquierda bajo el sello, igual que "Portada" empieza la barra de
+  arriba.
