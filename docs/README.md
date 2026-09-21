@@ -1291,3 +1291,18 @@ un MariaDB 10.6 para la de humo.
   rompía el `grid-template-columns: repeat(3, ...)` pensado para tres.
   Vive en su propia línea, con el periodo y el enlace a la fuente
   siempre pegados al valor.
+- **El aviso flotante de alta vuelve, a petición expresa, pero
+  reescrito y no revertido.** La versión anterior contradecía el
+  principio de `suscribir.php` -tapaba contenido desde el primer
+  píxel, sin cerrar, con un formulario suelto a `/api/suscribir.php`
+  sin la trampa para robots-. Esta usa las mismas clases
+  `.alta-formulario`/`.alta-fila`/`.trampa` que el formulario real
+  -mismo honeypot, nada que un robot pueda distinguir-, aparece tarde
+  -tras 400px de scroll o quince segundos, lo que llegue antes, para
+  no tapar lo primero que se lee- y lleva su propio botón de cerrar
+  que se recuerda en `localStorage` para no volver a preguntar en esa
+  visita. Solo se pinta con `$alta_abierta`: un aviso que empuja hacia
+  un formulario cerrado es peor que no llevar aviso. `flotante.js` es
+  el tercer guion del sitio, cargado solo cuando hace falta -no en
+  cada página si el alta está cerrada, como en el entorno de
+  `pruebas/humo.php`, que no configura correo-.

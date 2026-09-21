@@ -1016,14 +1016,14 @@ comprobar('cada resultado enlaza al dia real del bit', true, str_contains($dinam
 comprobar('y no a una pagina "bit.html" que no existe', false, str_contains($dinamico_js, 'bit.html'));
 comprobar('el indice se pide siempre en la raiz, no por ruta relativa', true, str_contains($dinamico_js, "fetch('/indice.json'"));
 
-// El alta va al final de la pagina, nunca en una ventana emergente: es el
-// principio que documenta suscribir.php. Un widget flotante fijo lo
-// contradecia y se quito en vez de arreglarse.
-comprobar('sin ningun widget flotante de suscripcion', false, str_contains($portada, 'flotante-newsletter'));
-// Solo una: no la de siempre mas la del widget que se acaba de quitar. Sin
-// el campo de la trampa para robots aqui -esta prueba corre sin correo
-// configurado, asi que suscribir.php pinta el aviso de "el alta todavia no
-// esta abierta" y no el formulario, que es donde vive esa trampa-.
+// El aviso flotante del alta solo se pinta con $alta_abierta -pie.php lo
+// envuelve entero en ese if-, y esta prueba corre sin correo configurado,
+// asi que aqui tiene que faltar del todo: ni la caja ni el guion que la
+// controla, igual que suscribir.php pinta el aviso de "el alta todavia no
+// esta abierta" en vez del formulario con su trampa.
+comprobar('sin el aviso flotante con el alta cerrada', false, str_contains($portada, 'id="flotante-alta"'));
+comprobar('ni el guion que lo controla', false, str_contains($portada, 'flotante.js'));
+// Solo una .alta: la de siempre al pie de la pagina.
 comprobar('la unica alta sigue siendo la del pie', 1, substr_count($portada, 'class="alta"'));
 
 comprobar(
