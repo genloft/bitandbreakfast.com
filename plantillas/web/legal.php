@@ -111,7 +111,7 @@ $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable,
     titular o un resumen se marca siempre como tal, con enlace al original
     en su idioma.</p>
 
-    <h2>Cookies</h2>
+    <h2 id="cookies">Cookies</h2>
 
     <p>La parte pública de este sitio -lo que se lee sin iniciar sesión- no
     instala ninguna cookie: ni de analítica, ni de publicidad, ni de

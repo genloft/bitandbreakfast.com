@@ -2,6 +2,11 @@
 /**
  * Pie comun de la web publicada. Recibe $base y $alta_abierta.
  *
+ * cookies.js se carga aqui siempre, sin condicion -a diferencia de
+ * flotante.js, que depende de $alta_abierta-: el aviso de cookies de
+ * cabecera.php esta en todas las paginas, no solo cuando el alta esta
+ * abierta.
+ *
  * El alta de siempre -suscribir.php, al final de cada pagina- sigue siendo
  * la unica forma completa: con su selector de temas cuando toca y su
  * trampa para robots. El aviso flotante de aqui abajo no la sustituye, la
@@ -70,6 +75,7 @@ $alta_abierta = $alta_abierta ?? false;
 <?php endif; ?>
 
 <script src="<?= web_e($base) ?>/dinamico.js?v=<?= web_e($version_js ?? '0') ?>" defer></script>
+<script src="<?= web_e($base) ?>/cookies.js?v=<?= web_e($version_js ?? '0') ?>" defer></script>
 <?php if ($alta_abierta): ?>
   <script src="<?= web_e($base) ?>/flotante.js?v=<?= web_e($version_js ?? '0') ?>" defer></script>
 <?php endif; ?>

@@ -1360,3 +1360,29 @@ un MariaDB 10.6 para la de humo.
   con la línea del RevPAR, ahora con la de Noticias/Medios/Temas-, así
   que queda fuera del alcance de esta mejora; pendiente de una revisión
   aparte del cálculo de `.logo-bloque`.
+- **Aviso de cookies, a petición expresa y con el conflicto avisado por
+  delante.** Este proyecto ya había decidido, y lo dejó escrito más
+  arriba en esta misma lista, no llevar un banner de "aceptar cookies"
+  -no hay ninguna cookie pública que aceptar, y pedir consentimiento
+  para algo que no existe sería un gesto vacío-. Se preguntó de nuevo
+  antes de tocar nada y la respuesta fue explícita: llevarlo igual. Lo
+  que se implementó no es ese banner falso: no tiene botón de
+  "aceptar" ni de "rechazar" -nada que aceptar o rechazar existe-, solo
+  informa de que el sitio público no instala cookies no esenciales,
+  enlaza al detalle de `/legal.html#cookies` y se puede cerrar. Con eso
+  se respeta la petición sin mentir sobre lo que hay que consentir.
+  Vive en `cabecera.php` -lo único que comparten todas las páginas-,
+  delante del `<header>`: no es un `position: fixed` que tape nada,
+  es un bloque normal que empuja el resto hacia abajo mientras está
+  visible y no deja hueco en cuanto se cierra. Aparece nada más
+  cargar -no espera a un scroll ni a un tiempo como el aviso de
+  alta: no es un reclamo publicitario que convenga demorar, es una
+  nota de transparencia-, y el cierre se recuerda en `localStorage`
+  (`bb-cookies-vista`), nunca en una cookie -sería irónico usar una
+  cookie para recordar que este sitio no usa cookies-. Mismo patrón
+  visual que `.flotante-alta`: mismo fondo invertido (`--tinta`/
+  `--papel`, que se cambian de sitio en modo oscuro a propósito, para
+  seguir contrastando con la página) y el mismo botón de cerrar.
+  `cookies.js` se publica y se carga siempre, sin condición -a
+  diferencia de `flotante.js`, atado a `$alta_abierta`-, porque el
+  aviso está en toda página, no solo cuando el alta está abierta.

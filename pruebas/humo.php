@@ -1036,6 +1036,18 @@ comprobar('ni el guion que lo controla', false, str_contains($portada, 'flotante
 // Solo una .alta: la de siempre al pie de la pagina.
 comprobar('la unica alta sigue siendo la del pie', 1, substr_count($portada, 'class="alta"'));
 
+// El aviso de cookies, en cambio, no depende de $alta_abierta: esta en
+// todas las paginas por igual, empieza oculto -cookies.js lo destapa al
+// cargar- y no lleva boton de "aceptar", porque no hay ninguna cookie no
+// esencial que aceptar.
+comprobar('el aviso de cookies esta en toda pagina, oculto de entrada', true, (bool) preg_match(
+    '~<div class="aviso-cookies" id="aviso-cookies"[^>]*\shidden>~',
+    $portada
+));
+comprobar('sin boton de "aceptar" cookies', false, str_contains($portada, 'ceptar'));
+comprobar('con su propio guion, cargado siempre', true, str_contains($portada, '/cookies.js?v='));
+comprobar('que enlaza al detalle del aviso legal', true, str_contains($portada, 'href="/legal.html#cookies"'));
+
 comprobar(
     'y tambien lo lleva una ficha de tema',
     true,

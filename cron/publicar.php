@@ -127,6 +127,7 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir($publico . '/buscar.js', publicar_plantilla('buscarjs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/dinamico.js', publicar_plantilla('dinamicojs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/flotante.js', publicar_plantilla('flotantejs', [])) ? 1 : 0;
+    $ficheros += publicar_escribir($publico . '/cookies.js', publicar_plantilla('cookiesjs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/favicon.svg', publicar_plantilla('favicon', [])) ? 1 : 0;
 

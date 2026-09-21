@@ -1609,6 +1609,58 @@ h1 {
 
 .flotante-alta .alta-fila { max-width: none; }
 
+/* El aviso de cookies, delante de toda la cabecera. No es un banner de
+   "aceptar" -no hay ninguna cookie no esencial que aceptar-, asi que no
+   lleva botones de aceptar o rechazar, solo el mismo boton de cerrar que
+   el aviso flotante de alta -.aviso-cookies-cerrar, misma talla y color
+   que .flotante-alta-cerrar-. Bloque normal, no position:fixed: empuja
+   el resto de la pagina hacia abajo mientras esta visible, y no deja
+   hueco cuando esta oculto -.aviso-cookies[hidden] { display: none }-,
+   asi que nunca tapa nada. Mismo fondo oscuro y el mismo filete que el
+   aviso de alta, para que se lean como parte del mismo sitio y no como
+   dos avisos con estilos distintos compitiendo entre si. */
+.aviso-cookies {
+  background: var(--tinta);
+  color: var(--papel);
+  border-bottom: 3px solid var(--filete);
+}
+
+.aviso-cookies[hidden] { display: none; }
+
+.aviso-cookies-caja {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: .7rem var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.aviso-cookies-caja p {
+  margin: 0;
+  font-family: var(--ui);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.aviso-cookies-caja a { color: var(--papel); }
+
+.aviso-cookies-cerrar {
+  flex: none;
+  width: 1.7rem;
+  height: 1.7rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: #b9b4ac;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.aviso-cookies-cerrar:hover,
+.aviso-cookies-cerrar:focus-visible { color: var(--papel); }
+
 /* --- Pie -------------------------------------------------------------------------------- */
 
 .pie {
