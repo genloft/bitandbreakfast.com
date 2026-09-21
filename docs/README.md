@@ -1325,3 +1325,14 @@ un MariaDB 10.6 para la de humo.
   1,9rem a 2,6rem y su dibujo de 1,05rem a 1,5rem, alineados a la
   izquierda bajo el sello, igual que "Portada" empieza la barra de
   arriba.
+- **Esos mismos iconos, más visibles y con más aire, a petición
+  expresa tras verlos publicados.** `.icono-boton` pinta en `--suave`
+  por defecto -pensado para un icono secundario junto a un titular,
+  como el de compartir en el pie de una ficha-, y aquí, seis trazos
+  finos y claros antes del negro macizo del nombre grande, no pesaban
+  nada. Pasan a `--tinta` desde el reposo, no solo al pasar el ratón
+  -tan oscuros como el propio nombre-, con `--acento` como señal de
+  interacción en su lugar. El hueco entre ellos sube de `.3rem` a
+  `.9rem`, y el margen por encima y por debajo de la fila crece
+  también, para que respire entre el filete de la barra y el nombre en
+  vez de apretarse contra los dos.

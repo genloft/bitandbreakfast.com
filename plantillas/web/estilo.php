@@ -345,15 +345,31 @@ img { max-width: 100%; height: auto; }
    compartir en el pie de una ficha; aqui tienen sitio para ser mas
    grandes y leerse como una segunda forma de moverse por el sitio, no
    como un adorno del menu. Alineados a la izquierda, bajo el sello,
-   igual que "Portada" empieza la barra de arriba. */
+   igual que "Portada" empieza la barra de arriba.
+
+   .icono-boton por defecto pinta en --suave -pensado para un icono
+   secundario junto a un titular, como el de compartir en el pie de una
+   ficha-, y aqui se perdia contra el papel: seis trazos finos y claros
+   antes del negro macizo del nombre no pesaban nada. En --tinta desde el
+   reposo, no solo al pasar el raton, leen tan oscuros como el propio
+   nombre; el acento en vez de --tinta al pasar el raton o llegar por
+   teclado da la señal de interaccion que --tinta ya no puede dar sola.
+   Mas separacion entre ellos y mas aire arriba y abajo, para que la fila
+   respire en vez de apretarse entre el filete de la barra y el nombre. */
 .cabecera-recursos {
   display: flex;
   align-items: center;
-  gap: .3rem;
-  padding: .6rem 0 0;
+  gap: .9rem;
+  padding: .9rem 0 1.1rem;
 }
 
-.cabecera-recursos .icono-boton { width: 2.6rem; height: 2.6rem; }
+.cabecera-recursos .icono-boton {
+  width: 2.6rem;
+  height: 2.6rem;
+  color: var(--tinta);
+}
+.cabecera-recursos .icono-boton:hover,
+.cabecera-recursos .icono-boton:focus-visible { color: var(--acento); }
 .cabecera-recursos .icono-boton .icono { width: 1.5rem; height: 1.5rem; }
 
 /* El nombre y las cifras, en la misma fila. En el movil se apilan: el panel
