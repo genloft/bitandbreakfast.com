@@ -61,6 +61,14 @@
  * pierde nada.
  *
  * Recibe $base, $panel y, opcionalmente, $enlace_activo.
+ *
+ * Justo antes del <header> va el aviso de cookies -.aviso-cookies-,
+ * empieza oculto y cookiesjs.php lo destapa al cargar la pagina. Vive
+ * aqui, delante de todo, por la misma razon que el resto de esta
+ * cabecera: es lo unico que comparten todas las paginas. No es un
+ * position:fixed que tape nada: es un bloque normal que empuja el resto
+ * hacia abajo mientras esta visible, y desaparece del todo -sin dejar
+ * hueco- en cuanto se cierra o si nunca llego a mostrarse.
  */
 
 declare(strict_types=1);
@@ -70,6 +78,15 @@ require_once __DIR__ . '/iconos.php';
 $enlace_activo = $enlace_activo ?? '';
 
 ?>
+<div class="aviso-cookies" id="aviso-cookies" role="region" aria-label="Aviso de cookies" hidden>
+  <div class="aviso-cookies-caja">
+    <p>Esta web no instala ninguna cookie no esencial: nada de analítica,
+    publicidad ni rastreo de terceros.
+    <a href="<?= web_e($base) ?>/legal.html#cookies">Más detalles</a>.</p>
+    <button type="button" class="aviso-cookies-cerrar" aria-label="Cerrar este aviso">&times;</button>
+  </div>
+</div>
+
 <header class="cabecera" itemscope itemtype="https://schema.org/WebSite">
   <meta itemprop="name" content="Bit &amp; Breakfast">
   <meta itemprop="url" content="<?= web_e($base) ?>/">
