@@ -1527,6 +1527,58 @@ h1 {
 
 .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
+/* El aviso flotante del alta: mismo fondo, mismo filete y el mismo
+   formulario -.alta-formulario, .alta-fila, .trampa, todo reutilizado tal
+   cual- que la caja de siempre al pie de cada pagina. No lleva box-shadow
+   -ese fue el unico sitio del proyecto que alguna vez lo uso, y el resto
+   del sitio se apoya en filetes, no en sombras- ni esquinas redondeadas.
+   Empieza oculto con el atributo hidden: flotante.js decide cuando
+   quitarlo, y sin JavaScript se queda asi para siempre, que es mejor que
+   tapar contenido sin que nadie pueda cerrarlo. */
+.flotante-alta {
+  position: fixed;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  z-index: 1000;
+  width: 19rem;
+  max-width: calc(100vw - 2.4rem);
+  padding: 1.2rem 1.3rem;
+  background: var(--tinta);
+  color: var(--papel);
+  border: 3px solid var(--filete);
+}
+
+.flotante-alta[hidden] { display: none; }
+
+.flotante-alta-titulo {
+  margin: 0 1.6rem .7rem 0;
+  font-family: var(--titular);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.flotante-alta-cerrar {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: #b9b4ac;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.flotante-alta-cerrar:hover,
+.flotante-alta-cerrar:focus-visible { color: var(--papel); }
+
+.flotante-alta .alta-fila { max-width: none; }
+
 /* --- Pie -------------------------------------------------------------------------------- */
 
 .pie {
@@ -1667,6 +1719,7 @@ h1 {
   .panel,
   .pie,
   .alta,
+  .flotante-alta,
   .masleido,
   .explorar,
   .pie-acciones,
