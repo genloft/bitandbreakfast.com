@@ -527,16 +527,25 @@ comprobar('sin identidad configurada, lo dice en vez de inventarla', true, str_c
 comprobar('y aun asi deja un contacto', true, str_contains($legal, 'mailto:'));
 comprobar('explica la base legal de citar fragmentos', true, str_contains($legal, 'artículo 32.2'));
 // Google Analytics es la unica pieza que instala una cookie de
-// analitica, y solo tras aceptar -nunca antes-, asi que el aviso legal
-// lo dice tal cual, sin la declaracion "no instala ninguna cookie" de
-// antes de que existiera.
-comprobar('explica que Google Analytics solo se activa si se acepta', true, (bool) preg_match('~usa\s+Google Analytics~', $legal));
+// analitica, y se activa para toda visita sin esperar a ningun clic
+// -a peticion expresa, confirmada dos veces tras explicar lo que
+// implicaba-, asi que el aviso legal lo dice tal cual, sin la
+// declaracion "no instala ninguna cookie" de antes de que existiera
+// Analytics, y sin ofrecer un "activar/desactivar" que no controlaria
+// nada real.
+comprobar('explica que Google Analytics se activa para toda visita', true, (bool) preg_match('~usa\s+Google Analytics~', $legal));
+comprobar('sin esperar a ningun aviso ni clic', true, str_contains($legal, 'sin esperar a ningún aviso ni a'));
 comprobar('con sus dos cookies propias y cuanto duran, con fuente', true, (bool) preg_match(
-    '~<code>_ga</code> y <code>_ga_&lt;identificador&gt;</code>,\s*\n\s*que expiran a los dos años según la\s*\n\s*<a href="https://developers\.google\.com/[^"]+"~',
+    '~<code>_ga</code> y <code>_ga_&lt;identificador&gt;</code>,\s*que expiran~',
     $legal
 ));
-comprobar('y dos botones reales para cambiar la decision despues', true,
-    str_contains($legal, 'id="cookies-gestionar-aceptar"') && str_contains($legal, 'id="cookies-gestionar-rechazar"')
+// Sin botones falsos de consentimiento: se quitaron en vez de dejarlos
+// sin efecto real.
+comprobar('sin botones falsos de aceptar/rechazar Analytics', false,
+    str_contains($legal, 'id="cookies-gestionar-aceptar"') || str_contains($legal, 'id="cookies-gestionar-rechazar"')
+);
+comprobar('con el enlace real para desactivarlo, la extension de Google', true,
+    str_contains($legal, 'https://tools.google.com/dlpage/gaoptout')
 );
 comprobar('y menciona el localStorage del aviso flotante, aunque no sea una cookie', true, str_contains($legal, 'localStorage'));
 comprobar('el pie enlaza al aviso legal', true, str_contains($sobre, '/legal.html'));
@@ -1048,21 +1057,34 @@ comprobar('ni el guion que lo controla', false, str_contains($portada, 'flotante
 comprobar('la unica alta sigue siendo la del pie', 1, substr_count($portada, 'class="alta"'));
 
 // El aviso de cookies, en cambio, no depende de $alta_abierta: esta en
-// todas las paginas por igual y empieza oculto -cookies.js decide
-// cuando destaparlo, segun si ya hay una decision guardada-. Google
-// Analytics es la unica pieza que instala una cookie de analitica, asi
-// que el aviso si lleva botones reales de aceptar y rechazar -a
-// diferencia de cuando el aviso era solo informativo-.
+// todas las paginas por igual y empieza oculto -cookies.js lo destapa
+// al cargar, salvo que ya se hubiera cerrado en una visita anterior-.
+// Es informativo, no de consentimiento: Google Analytics se activa
+// para toda visita sin esperar a este aviso, asi que no lleva botones
+// de aceptar o rechazar -unos botones que no controlarian nada real
+// serian peor que no llevarlos-, solo el boton de cerrar de siempre.
 comprobar('el aviso de cookies esta en toda pagina, oculto de entrada', true, (bool) preg_match(
     '~<div class="aviso-cookies" id="aviso-cookies"[^>]*\shidden>~',
     $portada
 ));
-comprobar('con boton de aceptar', true, str_contains($portada, 'id="aviso-cookies-aceptar"'));
-comprobar('y boton de rechazar, mismo peso visual', true, str_contains($portada, 'id="aviso-cookies-rechazar"'));
-// El guion de gtag.js no aparece en ningun HTML servido por el
-// servidor: cookies.js lo inyecta el, y solo tras un "Aceptar".
-comprobar('sin ningun guion de Google en el HTML servido', false, str_contains($portada, 'googletagmanager.com'));
+comprobar('sin botones de aceptar/rechazar: no controlarian nada real', false,
+    str_contains($portada, 'id="aviso-cookies-aceptar"') || str_contains($portada, 'id="aviso-cookies-rechazar"')
+);
+comprobar('con su boton de cerrar de siempre', true, str_contains($portada, 'class="aviso-cookies-cerrar"'));
+// El guion de gtag.js no aparece como <script> en linea en ningun HTML
+// servido por el servidor -el Content-Security-Policy no lleva
+// 'unsafe-inline' en script-src, y no se debilita para esto-: vive en
+// cookies.js, que si lo inyecta por su cuenta, siempre, sin esperar a
+// nada.
+comprobar('sin ningun guion de Google en linea en el HTML servido', false, str_contains($portada, 'googletagmanager.com'));
 comprobar('con su propio guion, cargado siempre', true, str_contains($portada, '/cookies.js?v='));
+
+// cookies.js si activa Analytics para toda visita, sin comprobar
+// ninguna decision guardada: ni gtag('config', ...) ni la inyeccion
+// del guion de Google dependen de una condicion.
+$cookies_js = (string) file_get_contents($publico . '/cookies.js');
+comprobar('cookies.js activa Analytics con el id de medicion correcto', true, str_contains($cookies_js, "gtag('config', ID_MEDICION)"));
+comprobar('sin esperar a ninguna decision guardada', false, str_contains($cookies_js, 'CLAVE_CONSENTIMIENTO'));
 // El href real lleva $base delante (https://ejemplo.test en esta prueba,
 // no una ruta relativa), asi que se comprueba el sufijo, no la ruta
 // absoluta desde la raiz.
