@@ -526,7 +526,18 @@ $legal = (string) file_get_contents($publico . '/legal.html');
 comprobar('sin identidad configurada, lo dice en vez de inventarla', true, str_contains($legal, 'todavía no tiene rellenos'));
 comprobar('y aun asi deja un contacto', true, str_contains($legal, 'mailto:'));
 comprobar('explica la base legal de citar fragmentos', true, str_contains($legal, 'artículo 32.2'));
-comprobar('declara que la web publica no usa cookies de rastreo', true, str_contains($legal, 'instala ninguna cookie'));
+// Google Analytics es la unica pieza que instala una cookie de
+// analitica, y solo tras aceptar -nunca antes-, asi que el aviso legal
+// lo dice tal cual, sin la declaracion "no instala ninguna cookie" de
+// antes de que existiera.
+comprobar('explica que Google Analytics solo se activa si se acepta', true, (bool) preg_match('~usa\s+Google Analytics~', $legal));
+comprobar('con sus dos cookies propias y cuanto duran, con fuente', true, (bool) preg_match(
+    '~<code>_ga</code> y <code>_ga_&lt;identificador&gt;</code>,\s*\n\s*que expiran a los dos años según la\s*\n\s*<a href="https://developers\.google\.com/[^"]+"~',
+    $legal
+));
+comprobar('y dos botones reales para cambiar la decision despues', true,
+    str_contains($legal, 'id="cookies-gestionar-aceptar"') && str_contains($legal, 'id="cookies-gestionar-rechazar"')
+);
 comprobar('y menciona el localStorage del aviso flotante, aunque no sea una cookie', true, str_contains($legal, 'localStorage'));
 comprobar('el pie enlaza al aviso legal', true, str_contains($sobre, '/legal.html'));
 
@@ -1037,19 +1048,32 @@ comprobar('ni el guion que lo controla', false, str_contains($portada, 'flotante
 comprobar('la unica alta sigue siendo la del pie', 1, substr_count($portada, 'class="alta"'));
 
 // El aviso de cookies, en cambio, no depende de $alta_abierta: esta en
-// todas las paginas por igual, empieza oculto -cookies.js lo destapa al
-// cargar- y no lleva boton de "aceptar", porque no hay ninguna cookie no
-// esencial que aceptar.
+// todas las paginas por igual y empieza oculto -cookies.js decide
+// cuando destaparlo, segun si ya hay una decision guardada-. Google
+// Analytics es la unica pieza que instala una cookie de analitica, asi
+// que el aviso si lleva botones reales de aceptar y rechazar -a
+// diferencia de cuando el aviso era solo informativo-.
 comprobar('el aviso de cookies esta en toda pagina, oculto de entrada', true, (bool) preg_match(
     '~<div class="aviso-cookies" id="aviso-cookies"[^>]*\shidden>~',
     $portada
 ));
-comprobar('sin boton de "aceptar" cookies', false, str_contains($portada, 'ceptar'));
+comprobar('con boton de aceptar', true, str_contains($portada, 'id="aviso-cookies-aceptar"'));
+comprobar('y boton de rechazar, mismo peso visual', true, str_contains($portada, 'id="aviso-cookies-rechazar"'));
+// El guion de gtag.js no aparece en ningun HTML servido por el
+// servidor: cookies.js lo inyecta el, y solo tras un "Aceptar".
+comprobar('sin ningun guion de Google en el HTML servido', false, str_contains($portada, 'googletagmanager.com'));
 comprobar('con su propio guion, cargado siempre', true, str_contains($portada, '/cookies.js?v='));
 // El href real lleva $base delante (https://ejemplo.test en esta prueba,
 // no una ruta relativa), asi que se comprueba el sufijo, no la ruta
 // absoluta desde la raiz.
 comprobar('que enlaza al detalle del aviso legal', true, str_contains($portada, 'legal.html#cookies"'));
+
+// El Content-Security-Policy del .htaccess es lo unico que decide si el
+// guion de Google puede cargar en el navegador; si no lo permite
+// explicitamente, aceptar el aviso no serviria de nada.
+$htaccess = (string) file_get_contents($raiz . '/.htaccess');
+comprobar('el CSP permite el guion de googletagmanager.com', true, str_contains($htaccess, 'script-src \'self\' https://www.googletagmanager.com'));
+comprobar('y los envios a google-analytics.com', true, str_contains($htaccess, 'connect-src \'self\' https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com'));
 
 comprobar(
     'y tambien lo lleva una ficha de tema',

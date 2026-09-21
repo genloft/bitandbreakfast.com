@@ -1609,16 +1609,17 @@ h1 {
 
 .flotante-alta .alta-fila { max-width: none; }
 
-/* El aviso de cookies, delante de toda la cabecera. No es un banner de
-   "aceptar" -no hay ninguna cookie no esencial que aceptar-, asi que no
-   lleva botones de aceptar o rechazar, solo el mismo boton de cerrar que
-   el aviso flotante de alta -.aviso-cookies-cerrar, misma talla y color
-   que .flotante-alta-cerrar-. Bloque normal, no position:fixed: empuja
-   el resto de la pagina hacia abajo mientras esta visible, y no deja
-   hueco cuando esta oculto -.aviso-cookies[hidden] { display: none }-,
-   asi que nunca tapa nada. Mismo fondo oscuro y el mismo filete que el
-   aviso de alta, para que se lean como parte del mismo sitio y no como
-   dos avisos con estilos distintos compitiendo entre si. */
+/* El aviso de cookies, delante de toda la cabecera. Ya no es solo
+   informativo: Google Analytics es la unica pieza de este sitio que
+   instala una cookie de analitica, asi que aqui si hay algo real que
+   aceptar o rechazar -.aviso-cookies-boton--aceptar y --rechazar, mismo
+   tamaño y peso visual los dos, sin truco de diseño que empuje hacia
+   uno-. Bloque normal, no position:fixed: empuja el resto de la pagina
+   hacia abajo mientras esta visible, y no deja hueco cuando esta oculto
+   -.aviso-cookies[hidden] { display: none }-, asi que nunca tapa nada.
+   Mismo fondo oscuro y el mismo filete que el aviso de alta, para que se
+   lean como parte del mismo sitio y no como dos avisos con estilos
+   distintos compitiendo entre si. */
 .aviso-cookies {
   background: var(--tinta);
   color: var(--papel);
@@ -1633,11 +1634,13 @@ h1 {
   padding: .7rem var(--gutter);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: .8rem 1rem;
 }
 
 .aviso-cookies-caja p {
   margin: 0;
+  flex: 1 1 16rem;
   font-family: var(--ui);
   font-size: .78rem;
   line-height: 1.45;
@@ -1645,21 +1648,39 @@ h1 {
 
 .aviso-cookies-caja a { color: var(--papel); }
 
-.aviso-cookies-cerrar {
+.aviso-cookies-botones {
+  display: flex;
   flex: none;
-  width: 1.7rem;
-  height: 1.7rem;
-  display: grid;
-  place-items: center;
-  border: none;
+  gap: .6rem;
+}
+
+/* color: inherit y border-color: currentColor a proposito, no
+   var(--papel): este mismo boton (salvo --aceptar) vive en dos sitios
+   con fondos opuestos -el aviso oscuro de la cabecera, y el cuerpo
+   claro de /legal.html, donde manda .aviso-cookies-boton--rechazar-,
+   asi que toma el color de texto que ya tenga alrededor en vez de
+   asumir uno fijo. */
+.aviso-cookies-boton {
+  padding: .5rem 1rem;
+  border: 1px solid currentColor;
   background: transparent;
-  color: #b9b4ac;
-  font-size: 1.4rem;
-  line-height: 1;
+  color: inherit;
+  font-family: var(--ui);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
   cursor: pointer;
 }
-.aviso-cookies-cerrar:hover,
-.aviso-cookies-cerrar:focus-visible { color: var(--papel); }
+.aviso-cookies-boton:hover,
+.aviso-cookies-boton:focus-visible { opacity: .75; }
+
+.aviso-cookies-boton--aceptar {
+  border-color: var(--acento);
+  background: var(--acento);
+  color: #fff;
+}
 
 /* --- Pie -------------------------------------------------------------------------------- */
 

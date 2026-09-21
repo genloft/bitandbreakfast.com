@@ -113,13 +113,43 @@ $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable,
 
     <h2 id="cookies">Cookies</h2>
 
-    <p>La parte pública de este sitio -lo que se lee sin iniciar sesión- no
-    instala ninguna cookie: ni de analítica, ni de publicidad, ni de
-    terceros. El <code>Content-Security-Policy</code> del servidor ya
-    bloquea cargar nada que no sea del propio dominio, así que no hay donde
-    esconder un rastreador aunque se quisiera.</p>
+    <p>La parte pública de este sitio -lo que se lee sin iniciar sesión- usa
+    Google Analytics (Google LLC) para saber cuánta gente la lee y qué se
+    lee más, pero solo si lo aceptas en el aviso que aparece al entrar:
+    mientras no lo aceptes, no se carga ningún guion de Google ni se
+    instala ninguna cookie de analítica. El
+    <code>Content-Security-Policy</code> del servidor solo permite cargar
+    guiones de <code>googletagmanager.com</code> -ningún otro dominio de
+    terceros-, así que no hay donde esconder nada más aunque se quisiera.</p>
 
-    <p>El único dato que este sitio guarda en tu navegador sin ser una
+    <p>Puedes cambiar tu decisión en cualquier momento, sin esperar a que
+    vuelva a salir el aviso:</p>
+
+    <p id="cookies-estado" class="datos" hidden></p>
+    <p>
+      <button type="button" id="cookies-gestionar-rechazar" class="aviso-cookies-boton aviso-cookies-boton--rechazar">Desactivar Google Analytics</button>
+      <button type="button" id="cookies-gestionar-aceptar" class="aviso-cookies-boton aviso-cookies-boton--aceptar">Activar Google Analytics</button>
+    </p>
+
+    <p>Al aceptar, Google Analytics instala dos cookies propias de su
+    medición: <code>_ga</code> y <code>_ga_&lt;identificador&gt;</code>,
+    que expiran a los dos años según la
+    <a href="https://developers.google.com/analytics/devguides/collection/ga4/cookies-user-id" rel="nofollow noopener" target="_blank">documentación de Google</a>.
+    Sirven para distinguir una visita de otra, no para identificar a nadie
+    por su nombre. Lo que recoge -páginas vistas, procedencia, tipo de
+    dispositivo- se procesa en los servidores de Google, que pueden estar
+    fuera de la Unión Europea; la
+    <a href="https://policies.google.com/privacy" rel="nofollow noopener" target="_blank">política de privacidad de Google</a>
+    explica cómo lo trata. Rechazar no deja nada a medias: el sitio
+    funciona exactamente igual, se acepte o no.</p>
+
+    <p>La decisión que tomes -aceptar o rechazar- se guarda en el
+    <code>localStorage</code> de tu navegador, no en una cookie -sería raro
+    usar una cookie para recordar una decisión sobre cookies-, solo para no
+    volver a preguntarte en cada visita. No sale de tu navegador y no sirve
+    para nada más que eso.</p>
+
+    <p>El único otro dato que este sitio guarda en tu navegador sin ser una
     cookie es que cerraste el aviso de suscripción flotante, si lo cerraste:
     una marca en el <code>localStorage</code> de tu navegador, solo para no
     volver a preguntarte en la misma visita. No sale de tu navegador, no
@@ -127,10 +157,10 @@ $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable,
     cualquier momento desde los ajustes de privacidad de tu navegador,
     igual que una cookie.</p>
 
-    <p>La única cookie de todo el sitio es la de la sesión del panel de
-    administración, de uso interno y estrictamente necesaria para que quien
-    edita pueda iniciar sesión. No la ve, ni la recibe, quien solo lee la
-    web pública.</p>
+    <p>La única cookie propia de todo el sitio -no de Google- es la de la
+    sesión del panel de administración, de uso interno y estrictamente
+    necesaria para que quien edita pueda iniciar sesión. No la ve, ni la
+    recibe, quien solo lee la web pública.</p>
 
     <h2>Datos personales</h2>
 
