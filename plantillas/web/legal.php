@@ -115,47 +115,38 @@ $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable,
 
     <p>La parte pública de este sitio -lo que se lee sin iniciar sesión- usa
     Google Analytics (Google LLC) para saber cuánta gente la lee y qué se
-    lee más, pero solo si lo aceptas en el aviso que aparece al entrar:
-    mientras no lo aceptes, no se carga ningún guion de Google ni se
-    instala ninguna cookie de analítica. El
-    <code>Content-Security-Policy</code> del servidor solo permite cargar
-    guiones de <code>googletagmanager.com</code> -ningún otro dominio de
-    terceros-, así que no hay donde esconder nada más aunque se quisiera.</p>
+    lee más. Se activa para toda visita, sin esperar a ningún aviso ni a
+    ningún clic. El <code>Content-Security-Policy</code> del servidor solo
+    permite cargar guiones de <code>googletagmanager.com</code> -ningún
+    otro dominio de terceros-, así que no hay donde esconder nada más
+    aunque se quisiera.</p>
 
-    <p>Puedes cambiar tu decisión en cualquier momento, sin esperar a que
-    vuelva a salir el aviso:</p>
-
-    <p id="cookies-estado" class="datos" hidden></p>
-    <p>
-      <button type="button" id="cookies-gestionar-rechazar" class="aviso-cookies-boton aviso-cookies-boton--rechazar">Desactivar Google Analytics</button>
-      <button type="button" id="cookies-gestionar-aceptar" class="aviso-cookies-boton aviso-cookies-boton--aceptar">Activar Google Analytics</button>
-    </p>
-
-    <p>Al aceptar, Google Analytics instala dos cookies propias de su
-    medición: <code>_ga</code> y <code>_ga_&lt;identificador&gt;</code>,
-    que expiran a los dos años según la
+    <p>Google Analytics instala dos cookies propias de su medición:
+    <code>_ga</code> y <code>_ga_&lt;identificador&gt;</code>, que expiran
+    a los dos años según la
     <a href="https://developers.google.com/analytics/devguides/collection/ga4/cookies-user-id" rel="nofollow noopener" target="_blank">documentación de Google</a>.
     Sirven para distinguir una visita de otra, no para identificar a nadie
     por su nombre. Lo que recoge -páginas vistas, procedencia, tipo de
     dispositivo- se procesa en los servidores de Google, que pueden estar
     fuera de la Unión Europea; la
     <a href="https://policies.google.com/privacy" rel="nofollow noopener" target="_blank">política de privacidad de Google</a>
-    explica cómo lo trata. Rechazar no deja nada a medias: el sitio
-    funciona exactamente igual, se acepte o no.</p>
+    explica cómo lo trata.</p>
 
-    <p>La decisión que tomes -aceptar o rechazar- se guarda en el
-    <code>localStorage</code> de tu navegador, no en una cookie -sería raro
-    usar una cookie para recordar una decisión sobre cookies-, solo para no
-    volver a preguntarte en cada visita. No sale de tu navegador y no sirve
-    para nada más que eso.</p>
+    <p>La forma real de no ser medido por este guion es la
+    <a href="https://tools.google.com/dlpage/gaoptout" rel="nofollow noopener" target="_blank">extensión oficial de Google para desactivar Analytics</a>,
+    que instalas una vez en tu navegador y vale para cualquier sitio que
+    use Analytics, no solo este. También puedes bloquear
+    <code>googletagmanager.com</code> con cualquier bloqueador de
+    rastreadores.</p>
 
-    <p>El único otro dato que este sitio guarda en tu navegador sin ser una
-    cookie es que cerraste el aviso de suscripción flotante, si lo cerraste:
-    una marca en el <code>localStorage</code> de tu navegador, solo para no
-    volver a preguntarte en la misma visita. No sale de tu navegador, no
-    identifica a nadie y no sirve para nada más que eso; puedes borrarla en
-    cualquier momento desde los ajustes de privacidad de tu navegador,
-    igual que una cookie.</p>
+    <p>Los otros datos que este sitio guarda en tu navegador sin ser
+    cookies son que cerraste este mismo aviso, y que cerraste el aviso de
+    suscripción flotante, si cerraste alguno de los dos: una marca en el
+    <code>localStorage</code> de tu navegador por cada uno, solo para no
+    volver a preguntarte en la misma visita. Ninguna de las dos sale de tu
+    navegador, no identifican a nadie y no sirven para nada más que eso;
+    puedes borrarlas en cualquier momento desde los ajustes de privacidad
+    de tu navegador, igual que una cookie.</p>
 
     <p>La única cookie propia de todo el sitio -no de Google- es la de la
     sesión del panel de administración, de uso interno y estrictamente

@@ -63,21 +63,20 @@
  * Recibe $base, $panel y, opcionalmente, $enlace_activo.
  *
  * Justo antes del <header> va el aviso de cookies -.aviso-cookies-,
- * empieza oculto y cookiesjs.php decide cuando destaparlo. Vive aqui,
- * delante de todo, por la misma razon que el resto de esta cabecera: es
- * lo unico que comparten todas las paginas. No es un position:fixed que
- * tape nada: es un bloque normal que empuja el resto hacia abajo
- * mientras esta visible, y desaparece del todo -sin dejar hueco- en
- * cuanto se decide algo o si ya se habia decidido en una visita
- * anterior.
+ * empieza oculto y cookiesjs.php lo destapa al cargar, salvo que ya se
+ * hubiera cerrado en una visita anterior. Vive aqui, delante de todo,
+ * por la misma razon que el resto de esta cabecera: es lo unico que
+ * comparten todas las paginas. No es un position:fixed que tape nada:
+ * es un bloque normal que empuja el resto hacia abajo mientras esta
+ * visible, y desaparece del todo -sin dejar hueco- en cuanto se cierra.
  *
- * Lleva dos botones, Aceptar y Rechazar, con el mismo peso visual -sin
- * truco de diseño que empuje hacia uno de los dos-: activan o no Google
- * Analytics, la unica pieza de este sitio que instala una cookie de
- * analitica. Mientras no se acepta, cookiesjs.php no inyecta ningun
- * guion de Google -ni el Content-Security-Policy del servidor lo
- * dejaria pasar sin ese dominio explicito-. El detalle completo, y como
- * cambiar la decision despues, esta en /legal.html#cookies.
+ * Es informativo, no de consentimiento: Google Analytics -la unica
+ * pieza de este sitio que instala una cookie de analitica- se activa
+ * para toda visita, sin esperar a este aviso ni a ningun clic. Unos
+ * botones de "Aceptar" o "Rechazar" que no controlaran nada de verdad
+ * serian peor que no llevarlos, asi que no los lleva: solo avisa, con
+ * un enlace a /legal.html#cookies para el detalle y para la unica
+ * forma real de no ser medido -la extension de Google-.
  */
 
 declare(strict_types=1);
@@ -90,13 +89,9 @@ $enlace_activo = $enlace_activo ?? '';
 <div class="aviso-cookies" id="aviso-cookies" role="region" aria-label="Aviso de cookies" hidden>
   <div class="aviso-cookies-caja">
     <p>Usamos Google Analytics para saber cuánta gente lee esto y qué se
-    lee más, pero solo si lo aceptas: mientras no lo hagas, no se carga
-    ningún guion de Google ni se instala ninguna cookie de analítica.
+    lee más: instala una cookie de analítica en tu navegador.
     <a href="<?= web_e($base) ?>/legal.html#cookies">Más detalles</a>.</p>
-    <div class="aviso-cookies-botones">
-      <button type="button" id="aviso-cookies-rechazar" class="aviso-cookies-boton aviso-cookies-boton--rechazar">Rechazar</button>
-      <button type="button" id="aviso-cookies-aceptar" class="aviso-cookies-boton aviso-cookies-boton--aceptar">Aceptar</button>
-    </div>
+    <button type="button" class="aviso-cookies-cerrar" aria-label="Cerrar este aviso">&times;</button>
   </div>
 </div>
 

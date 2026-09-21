@@ -1430,3 +1430,39 @@ un MariaDB 10.6 para la de humo.
     de Google-, así que sacarlo a `config/config.php` -que ni siquiera
     está en este repositorio- solo habría añadido un paso manual en el
     servidor sin ganar nada a cambio.
+- **La puerta de consentimiento del punto anterior se quitó, a petición
+  expresa y confirmada dos veces tras explicar exactamente lo que
+  implicaba.** Se avisó en el chat, antes de tocar nada, de que
+  "meter el tag tal cual" significaba activar Analytics para todo
+  visitante sin esperar a ningún clic, que eso deshacía la puerta de
+  consentimiento recién construida, y que el aviso legal volvería a
+  cambiar porque dejaría de ser verdad que "solo se activa si lo
+  aceptas". La respuesta fue sí, explícita, a esa pregunta concreta.
+  - `cookiesjs.php` ya no comprueba ninguna decisión guardada:
+    `gtag('js', ...)` y `gtag('config', ...)` corren en cuanto carga
+    el guion, para toda visita, y el `<script>` de
+    `googletagmanager.com` se inyecta siempre, no tras un clic.
+  - Con eso, los botones "Aceptar" y "Rechazar" de `.aviso-cookies` y
+    de `/legal.html#cookies` dejaban de controlar nada real -Analytics
+    ya se habría activado antes de que nadie pulsara nada-, así que se
+    quitaron en vez de dejarlos como decoración: unos botones de
+    consentimiento que no consienten nada son el mismo gesto vacío que
+    este proyecto ya rechazó una vez para un banner de "aceptar
+    cookies" sin ninguna cookie detrás. El aviso vuelve a ser
+    informativo, con un solo botón de cerrar -mismo patrón y mismas
+    clases que llevaba antes de la PR de Analytics-.
+  - El aviso legal deja de ofrecer "activar/desactivar" -no hay nada
+    que activar o desactivar desde aquí- y en su lugar enlaza a la
+    forma real de no ser medido: la
+    [extensión oficial de Google para desactivar Analytics](https://tools.google.com/dlpage/gaoptout),
+    que funciona a nivel de navegador para cualquier sitio, no algo
+    que este proyecto pueda ofrecer desde su propia página.
+  - Lo que no cambió: el `Content-Security-Policy` sigue sin
+    `'unsafe-inline'` en `script-src` -nunca lo ha llevado, ver
+    `migas.php` y `bit.php`-, así que el trozo de código que pegó el
+    dueño del sitio (un `<script>` en línea con `dataLayer`/`gtag`) no
+    se pudo copiar tal cual: habría quedado bloqueado por esa misma
+    política. `cookiesjs.php` hace exactamente lo mismo -mismo
+    `dataLayer`, mismo `gtag()`, mismo `'js'` y `'config'`- pero como
+    fichero `.js` propio, que sí está permitido, en vez de como
+    `<script>` suelto en la plantilla.
