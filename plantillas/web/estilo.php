@@ -269,16 +269,6 @@ img { max-width: 100%; height: auto; }
 
 .menu-fin { margin-left: auto; }
 
-/* Cifras, Cumplimiento, Tendencias, Glosario, Reserva agentica y
-   Calendario: paginas de consulta, no de lectura diaria, y no merecen el
-   mismo peso que Portada o Temas en la barra. Antes iban en un
-   <details>/<summary> de texto ("Recursos ▾") que escondia el destino
-   hasta abrirlo; ahora son iconos con su propio aria-label, que hace de
-   tooltip -mismo .icono-boton que ya usa el pie de cada ficha para
-   compartir, sin padding propio de .menu a de por medio-. */
-.menu-recursos-iconos { display: inline-flex; align-items: center; gap: .1rem; }
-.menu-recursos-iconos .icono-boton { padding: 0; }
-
 /* El buscador en vivo de la cabecera: mismo filete y misma tarjeta que el
    desplegable de "Recursos" de aqui arriba, para que se lea como parte de
    la misma barra y no como un elemento prestado de otra pagina. */
@@ -346,6 +336,25 @@ img { max-width: 100%; height: auto; }
 .cabecera-resultados a:focus-visible { background: var(--papel); }
 
 .cabecera-resultados-vacio { margin: 0; padding: .6rem .7rem; color: var(--suave); font-size: .82rem; }
+
+/* Cifras, Cumplimiento, Tendencias, Glosario, Reserva agentica y
+   Calendario: su propia fila, debajo del filete que cierra la barra de
+   navegacion y encima del nombre grande. Mezclados con "Portada" o
+   "Buscar" -donde estuvieron primero- quedaban aplastados por el padding
+   de esos enlaces de texto, del mismo tamaño pequeño que un icono de
+   compartir en el pie de una ficha; aqui tienen sitio para ser mas
+   grandes y leerse como una segunda forma de moverse por el sitio, no
+   como un adorno del menu. Alineados a la izquierda, bajo el sello,
+   igual que "Portada" empieza la barra de arriba. */
+.cabecera-recursos {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .6rem 0 0;
+}
+
+.cabecera-recursos .icono-boton { width: 2.6rem; height: 2.6rem; }
+.cabecera-recursos .icono-boton .icono { width: 1.5rem; height: 1.5rem; }
 
 /* El nombre y las cifras, en la misma fila. En el movil se apilan: el panel
    debajo del nombre y a todo lo ancho, que es lo unico que cabe. */
