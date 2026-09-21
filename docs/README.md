@@ -1250,3 +1250,13 @@ un MariaDB 10.6 para la de humo.
   `/d/<fecha>/#bit-<id>`- y se le quitaron los estilos en línea y el
   emoji de lupa a favor de las clases del sitio y el icono `lupa` que
   ya existía sin usar en `iconos.php`.
+- **"Recursos" pasó de desplegable de texto a fila de iconos, a
+  petición expresa.** El `<details>`/`<summary>` escondía el destino
+  hasta abrirlo; ahora cada página (Cifras, Cumplimiento, Tendencias,
+  Glosario, Reserva agéntica, Calendario) es un icono con su propio
+  `aria-label`, que hace de nombre accesible y -con el `::after` de
+  `.icono-boton`, el mismo patrón que ya usa el pie de cada ficha para
+  compartir- de tooltip al pasar el ratón o llegar por teclado: se ve
+  dónde lleva sin entrar. Los seis dibujos son nuevos en
+  `web_icono_ui()` salvo Cumplimiento, que ya tenía uno en el catálogo
+  de temáticas (`web_iconos()`) y se reutiliza tal cual.

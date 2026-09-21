@@ -17,12 +17,15 @@
  * es de las primeras cosas que se preguntan al volver a un agregador. Al lado
  * del nombre son parte de la cabecera, no un mensaje.
  *
- * El menu agrupa Cifras, Cumplimiento, Tendencias, Glosario, Reserva
- * agéntica y Calendario bajo un
- * desplegable ("Recursos"): son paginas de consulta, no de lectura diaria, y
- * puestas al mismo nivel que Portada o Temas la barra crecio a diez enlaces. Un
- * <details> nativo -sin una linea de JS- porque no hay nada que un script
- * haga aqui mejor que el navegador solo.
+ * Cifras, Cumplimiento, Tendencias, Glosario, Reserva agéntica y Calendario
+ * -paginas de consulta, no de lectura diaria- van como iconos, no como texto:
+ * puestas al mismo nivel que Portada o Temas la barra crecio a diez enlaces,
+ * y un desplegable de texto ("Recursos ▾") escondia el destino hasta abrirlo.
+ * Cada icono lleva su propio aria-label -el nombre de la pagina, nada mas
+ * largo- que hace de nombre accesible y, con el ::after de .icono-boton en
+ * estilo.php, de tooltip al pasar el raton o llegar por teclado: se ve donde
+ * lleva sin tener que entrar. Mismo patron que los iconos de compartir del
+ * pie de cada ficha, no uno nuevo que aprender.
  *
  * Lleva microdatos de schema.org (WebSite, con su SearchAction hacia
  * /buscar.html), no JSON-LD -mismo motivo que en bit.php: un <script> en
@@ -47,7 +50,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/iconos.php';
 
 $enlace_activo = $enlace_activo ?? '';
-$en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias', 'glosario', 'agentica', 'calendario'], true);
 
 ?>
 <header class="cabecera" itemscope itemtype="https://schema.org/WebSite">
@@ -72,17 +74,14 @@ $en_recursos   = in_array($enlace_activo, ['cifras', 'cumplimiento', 'tendencias
       <a href="<?= web_e($base) ?>/medios.html"<?= $enlace_activo === 'medios' ? ' aria-current="page"' : '' ?>>Medios</a>
       <a href="<?= web_e($base) ?>/archivo.html"<?= $enlace_activo === 'archivo' ? ' aria-current="page"' : '' ?>>Archivo</a>
       <a href="<?= web_e($base) ?>/sobre.html"<?= $enlace_activo === 'sobre' ? ' aria-current="page"' : '' ?>>Qué es</a>
-      <details class="menu-recursos">
-        <summary<?= $en_recursos ? ' aria-current="page"' : '' ?>>Recursos</summary>
-        <div class="menu-recursos-lista">
-          <a href="<?= web_e($base) ?>/estadisticas.html"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>>Cifras</a>
-          <a href="<?= web_e($base) ?>/cumplimiento.html"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>>Cumplimiento</a>
-          <a href="<?= web_e($base) ?>/tendencias.html"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>>Tendencias</a>
-          <a href="<?= web_e($base) ?>/glosario.html"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>>Glosario</a>
-          <a href="<?= web_e($base) ?>/agentica.html"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>>Reserva agéntica</a>
-          <a href="<?= web_e($base) ?>/calendario.html"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>>Calendario</a>
-        </div>
-      </details>
+      <span class="menu-recursos-iconos" role="group" aria-label="Recursos">
+        <a class="icono-boton" href="<?= web_e($base) ?>/estadisticas.html" aria-label="Cifras"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('cifras', 'icono icono-mini') ?></a>
+        <a class="icono-boton" href="<?= web_e($base) ?>/cumplimiento.html" aria-label="Cumplimiento"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>><?= web_icono('cumplimiento', 'icono icono-mini') ?></a>
+        <a class="icono-boton" href="<?= web_e($base) ?>/tendencias.html" aria-label="Tendencias"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('tendencias', 'icono icono-mini') ?></a>
+        <a class="icono-boton" href="<?= web_e($base) ?>/glosario.html" aria-label="Glosario"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('glosario', 'icono icono-mini') ?></a>
+        <a class="icono-boton" href="<?= web_e($base) ?>/agentica.html" aria-label="Reserva agéntica"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('agentica', 'icono icono-mini') ?></a>
+        <a class="icono-boton" href="<?= web_e($base) ?>/calendario.html" aria-label="Calendario"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('calendario', 'icono icono-mini') ?></a>
+      </span>
       <span class="menu-fin"></span>
       <a href="<?= web_e($base) ?>/buscar.html"<?= $enlace_activo === 'buscar' ? ' aria-current="page"' : '' ?>>Buscar</a>
       <a href="<?= web_e($base) ?>/feed.xml">RSS</a>

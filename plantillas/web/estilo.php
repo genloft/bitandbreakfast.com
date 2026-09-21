@@ -269,45 +269,15 @@ img { max-width: 100%; height: auto; }
 
 .menu-fin { margin-left: auto; }
 
-/* Cifras, Tendencias y Glosario, agrupadas: son paginas de consulta, no de
-   lectura diaria, y no merecen el mismo peso que Portada o Temas en la
-   barra. <details> nativo, sin JS: se abre y cierra solo. */
-.menu-recursos { position: relative; }
-
-.menu-recursos summary {
-  display: inline-block;
-  padding: .3rem 0;
-  color: var(--apagado);
-  cursor: pointer;
-  list-style: none;
-}
-
-.menu-recursos summary::-webkit-details-marker { display: none; }
-.menu-recursos summary::after { content: ' \25BE'; font-size: .85em; }
-.menu-recursos summary:hover { color: var(--tinta); }
-
-.menu-recursos[open] summary,
-.menu-recursos summary[aria-current="page"] {
-  color: var(--tinta);
-  border-bottom: 2px solid var(--acento);
-}
-
-.menu-recursos-lista {
-  position: absolute;
-  z-index: 5;
-  top: 100%;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: .7rem;
-  min-width: 9rem;
-  margin-top: .5rem;
-  padding: .9rem 1.1rem;
-  background: var(--tarjeta);
-  border: 1px solid var(--filete);
-}
-
-.menu-recursos-lista a { white-space: nowrap; }
+/* Cifras, Cumplimiento, Tendencias, Glosario, Reserva agentica y
+   Calendario: paginas de consulta, no de lectura diaria, y no merecen el
+   mismo peso que Portada o Temas en la barra. Antes iban en un
+   <details>/<summary> de texto ("Recursos ▾") que escondia el destino
+   hasta abrirlo; ahora son iconos con su propio aria-label, que hace de
+   tooltip -mismo .icono-boton que ya usa el pie de cada ficha para
+   compartir, sin padding propio de .menu a de por medio-. */
+.menu-recursos-iconos { display: inline-flex; align-items: center; gap: .1rem; }
+.menu-recursos-iconos .icono-boton { padding: 0; }
 
 /* El buscador en vivo de la cabecera: mismo filete y misma tarjeta que el
    desplegable de "Recursos" de aqui arriba, para que se lea como parte de

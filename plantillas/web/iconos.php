@@ -123,6 +123,30 @@ function web_icono_ui(string $nombre, string $clase = 'icono'): string
         'linkedin' => '<rect x="3" y="3" width="18" height="18" rx="3"/>'
                      . '<path d="M7.5 10.7v5.8"/><path d="M7.5 7.7v.1"/>'
                      . '<path d="M11.5 16.5v-3.7a2.2 2.2 0 0 1 4.3 0v3.7"/><path d="M11.5 10.7v5.8"/>',
+
+        // Los seis de "Recursos", en la cabecera: cada uno lo que la pagina
+        // es, no la metafora mas bonita, igual que los de tematica.
+
+        // Tres barras sobre una linea de base: Cifras.
+        'cifras' => '<path d="M4 20v-8"/><path d="M12 20V6"/><path d="M20 20v-9"/><path d="M2 20h20"/>',
+
+        // Una linea que sube y termina en punta de flecha, distinta de la
+        // curva de revenue-rms: Tendencias.
+        'tendencias' => '<path d="M4 17l6-6 4 4 6-8"/><path d="M16 7h4v4"/>',
+
+        // Un libro abierto: Glosario.
+        'glosario' => '<path d="M12 6.5c-1.6-1.1-4-1.6-7-1.1v13c3-.5 5.4 0 7 1.1'
+                     . 'c1.6-1.1 4-1.6 7-1.1v-13c-3-.5-5.4 0-7 1.1z"/><path d="M12 6.5v13"/>',
+
+        // Una cabeza de robot, distinta de los destellos de ia-aplicada:
+        // Reserva agentica, el agente que reserva por cuenta de otro.
+        'agentica' => '<rect x="5" y="8" width="14" height="10" rx="2"/><path d="M12 8V5"/>'
+                    . '<circle cx="12" cy="4" r="1"/><circle cx="9" cy="13" r="1"/>'
+                    . '<circle cx="15" cy="13" r="1"/><path d="M9 16h6"/>',
+
+        // Una hoja de calendario: Calendario.
+        'calendario' => '<rect x="3.5" y="5" width="17" height="16" rx="2"/>'
+                       . '<path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/>',
     ][$nombre] ?? '';
 
     if ($trazos === '') {
