@@ -604,7 +604,19 @@ function publicar_panel(int $bits, int $medios, int $temas, string $cuando): arr
             'total'  => $temas,
             'nuevas' => max(0, $temas - (int) ajuste('web_temas_frente', '0')),
         ],
-        'revpar'    => (string) ajuste('estadistica_revpar', '€ 114,20'),
+        // Media nacional, no un dato propio: por eso lleva su periodo y su
+        // fuente siempre pegados, y por eso los tres viven en ajustes y no
+        // en una constante. El valor por defecto es real y comprobado -INE,
+        // Coyuntura Turistica Hotelera, julio de 2026-, no un relleno
+        // inventado; sigue haciendo falta que alguien lo actualice a mano
+        // cuando el INE publique el mes siguiente, que es justo lo que
+        // "periodo" hace visible si nadie lo toca.
+        'revpar'         => (string) ajuste('estadistica_revpar', '119,3 €'),
+        'revpar_periodo' => (string) ajuste('estadistica_revpar_periodo', 'julio de 2026'),
+        'revpar_url'     => (string) ajuste(
+            'estadistica_revpar_url',
+            'https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177015&menu=ultiDatos&idp=1254735576863'
+        ),
     ];
 }
 
