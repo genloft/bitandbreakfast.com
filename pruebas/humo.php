@@ -1046,7 +1046,10 @@ comprobar('el aviso de cookies esta en toda pagina, oculto de entrada', true, (b
 ));
 comprobar('sin boton de "aceptar" cookies', false, str_contains($portada, 'ceptar'));
 comprobar('con su propio guion, cargado siempre', true, str_contains($portada, '/cookies.js?v='));
-comprobar('que enlaza al detalle del aviso legal', true, str_contains($portada, 'href="/legal.html#cookies"'));
+// El href real lleva $base delante (https://ejemplo.test en esta prueba,
+// no una ruta relativa), asi que se comprueba el sufijo, no la ruta
+// absoluta desde la raiz.
+comprobar('que enlaza al detalle del aviso legal', true, str_contains($portada, 'legal.html#cookies"'));
 
 comprobar(
     'y tambien lo lleva una ficha de tema',
