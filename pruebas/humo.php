@@ -972,11 +972,7 @@ comprobar('cada bit lleva su fecha encima', true, str_contains($portada, 'etique
 comprobar('lo que cuentan varios medios sale en negativo', true, str_contains($portada, 'bit-multifuente'));
 
 // Las tres cuentas fijas del panel -Noticias, Medios, Temas-, cada una por
-// su propia etiqueta. Antes se comprobaba el total de ".panel-cifra" y
-// tenia que ser exactamente 3, pero panel.php puede sumar una cuarta fila
-// opcional (RevPAR) segun el ajuste que traiga la base: un recuento rigido
-// se rompe con esa fila de mas sin que nada de esto haya cambiado en lo que
-// de verdad importa, que es que las tres cuentas fijas sigan ahi.
+// su propia etiqueta.
 comprobar('con la cuenta de noticias', true, str_contains($portada, '<dt>Noticias</dt>'));
 comprobar('la de medios', true, str_contains($portada, '<dt>Medios</dt>'));
 comprobar('y la de temas', true, str_contains($portada, '<dt>Temas</dt>'));
@@ -995,6 +991,15 @@ foreach (['Cifras', 'Cumplimiento', 'Tendencias', 'Glosario', 'Reserva agéntica
         preg_match('~<a class="icono-boton"[^>]*aria-label="' . preg_quote($recurso, '~') . '"~', $portada)
     );
 }
+
+// El RevPAR no es una cuarta cuenta del sitio, es la media nacional del
+// INE para un mes concreto: por eso vive fuera de la rejilla de tres
+// columnas, y por eso nunca sale sin su periodo ni su fuente pegados -un
+// numero sin fecha visible se leeria como el de ahora mismo, y esto se
+// conoce con semanas de retraso-.
+comprobar('el RevPAR lleva su etiqueta', true, str_contains($portada, 'class="panel-revpar-etiqueta">RevPAR España'));
+comprobar('su valor', true, (bool) preg_match('~class="panel-revpar-valor">[\d.,]+\s*€~', $portada));
+comprobar('y su fuente con el periodo, enlazada al INE', true, (bool) preg_match('~class="panel-revpar-fuente" href="https://www\.ine\.es/[^"]+"[^>]*>INE, [^<]+~', $portada));
 
 // El buscador en vivo de la cabecera: con clases del sitio, no con estilos
 // sueltos ni un emoji de lupa, y el guion que consulta indice.json escribe

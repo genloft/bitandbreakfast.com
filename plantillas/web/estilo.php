@@ -519,6 +519,43 @@ img { max-width: 100%; height: auto; }
   color: var(--apagado);
 }
 
+/* El RevPAR no cabe en la rejilla de tres columnas de arriba -no es una
+   cuarta cuenta que crece y decrece, es la media nacional del INE para un
+   mes concreto- y por eso vive en su propia linea, con el periodo y la
+   fuente siempre pegados al valor. */
+.panel-revpar {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .3rem .5rem;
+  margin: .5rem 0 0;
+  padding-top: .5rem;
+  border-top: 1px solid var(--filete-fino);
+}
+
+.panel-revpar-etiqueta {
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.panel-revpar-valor {
+  font-family: var(--titular);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-revpar-fuente {
+  font-size: .68rem;
+  color: var(--apagado);
+  text-decoration: none;
+}
+.panel-revpar-fuente:hover,
+.panel-revpar-fuente:focus-visible { color: var(--tinta); text-decoration: underline; }
+
 .cabecera-pie {
   display: flex;
   flex-wrap: wrap;

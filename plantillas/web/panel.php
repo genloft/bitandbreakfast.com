@@ -20,6 +20,17 @@
  * pulsa junto a "Actualizado" no lo desmiente -sigue siendo una foto-, solo
  * dice que detras hay un radar que no se ha parado, no un volcado suelto.
  *
+ * El RevPAR va aparte de las tres parejas, no dentro: no es un recuento de
+ * este sitio que crece y decrece, es la media nacional que publica el INE
+ * -Coyuntura Turistica Hotelera- para un mes concreto. Por eso lleva
+ * siempre su periodo y su fuente pegados, nunca un numero suelto sin decir
+ * de cuando es: un dato sin fecha visible se lee como el de ahora mismo,
+ * y esto es un promedio que se conoce con semanas de retraso. Los tres
+ * valores -cifra, periodo, enlace- viven en la tabla ajustes
+ * (estadistica_revpar, _periodo, _url) para que alguien los actualice a
+ * mano cuando el INE publique el mes siguiente; el valor por defecto en
+ * cron/publicar.php es real y comprobado, no un relleno.
+ *
  * Recibe $panel.
  */
 
@@ -39,6 +50,10 @@ $filas = [
     'Medios'   => $panel['medios']   ?? ['nuevas' => 0, 'total' => 0],
     'Temas'    => $panel['temas']    ?? ['nuevas' => 0, 'total' => 0],
 ];
+
+$revpar         = (string) ($panel['revpar'] ?? '');
+$revpar_periodo = (string) ($panel['revpar_periodo'] ?? '');
+$revpar_url     = (string) ($panel['revpar_url'] ?? '');
 
 ?>
 <div class="panel" role="complementary" aria-label="Estado del radar">
@@ -68,13 +83,19 @@ $filas = [
         </dd>
       </div>
     <?php endforeach; ?>
-    <?php if (isset($panel['revpar']) && $panel['revpar'] !== ''): ?>
-      <div class="panel-cifra">
-        <dt>RevPAR</dt>
-        <dd>
-          <span class="panel-total"><?= web_e($panel['revpar']) ?></span>
-        </dd>
-      </div>
-    <?php endif; ?>
   </dl>
+
+  <?php if ($revpar !== ''): ?>
+    <p class="panel-revpar">
+      <span class="panel-revpar-etiqueta">RevPAR España</span>
+      <strong class="panel-revpar-valor"><?= web_e($revpar) ?></strong>
+      <?php if ($revpar_periodo !== ''): ?>
+        <?php if ($revpar_url !== ''): ?>
+          <a class="panel-revpar-fuente" href="<?= web_e($revpar_url) ?>" rel="nofollow noopener" target="_blank">INE, <?= web_e($revpar_periodo) ?></a>
+        <?php else: ?>
+          <span class="panel-revpar-fuente">INE, <?= web_e($revpar_periodo) ?></span>
+        <?php endif; ?>
+      <?php endif; ?>
+    </p>
+  <?php endif; ?>
 </div>

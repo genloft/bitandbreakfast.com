@@ -1260,3 +1260,34 @@ un MariaDB 10.6 para la de humo.
   dónde lleva sin entrar. Los seis dibujos son nuevos en
   `web_icono_ui()` salvo Cumplimiento, que ya tenía uno en el catálogo
   de temáticas (`web_iconos()`) y se reutiliza tal cual.
+- **El RevPAR del panel llevaba un valor inventado, sin fuente ni forma
+  de actualizarse: se sustituyó por uno real, en vez de solo
+  restilizarlo.** `cron/publicar.php` leía
+  `ajuste('estadistica_revpar', '€ 114,20')`, y "estadistica_revpar" no
+  se referenciaba en ningún otro sitio del código: ni panel de
+  administración, ni formulario, ni forma de que nadie lo cambiara
+  jamás. El sitio publicaba ese número para siempre, como si fuera de
+  hoy. El nuevo valor por defecto -119,3 €, julio de 2026, +6,6%
+  interanual- sale de la Coyuntura Turística Hotelera del INE,
+  confirmado por dos fuentes de prensa del sector independientes entre
+  sí (Hosteltur y Brains RE News) porque `ine.es` no es accesible
+  desde este entorno de desarrollo -mismo problema que ya dejó §2.2 sin
+  resolver-. Se añaden `estadistica_revpar_periodo` y
+  `estadistica_revpar_url` junto al valor: sin periodo visible, un
+  promedio que se conoce con semanas de retraso se leería como el dato
+  de ahora mismo. La URL apunta a la página estable de la serie en
+  INEbase, no a la nota de prensa de un mes concreto, para que no se
+  rompa el enlace cuando el valor se quede desactualizado.
+- **Sigue sin haber un formulario en el panel para actualizar el
+  RevPAR mes a mes.** Es una limitación conocida, no resuelta: los tres
+  `ajuste()` se pueden cambiar a mano en la base de datos, pero nadie
+  lo hará sin que se le recuerde. Añadir ese formulario -mismo patrón
+  que `cron_aviso` en `panel/index.php`- es trabajo aparte y pendiente,
+  no algo que se cuele sin decirlo en esta misma mejora.
+- **El RevPAR salió de la rejilla de tres columnas del panel
+  (`.panel-cifras`), no se quedó dentro como una cuarta fila.** No es
+  un recuento de este sitio que crece y decrece como noticias, medios o
+  temas: es una media nacional ajena, y forzarlo en la misma rejilla ya
+  rompía el `grid-template-columns: repeat(3, ...)` pensado para tres.
+  Vive en su propia línea, con el periodo y el enlace a la fuente
+  siempre pegados al valor.
