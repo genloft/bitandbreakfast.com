@@ -338,14 +338,14 @@ img { max-width: 100%; height: auto; }
 .cabecera-resultados-vacio { margin: 0; padding: .6rem .7rem; color: var(--suave); font-size: .82rem; }
 
 /* Cifras, Cumplimiento, Tendencias, Glosario, Reserva agentica y
-   Calendario: su propia fila, debajo del filete que cierra la barra de
-   navegacion y encima del nombre grande. Mezclados con "Portada" o
-   "Buscar" -donde estuvieron primero- quedaban aplastados por el padding
-   de esos enlaces de texto, del mismo tamaño pequeño que un icono de
-   compartir en el pie de una ficha; aqui tienen sitio para ser mas
-   grandes y leerse como una segunda forma de moverse por el sitio, no
-   como un adorno del menu. Alineados a la izquierda, bajo el sello,
-   igual que "Portada" empieza la barra de arriba.
+   Calendario: debajo del filete que cierra la barra de navegacion y
+   encima del nombre grande. Mezclados con "Portada" o "Buscar" -donde
+   estuvieron primero- quedaban aplastados por el padding de esos enlaces
+   de texto, del mismo tamaño pequeño que un icono de compartir en el pie
+   de una ficha; aqui tienen sitio para ser mas grandes y leerse como una
+   segunda forma de moverse por el sitio, no como un adorno del menu.
+   Alineados a la izquierda, bajo el sello, igual que "Portada" empieza la
+   barra de arriba.
 
    .icono-boton por defecto pinta en --suave -pensado para un icono
    secundario junto a un titular, como el de compartir en el pie de una
@@ -354,8 +354,13 @@ img { max-width: 100%; height: auto; }
    reposo, no solo al pasar el raton, leen tan oscuros como el propio
    nombre; el acento en vez de --tinta al pasar el raton o llegar por
    teclado da la señal de interaccion que --tinta ya no puede dar sola.
-   Mas separacion entre ellos y mas aire arriba y abajo, para que la fila
-   respire en vez de apretarse entre el filete de la barra y el nombre. */
+
+   En movil sigue siendo su propia fila -.cabecera-marca es display:block
+   ahi, los hijos se apilan en el orden del HTML: iconos, nombre, panel-,
+   con aire arriba y abajo para respirar entre el filete de la barra y el
+   nombre. En escritorio (52rem +) esa misma fila pasa a compartir alto
+   con el panel de cifras en vez de sumar el suyo aparte: ver el media
+   query de .cabecera-marca mas abajo. */
 .cabecera-recursos {
   display: flex;
   align-items: center;
@@ -1634,8 +1639,34 @@ h1 {
   .cabecera-marca {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
-    align-items: end;
+    grid-template-rows: auto auto;
+    align-items: start;
     gap: 0 2.5rem;
+  }
+
+  /* Los iconos ya no llevan su propia fila entera: comparten la fila 1 con
+     el panel de cifras, asi que "Actualizado" -la primera linea del
+     panel- cae a la misma altura que ellos, no a la del nombre. El nombre
+     baja a la fila 2, debajo de los iconos. Menos padding vertical aqui
+     que en movil -el nombre ya trae el suyo propio arriba, no hace falta
+     duplicarlo- y menos alto total en la cabecera: antes la fila de
+     iconos se sumaba entera por encima de esto, ahora vive dentro. */
+  .cabecera-recursos {
+    grid-column: 1;
+    grid-row: 1;
+    padding: .6rem 0 0;
+  }
+
+  .logo { grid-column: 1; grid-row: 2; }
+
+  /* El panel ocupa las dos filas de su columna -de ahi que su primera
+     linea quede a la altura de los iconos y el resto siga bajando junto
+     al nombre-, alineado arriba para que no le sobre hueco cuando es mas
+     bajo que iconos + nombre juntos, que es el caso normal. */
+  .panel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-bottom: 1.1rem;
   }
 
   /* El nombre baja de tamaño al compartir fila, y no por gusto: va en una sola
@@ -1644,8 +1675,6 @@ h1 {
      mide lo mismo en todos los sistemas y aqui no hay fuente incrustada que
      garantice el ancho. */
   .logo-bloque { font-size: clamp(2.2rem, 7.4vw, 5rem); }
-
-  .panel { margin-bottom: 1.1rem; }
 }
 
 @media (min-width: 46rem) {

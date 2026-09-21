@@ -1336,3 +1336,27 @@ un MariaDB 10.6 para la de humo.
   `.9rem`, y el margen por encima y por debajo de la fila crece
   también, para que respire entre el filete de la barra y el nombre en
   vez de apretarse contra los dos.
+- **La fila de iconos de "Recursos" pasa a compartir alto con el panel
+  de cifras en escritorio, a petición expresa, en vez de sumar su
+  propia fila entera.** `.cabecera-recursos` se mueve dentro de
+  `.cabecera-marca`, delante de `.logo` -el orden en el HTML no
+  cambia, así que en móvil (`.cabecera-marca` sigue siendo
+  `display: block` ahí) se sigue viendo exactamente igual: iconos,
+  nombre, panel, apilados-. En escritorio (52rem +) `.cabecera-marca`
+  gana una segunda fila: `.cabecera-recursos` ocupa la fila 1 de la
+  columna del nombre y `.panel` ocupa las dos filas de la columna
+  derecha, así que "Actualizado" -la primera línea del panel- cae a la
+  misma altura que los iconos, no a la del nombre grande, que baja a
+  la fila 2. Se ahorra el alto entero que antes sumaba la fila de
+  iconos por su cuenta -comprobado con Playwright: 369px de cabecera
+  antes, 296px después, con el mismo contenido-, y de paso el icono
+  "Cifras" queda justo encima de la etiqueta "Actualizado" a la que
+  más se parece por función.
+  Al hacerlo se confirmó un fallo previo, no introducido por este
+  cambio: entre ~52rem y ~60rem de ancho el nombre grande -su
+  `font-size` calculado con `clamp()` y unidades `vw`, que no conoce
+  el ancho real que le deja la columna del panel- invade la columna de
+  cifras. Ya pasaba en `main` antes de este cambio -antes se solapaba
+  con la línea del RevPAR, ahora con la de Noticias/Medios/Temas-, así
+  que queda fuera del alcance de esta mejora; pendiente de una revisión
+  aparte del cálculo de `.logo-bloque`.

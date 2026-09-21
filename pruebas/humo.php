@@ -985,9 +985,15 @@ comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'))
 // que hace de tooltip al pasar el raton o llegar por teclado -mismo
 // .icono-boton que el pie de cada ficha para compartir-.
 comprobar('sin el desplegable de texto "Recursos"', false, str_contains($portada, 'class="menu-recursos"'));
-// En su propia fila, debajo del filete de la barra de navegacion y encima
-// del nombre, no mezclados con "Portada" o "Buscar" dentro del <nav>.
-comprobar('los recursos van en su propia fila', true, str_contains($portada, 'class="cabecera-recursos"'));
+// Debajo del filete de la barra de navegacion y encima del nombre, no
+// mezclados con "Portada" o "Buscar" dentro del <nav>. Viven dentro de
+// .cabecera-marca, delante del logo: en escritorio esa reticula los pone
+// a la misma altura que el panel de cifras, en vez de sumar una fila
+// aparte.
+comprobar('los recursos van delante del logo, dentro de .cabecera-marca', true, (bool) preg_match(
+    '~<div class="cabecera-marca">\s*<div class="cabecera-recursos"~',
+    $portada
+));
 foreach (['Cifras', 'Cumplimiento', 'Tendencias', 'Glosario', 'Reserva agéntica', 'Calendario'] as $recurso) {
     comprobar(
         "el recurso \"$recurso\" es un icono con su propio tooltip",

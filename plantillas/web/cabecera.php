@@ -34,6 +34,17 @@
  * menu; en su propia fila son mas grandes y leen como lo que son, una
  * segunda forma de moverse por el sitio.
  *
+ * Por eso viven dentro de .cabecera-marca, delante del logo, y no como
+ * hermano suelto delante de el: en escritorio .cabecera-marca es una
+ * reticula de dos columnas y dos filas, los iconos ocupan la fila 1 de la
+ * columna del nombre y el panel de cifras ocupa las dos filas de la
+ * columna derecha, asi que "Actualizado" -la primera linea del panel- cae
+ * a la misma altura que los iconos en vez de a la altura del nombre
+ * grande. El nombre baja a la fila 2, debajo de los iconos. Se ahorra la
+ * fila entera que antes ocupaban los iconos por su cuenta, con su propio
+ * relleno arriba y abajo: ahora comparten alto con el panel en vez de
+ * sumar el suyo aparte.
+ *
  * Lleva microdatos de schema.org (WebSite, con su SearchAction hacia
  * /buscar.html), no JSON-LD -mismo motivo que en bit.php: un <script> en
  * linea cae bajo el script-src 'self' que el resto del sitio no rompe a
@@ -94,16 +105,16 @@ $enlace_activo = $enlace_activo ?? '';
     </div>
   </div>
 
-  <div class="cabecera-recursos" role="group" aria-label="Recursos">
-    <a class="icono-boton" href="<?= web_e($base) ?>/estadisticas.html" aria-label="Cifras"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('cifras') ?></a>
-    <a class="icono-boton" href="<?= web_e($base) ?>/cumplimiento.html" aria-label="Cumplimiento"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>><?= web_icono('cumplimiento') ?></a>
-    <a class="icono-boton" href="<?= web_e($base) ?>/tendencias.html" aria-label="Tendencias"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('tendencias') ?></a>
-    <a class="icono-boton" href="<?= web_e($base) ?>/glosario.html" aria-label="Glosario"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('glosario') ?></a>
-    <a class="icono-boton" href="<?= web_e($base) ?>/agentica.html" aria-label="Reserva agéntica"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('agentica') ?></a>
-    <a class="icono-boton" href="<?= web_e($base) ?>/calendario.html" aria-label="Calendario"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('calendario') ?></a>
-  </div>
-
   <div class="cabecera-marca">
+    <div class="cabecera-recursos" role="group" aria-label="Recursos">
+      <a class="icono-boton" href="<?= web_e($base) ?>/estadisticas.html" aria-label="Cifras"<?= $enlace_activo === 'cifras' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('cifras') ?></a>
+      <a class="icono-boton" href="<?= web_e($base) ?>/cumplimiento.html" aria-label="Cumplimiento"<?= $enlace_activo === 'cumplimiento' ? ' aria-current="page"' : '' ?>><?= web_icono('cumplimiento') ?></a>
+      <a class="icono-boton" href="<?= web_e($base) ?>/tendencias.html" aria-label="Tendencias"<?= $enlace_activo === 'tendencias' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('tendencias') ?></a>
+      <a class="icono-boton" href="<?= web_e($base) ?>/glosario.html" aria-label="Glosario"<?= $enlace_activo === 'glosario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('glosario') ?></a>
+      <a class="icono-boton" href="<?= web_e($base) ?>/agentica.html" aria-label="Reserva agéntica"<?= $enlace_activo === 'agentica' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('agentica') ?></a>
+      <a class="icono-boton" href="<?= web_e($base) ?>/calendario.html" aria-label="Calendario"<?= $enlace_activo === 'calendario' ? ' aria-current="page"' : '' ?>><?= web_icono_ui('calendario') ?></a>
+    </div>
+
     <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
       <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
     </a>
