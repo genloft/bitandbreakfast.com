@@ -119,6 +119,14 @@ $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable,
     bloquea cargar nada que no sea del propio dominio, así que no hay donde
     esconder un rastreador aunque se quisiera.</p>
 
+    <p>El único dato que este sitio guarda en tu navegador sin ser una
+    cookie es que cerraste el aviso de suscripción flotante, si lo cerraste:
+    una marca en el <code>localStorage</code> de tu navegador, solo para no
+    volver a preguntarte en la misma visita. No sale de tu navegador, no
+    identifica a nadie y no sirve para nada más que eso; puedes borrarla en
+    cualquier momento desde los ajustes de privacidad de tu navegador,
+    igual que una cookie.</p>
+
     <p>La única cookie de todo el sitio es la de la sesión del panel de
     administración, de uso interno y estrictamente necesaria para que quien
     edita pueda iniciar sesión. No la ve, ni la recibe, quien solo lee la

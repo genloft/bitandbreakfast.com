@@ -1306,3 +1306,13 @@ un MariaDB 10.6 para la de humo.
   el tercer guion del sitio, cargado solo cuando hace falta -no en
   cada página si el alta está cerrada, como en el entorno de
   `pruebas/humo.php`, que no configura correo-.
+- **La sección de cookies de `legal.php` ya existía, completa y
+  honesta -no instala ninguna, ni de analítica ni de terceros, y lo
+  dice-, así que no se creó desde cero.** Lo único que hacía falta era
+  una frase más: el `localStorage` que recuerda haber cerrado el aviso
+  flotante de alta no es una cookie, pero por transparencia se
+  menciona igual, con qué guarda y por qué. No se añadió un banner de
+  "aceptar cookies" -no hay ninguna cookie pública que aceptar, y
+  pedir consentimiento para algo que no existe sería un gesto vacío,
+  lo mismo que este proyecto ya descartó con `llms.txt` en §5 de
+  `MEJORAS.md`-.

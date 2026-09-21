@@ -527,6 +527,7 @@ comprobar('sin identidad configurada, lo dice en vez de inventarla', true, str_c
 comprobar('y aun asi deja un contacto', true, str_contains($legal, 'mailto:'));
 comprobar('explica la base legal de citar fragmentos', true, str_contains($legal, 'artículo 32.2'));
 comprobar('declara que la web publica no usa cookies de rastreo', true, str_contains($legal, 'instala ninguna cookie'));
+comprobar('y menciona el localStorage del aviso flotante, aunque no sea una cookie', true, str_contains($legal, 'localStorage'));
 comprobar('el pie enlaza al aviso legal', true, str_contains($sobre, '/legal.html'));
 
 // La reserva agentica: pagina explicativa, no categoria nueva -misma logica
