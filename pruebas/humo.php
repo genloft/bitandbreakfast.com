@@ -982,6 +982,20 @@ comprobar('la de medios', true, str_contains($portada, '<dt>Medios</dt>'));
 comprobar('y la de temas', true, str_contains($portada, '<dt>Temas</dt>'));
 comprobar('y los dos relojes', 2, substr_count($portada, 'class="panel-reloj"'));
 
+// Cifras, Cumplimiento, Tendencias, Glosario, Reserva agentica y
+// Calendario ya no van en un <details> de texto ("Recursos ▾") que
+// escondia el destino hasta abrirlo: son iconos con su propio aria-label,
+// que hace de tooltip al pasar el raton o llegar por teclado -mismo
+// .icono-boton que el pie de cada ficha para compartir-.
+comprobar('sin el desplegable de texto "Recursos"', false, str_contains($portada, 'class="menu-recursos"'));
+foreach (['Cifras', 'Cumplimiento', 'Tendencias', 'Glosario', 'Reserva agéntica', 'Calendario'] as $recurso) {
+    comprobar(
+        "el recurso \"$recurso\" es un icono con su propio tooltip",
+        1,
+        preg_match('~<a class="icono-boton"[^>]*aria-label="' . preg_quote($recurso, '~') . '"~', $portada)
+    );
+}
+
 // El buscador en vivo de la cabecera: con clases del sitio, no con estilos
 // sueltos ni un emoji de lupa, y el guion que consulta indice.json escribe
 // enlaces reales -/d/<fecha>/#bit-<id>-, no la pagina "bit.html" que nunca
