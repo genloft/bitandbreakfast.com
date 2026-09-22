@@ -44,6 +44,18 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
   </url>
   <url><loc><?= web_e($base) ?>/archivo.html</loc></url>
   <url><loc><?= web_e($base) ?>/buscar.html</loc></url>
+  <?php // El mapa se recalcula solo, como Tendencias: su fecha real es la del
+        // bit mas reciente, porque el decay lo cambia aunque no se publique
+        // nada nuevo. ?>
+  <?php if ($tendencias_lastmod !== ''): ?>
+  <url>
+    <loc><?= web_e($base) ?>/mapa.html</loc>
+    <lastmod><?= web_e($tendencias_lastmod) ?></lastmod>
+    <changefreq>daily</changefreq>
+  </url>
+  <?php else: ?>
+  <url><loc><?= web_e($base) ?>/mapa.html</loc></url>
+  <?php endif; ?>
   <url><loc><?= web_e($base) ?>/temas.html</loc></url>
   <url><loc><?= web_e($base) ?>/medios.html</loc></url>
   <url><loc><?= web_e($base) ?>/sobre.html</loc></url>

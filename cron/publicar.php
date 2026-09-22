@@ -37,6 +37,10 @@
  *   agentica.html        reserva agentica: MCP, ACP, UCP y AP2, con fecha y fuente
  *   calendario.html      ferias y foros del sector, con fecha, lugar y fuente
  *   cifras.json          las mismas cifras de estadisticas.html, en JSON
+ *   mapa.html            el mapa de calor del stack, nodo a nodo
+ *   mapa.js              navegar el mapa y su panel; sin el, la pagina se lee igual
+ *   data/taxonomy.json   los 24 nodos del stack y los alias que los delatan
+ *   data/heatmap.json    el estado del mapa de esta semana, publico y citable
  *
  * No regenera en cada pasada: calcula una firma de lo publicable y solo
  * trabaja si ha cambiado. Asi el cron -que pasa cada cinco minutos- no
@@ -55,6 +59,8 @@ require_once dirname(__DIR__) . '/lib/glosario.php';
 require_once dirname(__DIR__) . '/lib/agentica.php';
 require_once dirname(__DIR__) . '/lib/calendario.php';
 require_once dirname(__DIR__) . '/lib/imagen_social.php';
+require_once dirname(__DIR__) . '/lib/heatmap.php';
+require_once dirname(__DIR__) . '/lib/stack_grafo.php';
 
 /**
  * Publica lo que haya pendiente.
@@ -111,6 +117,20 @@ function publicar_pendiente(float $limite): array
     $mas_votados  = publicar_mas_votados();
     $tendencias   = publicar_tendencias();
 
+    // El mapa del stack. Se calcula aqui, con el resto de agregados, porque
+    // va en la portada y en su propia pagina y no puede salir distinto en
+    // cada una. Los bits del mapa no son los del rio: el rio deja fuera
+    // 'inversion-mercado' -no es una noticia de sistemas- y el mapa la quiere
+    // -una compra de proveedor es justo lo que obliga a revisar un contrato-,
+    // y la ventana la manda el decay, no la portada.
+    $bits_mapa = publicar_bits_mapa();
+    $mapa      = heatmap_componer(
+        $bits_mapa,
+        publicar_fuentes(array_column($bits_mapa, 'racimo_id')),
+        heatmap_semana(),
+        $base
+    );
+
     $publicados = (int) bd()->query("SELECT COUNT(*) FROM bits WHERE estado = 'publicado'")->fetchColumn();
     $aviso      = publicar_aviso($publicados, $tope_portada);
 
@@ -128,6 +148,7 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir($publico . '/dinamico.js', publicar_plantilla('dinamicojs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/flotante.js', publicar_plantilla('flotantejs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/cookies.js', publicar_plantilla('cookiesjs', [])) ? 1 : 0;
+    $ficheros += publicar_escribir($publico . '/mapa.js', publicar_plantilla('mapajs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/favicon.svg', publicar_plantilla('favicon', [])) ? 1 : 0;
 
@@ -158,6 +179,11 @@ function publicar_pendiente(float $limite): array
         'base'         => $base,
         'version'      => web_version($publico . '/estilo.css'),
         'version_js'   => web_version($publico . '/buscar.js'),
+        // Su propia version, y no la de buscar.js: el .htaccess le pone un mes
+        // de cache a los .js, asi que un arreglo del mapa se quedaria sin
+        // llegar a quien ya hubiera pasado por el sitio hasta que alguien
+        // tocara el buscador, que no tiene nada que ver.
+        'version_mapa' => web_version($publico . '/mapa.js'),
         'alta_abierta' => $alta,
         'alta_temas'   => $alta_temas,
         'temas'        => $temas,
@@ -168,6 +194,7 @@ function publicar_pendiente(float $limite): array
         'mas_votados'  => $mas_votados,
         'tendencias'   => $tendencias,
         'panel'        => $panel,
+        'mapa'         => $mapa,
         'secreto'      => (string) ($config['secretos']['secreto_hmac'] ?? ''),
     ];
 
@@ -361,6 +388,33 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir(
         $publico . '/calendario.html',
         publicar_plantilla('calendario', $comunes)
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/mapa.html',
+        publicar_plantilla('mapa', $comunes)
+    ) ? 1 : 0;
+
+    // La taxonomia y el estado del mapa, publicos y citables. Van en JSON y
+    // no escondidos dentro del HTML porque el valor de un mapa de riesgos se
+    // multiplica cuando otro lo puede leer sin raspar la pagina: quien quiera
+    // cruzarlo con su propio inventario de sistemas tiene aqui el contrato.
+    // Los alias viajan con la taxonomia a proposito -es la regla por la que
+    // una casilla se enciende, y esconderla haria del mapa un oraculo-.
+    $ficheros += publicar_escribir(
+        $publico . '/data/taxonomy.json',
+        (string) json_encode(
+            stack_taxonomia(),
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
+        )
+    ) ? 1 : 0;
+
+    $ficheros += publicar_escribir(
+        $publico . '/data/heatmap.json',
+        (string) json_encode(
+            $mapa,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
+        )
     ) ? 1 : 0;
 
     $ficheros += publicar_escribir(
@@ -1094,6 +1148,50 @@ function publicar_bits(?string $dia = null, int $tope = 80): array
 }
 
 /**
+ * Los bits que puede encender el mapa del stack: los de los ultimos noventa
+ * dias, todos.
+ *
+ * No se reutiliza el rio de la portada por dos motivos, y ninguno es
+ * cosmetico. El rio deja fuera 'inversion-mercado' -una ronda de financiacion
+ * no es una noticia que un director de sistemas tenga que leer hoy-, pero el
+ * mapa la necesita: que compren a tu proveedor de PMS es exactamente lo que
+ * obliga a mirar un contrato. Y el rio esta cortado por un tope de portada
+ * que no tiene nada que ver con el plazo del decay.
+ *
+ * Noventa dias porque es la caducidad mas larga del catalogo -la de una
+ * norma-. Todo lo anterior ya vale cero antes de entrar, asi que traerlo solo
+ * seria trabajo para tirarlo.
+ */
+function publicar_bits_mapa(int $dias = 90, int $tope = 500): array
+{
+    // Sin 'traducido_de': el mapa no dice de que idioma viene nada -eso lo
+    // cuenta la ficha del bit, que esta a un clic-, asi que tampoco hace falta
+    // preguntar si la columna existe todavia.
+    $sql = "SELECT b.id, b.racimo_id, b.titular, b.cuerpo, b.por_que, b.categoria,
+                   b.madurez, b.tipo, b.dia,
+                   (SELECT i.url FROM items i
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS url,
+                   (SELECT f.nombre FROM items i
+                      JOIN fuentes f ON f.id = i.fuente_id
+                     WHERE i.racimo_id = b.racimo_id AND i.estado <> 'descartado'
+                     ORDER BY (i.idioma = 'es') DESC, i.puntuacion DESC, i.id ASC LIMIT 1) AS fuente
+              FROM bits b
+             WHERE b.estado = 'publicado'
+               AND b.dia IS NOT NULL
+               AND b.dia >= ?
+             ORDER BY b.dia DESC, b.id DESC
+             LIMIT ?";
+
+    $st = bd()->prepare($sql);
+    $st->bindValue(1, gmdate('Y-m-d', time() - max(1, $dias) * 86400));
+    $st->bindValue(2, max(1, $tope), PDO::PARAM_INT);
+    $st->execute();
+
+    return $st->fetchAll();
+}
+
+/**
  * El rio, partido en dias: [['dia' => '2026-09-17', 'bits' => [...]], ...].
  *
  * La portada es esto. Se pide de una vez y se agrupa aqui, en vez de una
@@ -1237,6 +1335,17 @@ function publicar_firma(array $dias): string
         // visible hasta que se publicara una edicion nueva: las paginas ya
         // generadas seguirian diciendo que el alta no esta abierta.
         correo_configurado() ? 'alta' : 'sin-alta',
+        // El mapa del stack envejece solo: cada noticia pierde puntuacion con
+        // el tiempo y acaba cayendose sin que nadie publique nada. Sin esto,
+        // una racha tranquila dejaria colgado un mapa que ya no dice la verdad,
+        // y justo los nodos en rojo son los que antes dejan de serlo.
+        //
+        // La semana y no el dia: el mapa esta congelado por semanas, asi que
+        // dentro de una no cambia y regenerarlo a diario seria trabajo para
+        // dejarlo igual. Lo que si cambia a diario -un bit nuevo, una
+        // correccion- ya entra por el recuento y la fecha de modificacion de
+        // aqui abajo.
+        heatmap_semana(),
         count($dias),
         (string) ($dias[0]['dia'] ?? ''),
         (int) ($bits['bits'] ?? 0),

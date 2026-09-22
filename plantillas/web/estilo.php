@@ -1665,6 +1665,565 @@ h1 {
 .aviso-cookies-cerrar:hover,
 .aviso-cookies-cerrar:focus-visible { color: var(--papel); }
 
+/* --- El mapa del stack -----------------------------------------------------
+   La unica pieza del sitio que usa color de verdad, y no por capricho: aqui
+   el color ES el dato -que parte del stack esta caliente-, mientras que en el
+   resto de la web seria decoracion. Por eso el sitio entero puede seguir
+   siendo papel, tinta y filetes sin que esto lo contradiga.
+
+   Ningun color va solo. Cada casilla encendida lleva ademas un simbolo
+   -triangulo de aviso o flecha- y la palabra del nivel escrita: una parte
+   real de los lectores no distingue el rojo del verde, y el mapa se mira
+   tambien impreso y en capturas en blanco y negro. Si se quita el color, la
+   casilla sigue diciendo lo mismo.
+
+   Las cuatro parejas de color son las de la tabla de la skill: riesgo alto en
+   rojo y medio en naranja, oportunidad alta en azul y media en verde. El
+   relleno macizo se reserva al nivel alto -"esto pide una decision"- y el
+   nivel medio se pinta con una barra al canto sobre papel, que se ve pero no
+   grita. Es la diferencia entre tres alarmas y veinticuatro. */
+
+:root {
+  --riesgo-alto:  #c22a1c;
+  --riesgo-medio: #a8500b;
+  --oport-alto:   #1a4f9c;
+  --oport-medio:  #1a6347;
+  /* Lo que se escribe encima de un relleno macizo. */
+  --sobre-senal:  #fff;
+}
+
+.mapa-banda {
+  margin: 1.5rem 0 0;
+  border-top: 3px solid var(--filete);
+  border-bottom: 3px solid var(--filete);
+  padding: .9rem 0 .7rem;
+}
+
+.mapa-banda-cabeza { margin-bottom: .8rem; }
+
+.mapa-banda-rotulo h2 {
+  margin: .1rem 0 .4rem;
+  font-family: var(--titular);
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+}
+
+.mapa-banda-cifras {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .9rem;
+  font-family: var(--ui);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--suave);
+}
+
+.mapa-banda-cifra strong { color: var(--tinta); font-size: 1.15em; }
+.mapa-banda-cifra--alta strong { color: var(--riesgo-alto); }
+.mapa-banda-cifra--vieja { color: var(--riesgo-medio); }
+
+/* --- El lienzo del mapa ------------------------------------------------------
+   Todo lo que hay dentro del SVG se pinta desde aqui, no con atributos en el
+   propio dibujo. Es lo que permite que el mapa entero cambie de paleta en modo
+   oscuro y se quede en blanco y negro al imprimir sin tocar ni una linea del
+   generador. Y es lo unico que se puede hacer: un <style> dentro del SVG seria
+   estilo en linea, que la politica de seguridad del sitio no permite. */
+
+/* El marco no es un marco: no lleva ni borde ni fondo. El dibujo se funde con
+   el papel por los cuatro cantos con una mascara de degradados, porque un
+   recuadro lo convierte en una figura pegada en la pagina y esto no es una
+   ilustracion del articulo, es la portada.
+
+   Tampoco se desplaza: se navega. Antes el lienzo llevaba overflow-x y en el
+   telefono se arrastraba la barra; ahora el encuadre lo mueve mapa.js tocando
+   el viewBox del SVG, que es mejor por dos motivos -el trazo se redibuja a la
+   escala nueva en vez de estirarse, y no hay una barra de desplazamiento
+   dentro de la pagina compitiendo con la de la pagina-.
+
+   Los degradados se recortan al 3,5 %: el nodo mas a la izquierda esta al 6 % y
+   el rotulo mas bajo al 94 %, asi que el fundido muerde papel y no contenido.
+   Si el navegador no entiende mask-image, no hay fundido y ya esta: bordes
+   rectos, que es como estaba antes de todo esto. */
+
+.mapa-marco { position: relative; }
+
+.mapa-lienzo {
+  margin: 0;
+  overflow: hidden;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 3.5%, #000 96.5%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 3.5%, #000 96.5%, transparent 100%);
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 3.5%, #000 96.5%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 3.5%, #000 96.5%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* El hueco manda sobre la proporcion del dibujo, y no al reves. Con height
+   auto, el SVG imponia su 2,7 a 1 y en un telefono la banda quedaba en 139 px
+   de alto: un pasillo por el que el mapa no se puede mirar. Ahora la caja tiene
+   la proporcion que le conviene a cada pantalla y mapa.js adapta el viewBox,
+   que es lo unico que puede hacerlo sin deformar el trazo. */
+.mapa-lienzo { aspect-ratio: 1400 / 520; min-height: 9rem; }
+
+.mapa-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  /* El arrastre horizontal lo recoge el mapa y el vertical lo deja pasar, para
+     que la pagina siga bajando con el dedo encima del dibujo. */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mapa-marco--agarrado .mapa-svg { cursor: grabbing; }
+
+/* --- Los mandos: los crea mapa.js, no la plantilla -------------------------
+   Un boton que sin JavaScript no hace nada es peor que no tener boton. Y son
+   la unica forma de ampliar para quien no tiene rueda. */
+
+.mapa-mandos {
+  position: absolute;
+  right: .5rem;
+  bottom: .5rem;
+  display: flex;
+  gap: .25rem;
+}
+
+.mapa-mandos button {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--filete-fino);
+  background: var(--papel);
+  color: var(--apagado);
+  font-family: var(--ui);
+  font-size: .9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mapa-mandos button:hover { color: var(--tinta); border-color: var(--tinta); }
+.mapa-mandos button:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+
+/* --- El "por que" al pasar por encima -------------------------------------- */
+
+.mapa-pista {
+  position: absolute;
+  z-index: 2;
+  max-width: 22rem;
+  padding: .45rem .6rem;
+  border: 1px solid var(--tinta);
+  background: var(--papel);
+  color: var(--texto);
+  font-family: var(--lectura-serif);
+  font-size: .82rem;
+  line-height: 1.35;
+  /* Ni recoge el raton ni lo bloquea: si lo hiciera, asomar por su borde
+     apagaria el nodo que la ha abierto y entraria en un parpadeo. */
+  pointer-events: none;
+  box-shadow: 3px 3px 0 var(--filete-fino);
+}
+
+.mapa-pista strong {
+  display: block;
+  font-family: var(--titular);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  color: var(--tinta);
+}
+
+/* --- La fecha, en la esquina ----------------------------------------------- */
+
+.mapa-fecha {
+  position: absolute;
+  left: 0;
+  bottom: .35rem;
+  margin: 0;
+  font-family: var(--ui);
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--suave);
+}
+
+/* Flota sobre el dibujo, encima del canto donde la mascara ya lo esta
+   apagando. Un halo de papel en vez de un recuadro: lo hace legible aunque le
+   pase una arista por detras, y no vuelve a meter un marco en el mapa. */
+.mapa-fecha,
+.mapa-mandos button {
+  text-shadow: 0 0 4px var(--papel), 0 0 8px var(--papel), 0 0 12px var(--papel);
+}
+
+.mapa-fecha-rotulo { opacity: .75; }
+.mapa-fecha time { color: var(--apagado); font-weight: 700; }
+.mapa-fecha-vieja { color: var(--riesgo-medio); }
+
+/* --- Las manchas de area ---------------------------------------------------- */
+
+.mapa-region { fill: var(--realce); opacity: .55; }
+
+.mapa-region-nombre {
+  fill: var(--suave);
+  font-family: var(--ui);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+/* --- Las conexiones ----------------------------------------------------------
+   En reposo son un trazo de fondo, del color de los filetes finos: estan para
+   que se vea la forma del stack, no para llamar la atencion. Las que tocan un
+   nodo encendido se tinen de su color y engordan, y eso es lo que dibuja el
+   contagio. */
+
+.mapa-arista {
+  stroke: var(--filete-fino);
+  stroke-width: 1.5;
+  opacity: .9;
+}
+
+.mapa-arista--tibia { stroke: var(--suave); opacity: .55; }
+.mapa-arista--viva { stroke-width: 2.4; opacity: .5; }
+.mapa-arista--viva.mapa-arista--riesgo { stroke: var(--riesgo-alto); }
+.mapa-arista--viva.mapa-arista--oportunidad { stroke: var(--oport-alto); }
+
+/* --- Los nodos ---------------------------------------------------------------
+   Cada nodo hereda su color de la clase del enlace y todo lo de dentro tira de
+   currentColor: asi el punto, el halo, las dos auras y la etiqueta del nivel
+   cambian a la vez y no hay forma de que uno se quede con el color de ayer. */
+
+.mapa-nodo-enlace { cursor: pointer; }
+.mapa-nodo-enlace--riesgo.mapa-nodo-enlace--alto { color: var(--riesgo-alto); }
+.mapa-nodo-enlace--riesgo.mapa-nodo-enlace--medio { color: var(--riesgo-medio); }
+.mapa-nodo-enlace--oportunidad.mapa-nodo-enlace--alto { color: var(--oport-alto); }
+.mapa-nodo-enlace--oportunidad.mapa-nodo-enlace--medio { color: var(--oport-medio); }
+.mapa-nodo-enlace--apagado { color: var(--suave); }
+
+/* El calor que se derrama. Dos circulos y no un degradado radial: un
+   <radialGradient> con currentColor resuelve el color contra el propio
+   degradado y no contra el nodo que lo usa, asi que los veinticuatro saldrian
+   del mismo color. Dos circulos transparentes hacen el mismo efecto y no
+   tienen esa trampa. */
+.mapa-halo { fill: currentColor; opacity: .1; }
+.mapa-aura { fill: currentColor; opacity: .18; }
+
+.mapa-punto {
+  fill: currentColor;
+  stroke: var(--tarjeta);
+  stroke-width: 2;
+}
+
+/* Un nodo en calma es un punto hueco: se ve que la pieza esta ahi y se ve que
+   no tiene nada que contar. Relleno solido diria que pasa algo. */
+.mapa-nodo-enlace--apagado .mapa-punto {
+  fill: var(--tarjeta);
+  stroke: var(--suave);
+  stroke-width: 1.5;
+}
+
+.mapa-glifo { fill: var(--sobre-senal); }
+
+.mapa-etiqueta,
+.mapa-etiqueta-nivel {
+  text-anchor: middle;
+  /* El rotulo se lee tambien cuando le pasa una linea por debajo: se dibuja
+     dos veces, primero engordado del color del papel y encima en su color. */
+  paint-order: stroke;
+  stroke: var(--tarjeta);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.mapa-etiqueta {
+  fill: var(--tinta);
+  font-family: var(--titular);
+  font-size: 19px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.mapa-etiqueta-nivel {
+  fill: currentColor;
+  font-family: var(--ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+.mapa-nodo-enlace--apagado .mapa-etiqueta { fill: var(--suave); font-weight: 400; }
+
+.mapa-nodo-enlace:hover .mapa-etiqueta { fill: var(--acento); }
+.mapa-nodo-enlace:hover .mapa-punto { stroke: var(--tinta); }
+
+.mapa-nodo-enlace:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.mapa-senal-icono { width: .8rem; height: .8rem; flex: none; }
+
+.mapa-banda-pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .4rem 1rem;
+  margin-top: .6rem;
+}
+
+.mapa-leyenda {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .9rem;
+  font-family: var(--ui);
+  font-size: .66rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--suave);
+}
+
+.mapa-leyenda-item { display: inline-flex; align-items: center; gap: .25rem; }
+.mapa-leyenda-item:first-child .mapa-leyenda-icono { color: var(--riesgo-alto); }
+.mapa-leyenda-item:nth-child(2) .mapa-leyenda-icono { color: var(--oport-alto); }
+
+.mapa-banda-mas {
+  margin: 0;
+  font-family: var(--ui);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+/* --- /mapa.html: la rejilla grande y el detalle de cada nodo --------------- */
+
+.mapa-pagina .mapa-marco { margin-top: 1.5rem; }
+
+.aviso-viejo {
+  margin: 1rem 0 0;
+  padding: .6rem .8rem;
+  border-left: 4px solid var(--riesgo-medio);
+  background: var(--realce);
+  font-size: .9rem;
+}
+
+.mapa-detalle { margin-top: 2.5rem; }
+
+.mapa-detalle-area {
+  margin: 0 0 .8rem;
+  padding-bottom: .3rem;
+  border-bottom: 3px solid var(--filete);
+  font-family: var(--titular);
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
+
+.mapa-nodo {
+  padding: .9rem 0 1rem;
+  border-bottom: 1px solid var(--filete-fino);
+}
+
+.mapa-nodo:focus-visible { outline: 2px solid var(--acento); outline-offset: 4px; }
+
+.mapa-nodo-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .4rem .8rem;
+}
+
+.mapa-nodo-cabeza h3 {
+  margin: 0;
+  font-family: var(--titular);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+}
+
+.mapa-nodo-estado {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .12rem .45rem;
+  font-family: var(--ui);
+  font-size: .66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.mapa-nodo-nivel { font-weight: 400; opacity: .8; }
+.mapa-nodo-estado--apagado { color: var(--suave); padding-left: 0; }
+.mapa-nodo-estado--medio.mapa-nodo-estado--riesgo { color: var(--riesgo-medio); border: 1px solid currentColor; }
+.mapa-nodo-estado--medio.mapa-nodo-estado--oportunidad { color: var(--oport-medio); border: 1px solid currentColor; }
+.mapa-nodo-estado--alto { color: var(--sobre-senal); }
+.mapa-nodo-estado--alto.mapa-nodo-estado--riesgo { background: var(--riesgo-alto); }
+.mapa-nodo-estado--alto.mapa-nodo-estado--oportunidad { background: var(--oport-alto); }
+
+.mapa-nodo-vacio { margin: .4rem 0 0; color: var(--suave); font-size: .9rem; }
+
+.mapa-nodo-nota {
+  margin: .4rem 0 0;
+  padding-left: .6rem;
+  border-left: 2px solid var(--filete-fino);
+  color: var(--suave);
+  font-size: .82rem;
+}
+
+.mapa-briefs { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: 1rem; }
+
+.mapa-brief { padding-left: .8rem; border-left: 3px solid var(--filete-fino); }
+.mapa-brief--alto { border-left-color: var(--tinta); }
+
+.mapa-brief-marcas {
+  margin: 0 0 .25rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem .6rem;
+  font-family: var(--ui);
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--suave);
+}
+
+.mapa-brief-marca { font-weight: 700; }
+.mapa-brief-marca--riesgo { color: var(--riesgo-alto); }
+.mapa-brief-marca--oportunidad { color: var(--oport-alto); }
+.mapa-brief-marca--duda { font-weight: 400; border: 1px solid var(--filete-fino); padding: 0 .3rem; }
+
+.mapa-brief-titular {
+  margin: 0 0 .3rem;
+  font-family: var(--cuerpo);
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.mapa-brief-trigger { margin: 0 0 .3rem; font-family: var(--lectura-serif); color: var(--texto); }
+
+.mapa-brief-porque { margin: 0 0 .3rem; font-family: var(--lectura-serif); color: var(--texto); }
+
+.mapa-brief-etiqueta {
+  font-family: var(--ui);
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--acento);
+}
+
+.mapa-brief-fuente,
+.mapa-brief-medios { margin: 0; font-family: var(--ui); font-size: .72rem; color: var(--suave); }
+
+/* El panel lateral. Entra desde la derecha y ocupa toda la altura: es el
+   gesto de "abrir la ficha" sin perder el mapa, que sigue detras. */
+.mapa-panel {
+  margin: 0 0 0 auto;
+  max-width: 34rem;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border: none;
+  border-left: 3px solid var(--filete);
+  background: var(--papel);
+  color: var(--tinta);
+  padding: 1.2rem var(--gutter) 2rem;
+  overflow-y: auto;
+}
+
+.mapa-panel::backdrop { background: rgba(13, 13, 13, .55); }
+
+.mapa-panel-cerrar { display: flex; justify-content: flex-end; }
+
+.mapa-panel-cerrar button {
+  font-family: var(--ui);
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  padding: .3rem .7rem;
+  border: 1px solid var(--filete);
+  background: none;
+  color: var(--tinta);
+  cursor: pointer;
+}
+
+.mapa-panel-cuerpo .mapa-nodo { border-bottom: none; }
+
+/* En el telefono la banda se aprieta, y solo la banda: en /mapa.html la
+   rejilla es el contenido de la pagina y puede ocupar lo que necesite.
+
+   Sin esto la franja medi'a 994 px en una pantalla de 812 -mas de un movil
+   entero- y la primera noticia arrancaba en el pixel 1190. Eso no es una
+   banda, es una portada distinta con las noticias debajo, que es exactamente
+   lo que este bloque no puede llegar a ser.
+
+   Lo que se cae es la palabra del nivel escrita. No se pierde: sigue entera en
+   el aria-label de cada casilla -que es quien la lee de verdad para quien la
+   necesita- y siguen en pie las dos senales visuales que no son color, el
+   simbolo de riesgo u oportunidad y el relleno macizo del nivel alto frente a
+   la barra al canto del medio. */
+@media (max-width: 45.99rem) {
+  .mapa-banda .mapa-senal-icono { width: .68rem; height: .68rem; }
+  .mapa-banda { padding: .7rem 0 .55rem; }
+
+  /* Casi cuadrado en el telefono: el mapa se navega arrastrando, asi que lo
+     que hace falta no es verlo entero -no cabe legible de ninguna manera- sino
+     tener sitio para moverse por el. */
+  .mapa-banda .mapa-lienzo { aspect-ratio: 4 / 3; }
+
+  /* Hueco para el aviso de arrastrar, que va encima del dibujo. */
+  .mapa-banda .mapa-marco { margin-top: 1.1rem; }
+  .mapa-banda-cabeza { margin-bottom: .5rem; }
+  .mapa-banda-pie { margin-top: .45rem; }
+
+  /* El rotulo sobra en movil: el titular de debajo ya dice de que va, y ahi
+     arriba solo estaba gastando la unica altura que no sobra. */
+  .mapa-banda .sello { display: none; }
+  .mapa-banda-rotulo h2 { font-size: 1.3rem; }
+
+  /* La leyenda explica tres cosas; en movil se queda con la que no se deduce
+     mirando: que hay dos senales distintas. */
+  .mapa-leyenda-item:last-child { display: none; }
+
+  /* En el telefono el mapa arranca acercado -entero serian rotulos de cinco
+     pixeles- y hay que decir que se puede mover, porque nada en el dibujo lo
+     insinua. En escritorio cabe entero y el aviso seria mentira. */
+  .mapa-marco::after {
+    content: "Arrastra el mapa para moverte";
+    position: absolute;
+    left: 0;
+    top: -1.1rem;
+    font-family: var(--ui);
+    font-size: .6rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--suave);
+  }
+}
+
+@media (min-width: 62rem) {
+
+  /* El dibujo es apaisado, asi que cuanto mas ancho se le da mas alto se pone,
+     y en la portada eso se lo come todo: a 1400 px de contenedor la banda pasa
+     de los 650 y la primera noticia se va debajo del pliegue. Se le pone tope y
+     se centra. En /mapa.html no lo lleva -alli el mapa ES la pagina y puede
+     ocupar lo que quiera-. */
+  .mapa-banda .mapa-marco { max-width: 62rem; margin-left: auto; margin-right: auto; }
+  .mapa-banda-cabeza { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  .mapa-banda-cifras { justify-content: flex-end; text-align: right; }
+}
+
 /* --- Pie -------------------------------------------------------------------------------- */
 
 .pie {
@@ -1813,6 +2372,21 @@ h1 {
   }
   .alta-temas summary,
   .alta-formulario .alta-tema { color: #4a4438; }
+
+  /* Los cuatro colores del mapa, subidos de luminosidad. Los de papel estan
+     calculados para leerse sobre un fondo hueso y sobre una pagina oscura se
+     hunden: el rojo se convierte en marron y el azul en una mancha. Y con
+     ellos cambia lo que va encima de un relleno macizo, que en modo oscuro
+     es la propia tinta de la pagina y no el blanco. */
+  :root {
+    --riesgo-alto:  #e8503a;
+    --riesgo-medio: #dd8a2c;
+    --oport-alto:   #5f9dee;
+    --oport-medio:  #45b98a;
+    --sobre-senal:  #16140f;
+  }
+
+  .mapa-panel::backdrop { background: rgba(0, 0, 0, .7); }
 }
 
 /* --- Impresion --------------------------------------------------------------
@@ -1881,4 +2455,36 @@ h1 {
   .bit, .cuadro-tarjeta, .fuentes-bit {
     break-inside: avoid;
   }
+
+  /* El mapa se imprime -es justo lo que un director se lleva a una reunion-,
+     y ademas aguanta bien: el tamano del punto y el simbolo de dentro no
+     dependen del color, asi que en blanco y negro se sigue viendo donde
+     mirar. Lo que se quita son los halos, que en papel son manchas grises, y
+     el desplazamiento horizontal, que en una hoja no existe y cortaria el
+     dibujo por la mitad. */
+  /* Sin mascara: en papel el fundido de los cantos es una mancha gris, y el
+     dibujo va a salir recortado por el margen de la hoja de todas formas. Y
+     sin mandos ni pista, que son gestos y no contenido. */
+  .mapa-lienzo { overflow: visible; -webkit-mask-image: none; mask-image: none; }
+  .mapa-mandos, .mapa-pista { display: none; }
+  .mapa-halo, .mapa-aura, .mapa-region { display: none; }
+  .mapa-punto { fill: #000; stroke: #fff; }
+  .mapa-nodo-enlace--apagado .mapa-punto { fill: #fff; stroke: #000; }
+  .mapa-glifo { fill: #fff; }
+  .mapa-arista { stroke: #000; opacity: .25; }
+  .mapa-arista--tibia { stroke: #000; opacity: .45; }
+  .mapa-arista--viva { stroke: #000; opacity: .85; }
+  .mapa-etiqueta, .mapa-etiqueta-nivel { fill: #000; stroke: #fff; }
+  .mapa-region-nombre { fill: #000; }
+
+  /* El panel lateral no existe en papel: o esta vacio o lleva una copia de
+     algo que ya sale mas abajo. */
+  .mapa-nodo-estado--alto {
+    background: none !important;
+    color: #000 !important;
+    border: 1px solid #000;
+  }
+  .mapa-panel, .mapa-banda-pie, .mapa-banda-mas { display: none; }
+
+  .mapa-marco, .mapa-nodo { break-inside: avoid; }
 }

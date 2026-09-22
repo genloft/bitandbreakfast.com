@@ -159,3 +159,29 @@ function web_icono_ui(string $nombre, string $clase = 'icono'): string
          . $trazos
          . '</svg>';
 }
+
+/**
+ * El simbolo de una senal del mapa del stack: riesgo u oportunidad.
+ *
+ * Vive aqui y no dentro de la plantilla del mapa porque el color no puede ir
+ * solo. Una parte real de los directivos no distingue el rojo del verde, y el
+ * mapa se mira tambien en capturas en blanco y negro y en impresiones: sin
+ * una forma distinta, un mapa entero de casillas encendidas no dice nada. El
+ * triangulo apunta hacia arriba y la flecha tambien, pero se distinguen por
+ * la silueta incluso a doce pixeles, que es el tamano al que se ven en la
+ * banda de la portada.
+ */
+function web_icono_senal(string $senal, string $clase = 'mapa-senal-icono'): string
+{
+    $trazos = $senal === 'riesgo'
+        // Un triangulo de aviso con su admiracion dentro.
+        ? '<path d="M12 4.5 3.2 19.5h17.6z"/><path d="M12 10v4"/><path d="M12 16.8v.1"/>'
+        // Una flecha que sube, sin caja: lo que se abre, no lo que avisa.
+        : '<path d="M12 19.5v-15"/><path d="M5.5 11 12 4.5 18.5 11"/>';
+
+    return '<svg class="' . htmlspecialchars($clase, ENT_QUOTES) . '" viewBox="0 0 24 24" '
+         . 'fill="none" stroke="currentColor" stroke-width="2" '
+         . 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+         . $trazos
+         . '</svg>';
+}

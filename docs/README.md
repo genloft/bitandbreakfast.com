@@ -34,7 +34,9 @@ instalar.php  instalador web; se borra solo al terminar
 config/       configuración (config.php no está en el repositorio)
 lib/          utilidades: PDO, feeds, robots.txt, texto, URLs, agrupación,
               puntuación, reglas del bit, sesión del panel, instalador,
-              migraciones, cliente SMTP y lista de suscriptores
+              migraciones, cliente SMTP, lista de suscriptores, y el mapa del
+              stack: taxonomía (stack.php), motor (heatmap.php) y dibujo
+              (stack_grafo.php)
 cron/         tareas programadas; tareas.php es el despachador único
               (ingesta, procesar, auto, publicar, enviar, mantenimiento)
 api/          endpoints públicos: alta, confirmación, baja y redirección contada
@@ -69,6 +71,7 @@ php pruebas/panel.php
 php pruebas/web.php
 php pruebas/correo.php
 php pruebas/auto.php
+php pruebas/heatmap.php
 php pruebas/comprobar_feeds.php
 ```
 
@@ -95,6 +98,7 @@ un MariaDB 10.6 para la de humo.
 | 4 | Generador estático, archivo, RSS | completada |
 | 5 | Correo: buzón propio, alta con doble confirmación, baja y envío | completada |
 | 6 | Fichas de proveedor, buscador, votos, redacción asistida | fichas, buscador, clics y votos hechos |
+| 7 | Mapa de calor del stack: taxonomía, clasificación, decay y publicación | completada |
 
 ## Decisiones que conviene no olvidar
 
@@ -182,6 +186,107 @@ un MariaDB 10.6 para la de humo.
   dentro de `publico/` y a partir de ahí Apache los sirve sin tocar PHP ni la
   base de datos. Es lo único que aguanta una portada compartida de
   golpe, y en un alojamiento compartido no hay plan B.
+- **El mapa del stack enciende casillas, no las inventa.** El río contesta
+  «qué ha pasado hoy»; el mapa contesta «a qué parte de mi sistema le ha
+  pasado», que es la pregunta que se hace quien decide. Veinticuatro nodos en
+  seis áreas (`lib/stack.php`), y cada noticia cae en los que **menciona**:
+  la regla es una lista de alias, publicada entera en `/data/taxonomy.json`,
+  no el criterio de un modelo. Se eligió así sabiendo que un LLM clasificaría
+  mejor los casos raros. La razón es que una casilla roja tiene que poder
+  defenderse: cuando el director de sistemas de una cadena pregunte por qué su
+  área aparece en rojo, la respuesta es «porque la noticia dice "channel
+  manager"», y eso se comprueba abriendo el enlace. «Porque el modelo lo
+  decidió» no se comprueba, y el día que falle una vez se lleva por delante la
+  credibilidad de las veinticuatro.
+
+  Por eso el mapa tampoco redacta. La skill que lo define describe un
+  *executive brief* con impacto de negocio y acción recomendada, escrito por
+  un modelo; aquí cada casilla enseña lo que el bit ya dice con sus propias
+  palabras y enlaza al bit entero. Un impacto de negocio rellenado por una
+  plantilla es exactamente el tipo de frase que nadie discute y nadie usa.
+- **Cuatro reglas sostienen el mapa, y las cuatro son de resta.** El estado de
+  un nodo es el **máximo** de sus noticias, nunca la suma —cinco noticias
+  pequeñas no son una emergencia—; solo entra lo que puntúa 3 o más; todo
+  caduca solo, con media vida por tipo (una brecha envejece en una semana, una
+  norma en un mes); y como mucho **tres** nodos pueden estar en rojo a la vez.
+  Ninguna añade información: todas quitan. Es deliberado. Un mapa con media
+  docena de alarmas enseña a ignorarlo, y ese es el fallo que mata a este tipo
+  de herramienta en el segundo mes, no la falta de datos.
+
+- **El mapa se congela por semanas, y lo dice en una esquina.** El río publica
+  una noticia en cuanto está escrita —esa es la promesa del sitio— pero el mapa
+  es un estado, y un estado que se mueve todos los días no se puede mirar: quien
+  lo vio el martes y vuelve el jueves no sabe si lo que ha cambiado es el sector
+  o el decay. El corte es el lunes a las 00:00 UTC (`heatmap_semana()`), y lo
+  publicado de lunes a domingo entra en el mapa el lunes siguiente, todo de
+  golpe.
+
+  Es la única incoherencia que este diseño acepta a propósito —el río puede
+  llevar una noticia que el mapa todavía no refleja— y por eso el dibujo lleva
+  la fecha escrita en una esquina. El mapa se comparte en capturas, y una
+  captura sin fecha es exactamente la forma de que alguien enseñe en una
+  reunión el estado de hace un mes creyendo que es el de hoy.
+
+  La semana entra en `publicar_firma()`, no el día: el mapa envejece solo y sin
+  eso una racha tranquila lo dejaría colgado diciendo algo que ya no es verdad.
+  Con la semana, la web se regenera cuando cambia algo, no cada mañana para
+  dejarlo igual.
+- **El mapa es un dibujo, no una tabla.** Un SVG generado a mano: los
+  veinticuatro nodos colocados donde están en un hotel —la demanda entra por
+  Distribución a la izquierda, cruza Operaciones con el PMS de eje, sigue al
+  huésped y acaba liquidándose en Back-Office, con Infraestructura de cimiento
+  y Datos por encima— y unidos por las cuarenta integraciones que existen de
+  verdad. La primera versión fue una retícula de casillas y se descartó: cabía
+  mejor y no decía nada que no dijera una lista.
+
+  Las coordenadas y las conexiones viven en `lib/stack_grafo.php`, y no en la
+  plantilla, porque un nodo sin coordenada **no da error**: desaparece del
+  dibujo en silencio y nadie lo nota hasta que alguien pregunta por qué su área
+  no sale nunca. En `lib/` se puede probar que los veinticuatro están puestos,
+  que ninguna conexión apunta a un nodo que no existe, que ninguno se queda
+  suelto y que nada se sale del lienzo. En una plantilla, no.
+
+  Nada de librerías de grafos: la política de seguridad del sitio no deja
+  cargar un CDN, y un layout automático coloca los nodos donde le conviene al
+  algoritmo. Las coordenadas a mano son más trabajo una vez y dicen algo cada
+  vez.
+- **El color solo lo gasta lo que pide una decisión.** El calor se lee en tres
+  capas que no dependen del color: el tamaño del punto, el halo que lo rodea y
+  el símbolo de dentro —triángulo para riesgo, flecha para oportunidad—. Solo
+  se tiñen las conexiones que salen de un nodo de nivel alto; teñir todo lo que
+  tocara cualquier nodo encendido pintaba veintinueve de las cuarenta aristas,
+  y un mapa en el que casi todo es rojo no avisa de nada. Eso es lo que hace
+  que el dibujo conteste la pregunta cara: no «los pagos están en rojo», sino
+  «los pagos están en rojo y de ahí salen líneas al motor de reservas, al ERP
+  y al PMS».
+- **El mapa no tiene marco y no se desplaza: se navega.** Se funde con el papel
+  por los cuatro cantos con una máscara de degradados, porque un recuadro lo
+  convierte en una figura pegada en la página y esto no es una ilustración del
+  artículo, es la portada. Y se mueve arrastrando con el ratón y se amplía con
+  la rueda, moviendo el `viewBox` del SVG: el trazo se redibuja a la escala
+  nueva en vez de estirarse, y no hay una barra de desplazamiento dentro de la
+  página compitiendo con la de la página.
+
+  **El hueco manda sobre la proporción del dibujo, no al revés.** Con la
+  proporción del lienzo (2,7:1), en un teléfono la banda quedaba en 139 px de
+  alto: un pasillo por el que no se puede mirar un mapa. Ahora la caja es casi
+  cuadrada en pantalla estrecha y `mapa.js` adapta el `viewBox` a ella. Medido:
+  0,57 pantallas en un portátil y 0,52 en un móvil, con el primer titular
+  asomando en los dos.
+
+  La rueda amplía directamente en `/mapa.html` —allí el mapa es la página— y en
+  la banda de la portada solo después de pulsar el dibujo. Quien está bajando a
+  leer noticias y pasa el ratón por encima espera que la página siga bajando, y
+  un mapa que se come la rueda a la primera es un mapa que atrapa.
+- **Al pasar por un nodo sale su «por qué importa».** Es lo único que este sitio
+  sabe que no sabe ya la fuente, así que es lo que merece salir al pasar por
+  encima; cuando el bit no lo lleva —el modo automático lo deja en blanco a
+  propósito— sale su disparador, que son las palabras del propio bit. Va en tres
+  sitios y no es redundancia: en un `<title>` del SVG, que es el tooltip que
+  enseña el navegador cuando no hay JavaScript; en `data-porque`, de donde lo
+  saca `mapa.js` para pintar uno legible —y entonces retira el `<title>`, porque
+  si no saldrían los dos—; y dentro del `aria-label`, que es lo único que oye
+  quien no ve el dibujo.
 - **Todo en español, y diciendo cuándo es traducido.** Durante meses la regla
   fue no traducir: entraba solo lo que alguien contara en español. La razón era
   buena —traducir a máquina es poner en boca de un medio algo que no ha
