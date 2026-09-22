@@ -625,12 +625,53 @@ comprobar(
         > grafo_radio(['score' => 4, 'signal' => 'riesgo', 'level' => 'alto'])
 );
 
-// La curva entre dos puntos empieza y acaba donde tiene que acabar: si el
-// redondeo se comiera un extremo, la linea saldria despegada del nodo.
+/**
+ * Cuanto se aparta la curva de la recta entre sus dos extremos.
+ *
+ * Se mide en vez de comparar la cadena entera contra un literal, que es como
+ * estaba y estaba mal: ataba la prueba a la formula, asi que al cambiar la
+ * curvatura fallaba sin que nada se hubiera roto. Lo que importa de una curva
+ * aqui son tres cosas -de donde sale, adonde llega y cuanto se separa-, y eso
+ * es lo que se comprueba.
+ */
+function desvio_de(array $a, array $b): float
+{
+    if (!preg_match('/Q ([\d.-]+) ([\d.-]+)/', grafo_curva($a, $b), $trozos)) {
+        return -1.0;
+    }
+
+    $medio_x = $a['x'] + ($b['x'] - $a['x']) / 2;
+    $medio_y = $a['y'] + ($b['y'] - $a['y']) / 2;
+
+    return sqrt(
+        (((float) $trozos[1]) - $medio_x) ** 2 + (((float) $trozos[2]) - $medio_y) ** 2
+    );
+}
+
+// Si el redondeo se comiera un extremo, la linea saldria despegada del nodo.
+$curva = grafo_curva(['x' => 100, 'y' => 100], ['x' => 200, 'y' => 200]);
+
 comprobar(
     'la curva sale de un nodo y entra en el otro',
-    'M 100 100 Q 137.5 162.5 200 200',
-    grafo_curva(['x' => 100, 'y' => 100], ['x' => 200, 'y' => 200])
+    true,
+    str_starts_with($curva, 'M 100 100 Q') && str_ends_with($curva, ' 200 200')
+);
+
+// Un tramo corto se curva poco -un catorceavo de su largo- y uno largo deja de
+// curvarse mas: sin ese tope, las aristas largas del PMS salian disparadas por
+// el centro del dibujo y lo llenaban de arcos.
+comprobar_rango(
+    'la curvatura de un tramo corto es proporcional a su largo',
+    4.9,
+    5.1,
+    desvio_de(['x' => 0, 'y' => 0], ['x' => 70, 'y' => 0])
+);
+
+comprobar_rango(
+    'y la de uno largo se queda en el tope',
+    19.9,
+    20.1,
+    desvio_de(['x' => 0, 'y' => 0], ['x' => 1000, 'y' => 0])
 );
 
 resumen_pruebas('Mapa del stack');
