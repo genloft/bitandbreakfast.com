@@ -113,6 +113,7 @@ $enlace_activo = $enlace_activo ?? '';
 
     <nav class="menu" aria-label="Principal">
       <a href="<?= web_e($base) ?>/"<?= $enlace_activo === 'portada' ? ' aria-current="page"' : '' ?>>Portada</a>
+      <a href="<?= web_e($base) ?>/mapa.html"<?= $enlace_activo === 'mapa' ? ' aria-current="page"' : '' ?>>Mapa</a>
       <a href="<?= web_e($base) ?>/temas.html"<?= $enlace_activo === 'temas' ? ' aria-current="page"' : '' ?>>Temas</a>
       <a href="<?= web_e($base) ?>/medios.html"<?= $enlace_activo === 'medios' ? ' aria-current="page"' : '' ?>>Medios</a>
       <a href="<?= web_e($base) ?>/archivo.html"<?= $enlace_activo === 'archivo' ? ' aria-current="page"' : '' ?>>Archivo</a>

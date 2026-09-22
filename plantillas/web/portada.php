@@ -43,6 +43,7 @@ $mas_votados = $mas_votados ?? [];
 $tendencias = $tendencias ?? [];
 $secreto    = $secreto ?? '';
 $alta_abierta = $alta_abierta ?? false;
+$mapa       = $mapa ?? ['nodes' => []];
 
 // Los dos destacados de arriba no son un menu, son un titular: una cifra
 // grande y una linea de que va. La de Tendencias sale sola del mismo dato
@@ -120,6 +121,17 @@ require_once __DIR__ . '/iconos.php';
 <?php require __DIR__ . '/cabecera.php'; ?>
 
 <main id="contenido">
+
+  <?php // El mapa del stack va aqui y no mas abajo por una razon y su
+        // contraria a la vez: tiene que verse lo primero -es lo unico de esta
+        // portada que dice algo del conjunto y no de una noticia suelta- y no
+        // puede quedarse con la pagina. Se resuelve por densidad: veinticuatro
+        // casillas en una franja de dos dedos. Quien viene a leer titulares
+        // los tiene a un golpe de rueda, y ha visto de paso que esta semana lo
+        // que esta en rojo son los pagos. Si no hay ni un nodo encendido, la
+        // banda no se pinta sola: abrir el sitio con una rejilla apagada es
+        // peor que abrirlo sin mapa. ?>
+  <?php require __DIR__ . '/mapa_banda.php'; ?>
 
   <article class="edicion">
 
