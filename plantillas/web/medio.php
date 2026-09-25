@@ -70,6 +70,10 @@ $url = web_url_medio($base, (string) $medio['slug']);
 
     <p class="datos">
       <?= (int) $medio['bits'] ?> bit<?= (int) $medio['bits'] === 1 ? '' : 's' ?> publicado<?= (int) $medio['bits'] === 1 ? '' : 's' ?>
+      <?php if (!empty($medio['alta'])): ?>
+        <span class="punto">·</span>
+        en el radar desde el <time datetime="<?= web_e((string) $medio['alta']) ?>"><?= web_e(web_fecha_larga((string) $medio['alta'])) ?></time>
+      <?php endif; ?>
       <?php if (!empty($medio['url'])): ?>
         <span class="punto">·</span>
         <a href="<?= web_e($medio['url']) ?>" rel="nofollow noopener">ir al medio</a>

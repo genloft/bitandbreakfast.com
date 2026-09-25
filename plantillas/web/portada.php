@@ -165,6 +165,12 @@ require_once __DIR__ . '/iconos.php';
 
   </article>
 
+  <?php // Tres cifras del sector, para el que ha terminado de leer. Van aqui
+        // abajo y no arriba: el mapa ya ocupa la cabecera, y dos bloques de
+        // contexto por delante del primer titular convierten un agregador de
+        // noticias en un cuadro de mandos con noticias al fondo. ?>
+  <?php require __DIR__ . '/cifras_tira.php'; ?>
+
   <?php // El voto pesa mas que el clic -es la opinion de quien ya ha leido
         // el bit entero, no solo el titular-, por eso va primero. ?>
   <?php require __DIR__ . '/mas_votado.php'; ?>

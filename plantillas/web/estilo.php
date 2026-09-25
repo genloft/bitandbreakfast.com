@@ -1183,6 +1183,12 @@ h1 {
 .rejilla-nombre { font-family: var(--titular); font-size: 1.25rem; font-weight: 700; line-height: 1.1; text-transform: uppercase; }
 .rejilla-cuenta { margin-top: auto; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--suave); }
 
+/* Desde cuando esta ese medio en el radar. Va debajo del recuento y mas
+   apagada: no es lo que se busca al entrar, pero es lo que contesta "¿esto
+   lleva mucho leyendo?", que es la pregunta de quien no se fia todavia. */
+.rejilla-alta { font-size: .6rem; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); opacity: .8; }
+.rejilla-fichas a:hover .rejilla-alta { color: var(--papel); }
+
 /* --- Archivo -------------------------------------------------------------------- */
 
 .ano { margin-top: 2rem; }
@@ -2222,6 +2228,109 @@ h1 {
   .mapa-banda .mapa-marco { max-width: 62rem; margin-left: auto; margin-right: auto; }
   .mapa-banda-cabeza { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
   .mapa-banda-cifras { justify-content: flex-end; text-align: right; }
+}
+
+/* --- La banda plegada y su boton ----------------------------------------------
+   Sin animacion a proposito: lo que se pliega son cuatrocientos pixeles de
+   dibujo, y una transicion de altura sobre un SVG que ademas se esta
+   reencuadrando solo es un parpadeo caro. Aparece, se recoge, y el boton
+   queda donde estaba. */
+
+.mapa-banda--plegada .mapa-marco,
+.mapa-banda--plegada .mapa-banda-pie { display: none; }
+
+.mapa-banda--plegada .mapa-banda-cabeza { margin-bottom: .4rem; }
+
+.mapa-banda-plegar {
+  display: block;
+  width: 100%;
+  margin-top: .5rem;
+  padding: .4rem;
+  border: 1px solid var(--filete-fino);
+  background: none;
+  color: var(--apagado);
+  font-family: var(--ui);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+
+.mapa-banda-plegar:hover { color: var(--tinta); border-color: var(--tinta); }
+.mapa-banda-plegar:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+/* Plegada, el boton es lo unico que queda debajo del resumen: se marca mas,
+   porque es la unica forma de recuperar el mapa. */
+.mapa-banda--plegada .mapa-banda-plegar { border-color: var(--filete); color: var(--tinta); }
+
+/* --- Las cifras del sector, al pie del rio --------------------------------- */
+
+.cifras-tira {
+  margin: 2.5rem 0 0;
+  border-top: 3px solid var(--filete);
+  padding-top: .9rem;
+}
+
+.cifras-tira-cabeza h2 {
+  margin: .1rem 0 .9rem;
+  font-family: var(--titular);
+  font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cifras-tira-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--filete);
+  border-left: 1px solid var(--filete);
+}
+
+.cifras-tira-lista li {
+  border-right: 1px solid var(--filete);
+  border-bottom: 1px solid var(--filete);
+  padding: .8rem .9rem 1rem;
+}
+
+.cifras-tira-valor {
+  margin: 0;
+  font-family: var(--titular);
+  font-size: clamp(2.2rem, 9vw, 3.4rem);
+  line-height: .9;
+  letter-spacing: -.02em;
+  color: var(--tinta);
+}
+
+.cifras-tira-rotulo {
+  margin: .35rem 0 0;
+  font-family: var(--cuerpo);
+  font-size: .95rem;
+  line-height: 1.25;
+  color: var(--texto);
+}
+
+.cifras-tira-tema {
+  margin: .4rem 0 0;
+  font-family: var(--ui);
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--suave);
+}
+
+.cifras-tira-mas {
+  margin: .7rem 0 0;
+  font-family: var(--ui);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+@media (min-width: 46rem) {
+  .cifras-tira-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* --- Pie -------------------------------------------------------------------------------- */

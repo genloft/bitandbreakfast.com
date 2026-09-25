@@ -366,6 +366,60 @@ function cifras_grupos(): array
 }
 
 /**
+ * Las tres cifras que salen en la portada.
+ *
+ * La pagina de Cifras tiene trece grupos y treinta y tantos numeros, y eso es
+ * una pagina de consulta: nadie la abre desde la portada porque nadie sabe que
+ * hay dentro. Tres numeros en la portada no sustituyen a esa pagina, la
+ * anuncian -y de paso le dan el orden de magnitud del sector a quien llega por
+ * un enlace suelto y no vuelve-.
+ *
+ * Se eligen por el nombre del grupo y no por su posicion, para que reordenar
+ * la pagina de Cifras no cambie en silencio lo que sale en portada. Y el valor
+ * no se copia: se lee del mismo sitio que lo publica, asi que no puede
+ * quedarse atras cuando alguien actualice el dato.
+ *
+ * Los tres estan elegidos a proposito: uno dice de que tamano es el sector,
+ * otro como le fue el ano, y el tercero por que existe este sitio.
+ *
+ * @return array<int, array{valor: string, rotulo: string, tema: string}>
+ */
+function cifras_destacadas(): array
+{
+    $quiero = [
+        'Contribución económica del turismo' => 'del PIB español',
+        'Rendimiento hotelero'               => 'de ocupación media',
+        'Ciberseguridad hotelera'            => 'brechas notificadas a la AEPD',
+    ];
+
+    $salida = [];
+
+    foreach (cifras_grupos() as $grupo) {
+        $rotulo = $quiero[$grupo['tema']] ?? null;
+
+        if ($rotulo === null) {
+            continue;
+        }
+
+        foreach ($grupo['cifras'] as $cifra) {
+            if (($cifra['ambito'] ?? '') !== 'España') {
+                continue;
+            }
+
+            $salida[] = [
+                'valor'  => (string) $cifra['valor'],
+                'rotulo' => $rotulo,
+                'tema'   => (string) $grupo['tema'],
+            ];
+
+            break;
+        }
+    }
+
+    return $salida;
+}
+
+/**
  * Los grupos del cuadro de mandos que tocan a un tema concreto.
  */
 function cifras_por_tema(string $categoria): array

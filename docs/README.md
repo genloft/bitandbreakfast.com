@@ -140,6 +140,20 @@ un MariaDB 10.6 para la de humo.
   ya pasó. Mantenerse con las visitas es más lento y más tosco, pero la
   diferencia entre un radar lento y un radar muerto no es de grado. En cuanto
   el cron vuelve a latir, esto se apaga solo y el sitio vuelve a ser estático.
+- **Cuándo entró cada fuente en el radar, en su ficha.** La fecha de alta
+  estaba en la base y solo se veía en el panel privado. Contesta la pregunta de
+  quien todavía no se fía —«¿esto lleva mucho leyendo?»— y es gratis: la columna
+  ya existía. Las fuentes anteriores a esa columna se quedan en blanco: no se
+  sabe de verdad cuándo entraron, y una fecha inventada en un sitio que presume
+  de citar sus fuentes sería la peor de las mentiras pequeñas.
+- **Tres cifras del sector al pie del río.** Cifras es de las mejores páginas
+  del sitio y era la menos visitada, porque su única puerta era un icono en la
+  cabecera: nadie pulsa el icono de una página que no sabe que existe. Van
+  **después** de las noticias, no antes —arriba ya está el mapa, y dos bloques
+  de contexto por delante del primer titular convierten un agregador en un
+  cuadro de mandos con noticias al fondo— y los valores no se copian: se leen
+  del mismo sitio que pinta `/estadisticas.html`, así que no pueden quedarse
+  atrás cuando alguien actualice el dato.
 - **`/salud.php` cuenta lo que no se ve.** Cuándo corrió el cron, cuántos
   items esperan en la cola, cuántas fuentes fallaron hoy y qué versión de
   criterios lleva aplicada lo publicado. Existe porque el sitio se mantiene
@@ -250,6 +264,46 @@ un MariaDB 10.6 para la de humo.
   cargar un CDN, y un layout automático coloca los nodos donde le conviene al
   algoritmo. Las coordenadas a mano son más trabajo una vez y dicen algo cada
   vez.
+- **La señal se lee del texto, porque es lo único que varía.** La primera
+  versión puntuaba con `bits.tipo` y `bits.madurez`, y estuvo mal desde el
+  primer día por una razón que no se ve leyendo el esquema: esos campos solo
+  los rellena una persona en el panel, y este sitio publica en automático. En
+  producción los cincuenta y tres bits vivos llevaban los tres el valor por
+  defecto —producto, anuncio, un solo medio— así que **los dieciséis nodos
+  salían idénticos**: mismo color, mismo tamaño, misma puntuación. Un mapa de
+  calor sin calor, y ninguna prueba lo detectó porque todas usaban bits
+  inventados con el tipo puesto a mano.
+
+  Ahora la señal sale de un léxico sobre el texto (`lib/stack_lexico.php`), con
+  la misma técnica que clasifica los nodos. Dos niveles, y la diferencia es lo
+  que lo hace funcionar: los **fuertes** —«brecha de datos», «fin de soporte»,
+  «entra en vigor»— tiñen solos; los **débiles** —«vulnerabilidad», «amenaza»,
+  «riesgo»— necesitan dos, o uno más una temática que ya sea de riesgo. Sin esa
+  distinción, «una vulnerabilidad que los destinos tardan en reconocer» pintaba
+  de rojo un análisis de demanda.
+- **Un alias débil no enciende un nodo por su cuenta.** «Conectividad aérea»
+  mandaba un destino turístico al channel manager y «compras» aparecía en
+  cualquier noticia que hablara de comprar algo. Los alias que el castellano usa
+  también para otra cosa (`stack_alias_debiles()`) siguen sumando confianza,
+  pero no abren la puerta: hace falta un alias que identifique la pieza, o dos
+  que la rocen.
+
+  Por lo mismo desapareció el respaldo de `ia-aplicada` a «Mensajería e IA».
+  Mandaba al nodo de los chatbots once noticias de cincuenta y tres —ferias,
+  columnas de opinión, notas sobre la adopción de la IA—, ninguna sobre una
+  pieza del stack. Un respaldo que acierta una de cada tres no es una red de
+  seguridad, es un vertedero con nombre de nodo.
+- **El tamaño del nodo lleva el volumen, y por eso el mapa no se queda plano.**
+  La urgencia manda —cada puntuación tiene su franja: 10 a 14, 15 a 19, 20 a
+  24— y el volumen solo mueve dentro de la suya. Así una vulnerabilidad que hay
+  que parchear esta semana nunca sale más pequeña que un montón de notas de
+  prensa, por muchas que sean. Pero en una semana tranquila casi todo empata en
+  puntuación, y ahí el volumen es lo único que sigue distinguiendo las doce
+  noticias que tocaron el PMS de la única que tocó Compras.
+- **A igual puntuación, el nodo se pinta del color del problema.** Un nodo con
+  un aviso de cumplimiento y un anuncio de producto empatados se pintaba del
+  color del anuncio, porque llegaba antes, y el problema quedaba escondido
+  dentro. Un aviso que no se ve cuesta más que una oportunidad que no se ve.
 - **El color solo lo gasta lo que pide una decisión.** El calor se lee en tres
   capas que no dependen del color: el tamaño del punto, el halo que lo rodea y
   el símbolo de dentro —triángulo para riesgo, flecha para oportunidad—. Solo
@@ -278,6 +332,16 @@ un MariaDB 10.6 para la de humo.
   la banda de la portada solo después de pulsar el dibujo. Quien está bajando a
   leer noticias y pasa el ratón por encima espera que la página siga bajando, y
   un mapa que se come la rueda a la primera es un mapa que atrapa.
+- **El mapa se pliega solo a los cinco segundos.** Aparece entero —para eso
+  está arriba— y se recoge dejando su resumen y un botón. Cinco segundos es lo
+  que tarda alguien en mirar un mapa y decidir si le interesa: quien iba a leer
+  titulares recupera la pantalla sin haber hecho nada, y quien venía al mapa ya
+  lo ha visto y sabe dónde está el botón. Medido: la banda pasa de 552 px a 141
+  y el primer titular sube de 766 px a 355.
+
+  Abrirlo se recuerda durante la visita, y quien lo cierra no vuelve a verlo
+  abierto. Volver a la portada y que se te cierre otra vez en la cara lo
+  convierte de comodidad en pelea, y a la tercera vez ya nadie lo abre.
 - **Al pasar por un nodo sale su «por qué importa».** Es lo único que este sitio
   sabe que no sabe ya la fuente, así que es lo que merece salir al pasar por
   encima; cuando el bit no lo lleva —el modo automático lo deja en blanco a

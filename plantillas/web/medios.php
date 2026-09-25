@@ -72,6 +72,9 @@ require_once __DIR__ . '/iconos.php';
         <span class="ficha-icono"><?= web_icono_ui('medio') ?></span>
         <span class="rejilla-nombre"><?= web_e($medio['nombre']) ?></span>
         <span class="rejilla-cuenta"><?= (int) $medio['bits'] ?> bit<?= (int) $medio['bits'] === 1 ? '' : 's' ?></span>
+        <?php if (!empty($medio['alta'])): ?>
+          <span class="rejilla-alta">en el radar desde <?= web_e(web_mes_largo((string) $medio['alta'])) ?></span>
+        <?php endif; ?>
       </a>
     </li>
   <?php endforeach; ?>
