@@ -2230,16 +2230,68 @@ h1 {
   .mapa-banda-cifras { justify-content: flex-end; text-align: right; }
 }
 
-/* --- La banda plegada y su boton ----------------------------------------------
-   Sin animacion a proposito: lo que se pliega son cuatrocientos pixeles de
-   dibujo, y una transicion de altura sobre un SVG que ademas se esta
-   reencuadrando solo es un parpadeo caro. Aparece, se recoge, y el boton
-   queda donde estaba. */
+/* --- La banda plegada, su animacion y su boton --------------------------------
 
-.mapa-banda--plegada .mapa-marco,
-.mapa-banda--plegada .mapa-banda-pie { display: none; }
+   El mapa se recoge como un desplegable y las noticias suben con el, porque el
+   hueco que deja lo ocupan ellas: no hay que mover nada mas, basta con que la
+   banda mida menos.
+
+   Una altura automatica no se puede animar -el navegador no sabe interpolar
+   hasta 'auto'-, asi que el tope lo pone mapa.js en pixeles, medido del
+   contenido real justo antes de cada plegado. Medirlo es lo que hace que la
+   curva de la animacion sea la de verdad: con un max-height fijo y generoso,
+   la primera mitad de la transicion no mueve nada y el plegado parece que
+   tarda en arrancar.
+
+   Se probo antes el truco de la rejilla -de 1fr a 0fr, que no necesita medir-
+   y aqui no colapsa: la pista se queda con el alto del contenido aunque se le
+   pida 0fr, 0px o minmax(0, 0fr). Queda escrito para que nadie lo intente otra
+   vez pensando que es mas limpio.
+
+   En cuanto termina de abrirse, el guion quita el tope y la altura vuelve a
+   ser automatica: si se quedara clavada, girar el telefono dejaria el mapa
+   recortado a la altura que tenia en vertical. */
+
+.mapa-banda-cuerpo {
+  overflow: hidden;
+  transition: max-height .42s cubic-bezier(.4, 0, .2, 1);
+}
 
 .mapa-banda--plegada .mapa-banda-cabeza { margin-bottom: .4rem; }
+
+/* El latido de la barra: muy lento y sin llegar a apagarse. Es un velo de
+   acento al 4 % que entra y sale, no un cambio de opacidad del texto -las
+   cifras del resumen tienen que poder leerse mientras late, y un texto que
+   parpadea no se lee, se soporta-. */
+/* El maximo es 0,045: el velo se intuye y no tine. Mas alto y la barra pasa de
+   respirar a pedir socorro, que es justo lo que no puede hacer una pieza que va
+   a estar ahi en todas las visitas.
+
+   La opacidad se anima aqui y el color va plano, en vez de mezclarlo con
+   color-mix: hace lo mismo, lo entienden todos los navegadores y no deja el
+   latido a merced de una funcion de color que si falta se traga la regla
+   entera. */
+@keyframes mapa-latido {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: .045; }
+}
+
+.mapa-banda--plegada { position: relative; }
+
+.mapa-banda--plegada::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(var(--gutter) * -1);
+  background: var(--acento);
+  opacity: 0;
+  pointer-events: none;
+  animation: mapa-latido 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapa-banda-cuerpo { transition: none; }
+  .mapa-banda--plegada::before { animation: none; opacity: 0; }
+}
 
 .mapa-banda-plegar {
   display: block;

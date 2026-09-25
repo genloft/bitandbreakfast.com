@@ -14,8 +14,10 @@
  * segundos que esta semana lo que esta rojo son los pagos y a que arrastran, y
  * sigue bajando a leer titulares, que es a lo que venia.
  *
- * Y se pliega sola. A los cinco segundos de cargar la pagina entera, el dibujo
- * se recoge y deja una linea con el resumen y un boton para volver a abrirlo.
+ * Y se pliega sola, con animacion. A los cinco segundos de cargar la pagina
+ * entera el dibujo se recoge -las noticias suben solas con el, porque el hueco
+ * que deja lo ocupan ellas- y arriba queda una barra con el resumen y un boton
+ * que late muy despacio. Pulsarlo devuelve el mapa y baja las noticias.
  * Cinco segundos es lo que tarda alguien en mirar un mapa y decidir si le
  * interesa: los que van a leer titulares recuperan la pantalla sin haber hecho
  * nada, y los que venian al mapa ya lo han visto y saben donde esta el boton.
@@ -64,18 +66,31 @@ $mapa_variante = 'banda';
     </p>
   </header>
 
-  <?php require __DIR__ . '/mapa_grafo.php'; ?>
+  <?php // El envoltorio de dos capas no es decoracion: es lo que permite que el
+        // plegado se anime. La altura automatica no se puede transicionar -de
+        // 'auto' a 0 el navegador no interpola-, pero una fila de rejilla de
+        // 1fr a 0fr si, y con el hijo en overflow hidden el dibujo se recorta
+        // en vez de encogerse. Sin esto habria que medir el alto en JavaScript
+        // y clavarlo en pixeles, que se rompe en cuanto algo de dentro cambia
+        // de tamano -y aqui dentro hay un SVG que se reencuadra solo-. ?>
+  <div class="mapa-banda-cuerpo">
+   <div class="mapa-banda-cuerpo-interior">
 
-  <footer class="mapa-banda-pie">
-    <p class="mapa-leyenda">
-      <span class="mapa-leyenda-item"><?= web_icono_senal('riesgo', 'mapa-senal-icono mapa-leyenda-icono') ?> Riesgo</span>
-      <span class="mapa-leyenda-item"><?= web_icono_senal('oportunidad', 'mapa-senal-icono mapa-leyenda-icono') ?> Oportunidad</span>
-      <span class="mapa-leyenda-item">Punto más grande = pide decisión</span>
-    </p>
+    <?php require __DIR__ . '/mapa_grafo.php'; ?>
 
-    <p class="mapa-banda-mas">
-      <a href="<?= web_e($base) ?>/mapa.html">Ver el mapa entero, con las noticias de cada nodo &rarr;</a>
-    </p>
-  </footer>
+    <footer class="mapa-banda-pie">
+      <p class="mapa-leyenda">
+        <span class="mapa-leyenda-item"><?= web_icono_senal('riesgo', 'mapa-senal-icono mapa-leyenda-icono') ?> Riesgo</span>
+        <span class="mapa-leyenda-item"><?= web_icono_senal('oportunidad', 'mapa-senal-icono mapa-leyenda-icono') ?> Oportunidad</span>
+        <span class="mapa-leyenda-item">Punto más grande = pide decisión</span>
+      </p>
+
+      <p class="mapa-banda-mas">
+        <a href="<?= web_e($base) ?>/mapa.html">Ver el mapa entero, con las noticias de cada nodo &rarr;</a>
+      </p>
+    </footer>
+
+   </div>
+  </div>
 
 </section>
