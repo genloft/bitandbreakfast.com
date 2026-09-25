@@ -484,22 +484,94 @@ declare(strict_types=1);
     }
 
     var abierto = true;
+    var cuerpo = banda.querySelector('.mapa-banda-cuerpo');
+    var interior = banda.querySelector('.mapa-banda-cuerpo-interior');
+
     var boton = document.createElement('button');
 
     boton.type = 'button';
     boton.className = 'mapa-banda-plegar';
+    boton.setAttribute('aria-controls', 'mapa-banda');
     banda.appendChild(boton);
 
-    function pintar() {
+    // El alto real del contenido, sin recortar. Se mide del hijo y no del
+    // contenedor porque el contenedor es justo el que esta recortando.
+    function altoReal() {
+      return interior ? Math.ceil(interior.getBoundingClientRect().height) : 0;
+    }
+
+    // Al acabar de abrirse se suelta el tope y la altura vuelve a ser
+    // automatica. Si se quedara clavada en los pixeles de ahora, girar el
+    // telefono dejaria el mapa recortado al alto que tenia en vertical.
+    function soltarTope() {
+      if (abierto) {
+        cuerpo.style.maxHeight = '';
+      }
+    }
+
+    function mover() {
+      if (!cuerpo || !interior) {
+        return;
+      }
+
+      // Se parte siempre del alto de verdad y se va al destino: sin un punto de
+      // partida en pixeles no hay nada que interpolar y el navegador salta.
+      cuerpo.style.maxHeight = (abierto ? 0 : altoReal()) + 'px';
+
+      // Leer una medida entre los dos cambios obliga al navegador a recalcular
+      // la maquetacion ahi mismo, y con eso el segundo valor ya cuenta como un
+      // cambio y se anima. Es feo y es lo correcto: la alternativa -esperar dos
+      // fotogramas con requestAnimationFrame- no se ejecuta en una pestana que
+      // esta en segundo plano, y ahi el mapa se quedaba a medio plegar hasta
+      // que alguien volvia a mirarla.
+      void cuerpo.offsetHeight;
+
+      cuerpo.style.maxHeight = (abierto ? altoReal() : 0) + 'px';
+
+      if (abierto) {
+        soltarTopeLuego();
+      }
+    }
+
+    cuerpo && cuerpo.addEventListener('transitionend', function (evento) {
+      if (evento.propertyName === 'max-height') {
+        soltarTope();
+      }
+    });
+
+    // Y una red debajo del transitionend, porque hay dos casos en los que no
+    // llega: cuando la hoja de estilo quita la transicion -que es lo que
+    // reciben quienes piden movimiento reducido- y cuando el navegador se
+    // salta el evento por cualquier motivo. Sin ella el alto se queda clavado
+    // en los pixeles que media al abrirse, y al girar el telefono el mapa sale
+    // recortado por abajo sin que nada parezca roto.
+    function soltarTopeLuego() {
+      setTimeout(soltarTope, 600);
+    }
+
+    function pintar(animar) {
       banda.classList.toggle('mapa-banda--plegada', !abierto);
       boton.textContent = abierto ? 'Ocultar el mapa' : 'Ver el mapa del stack';
       boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-      boton.setAttribute('aria-controls', 'mapa-banda');
+
+      if (!cuerpo) {
+        return;
+      }
+
+      if (animar) {
+        mover();
+        return;
+      }
+
+      // Sin animar: el estado de partida. Abierto se queda sin tope -altura
+      // automatica- y plegado se clava en cero.
+      cuerpo.style.maxHeight = abierto ? '' : '0px';
+      return;
     }
 
     boton.addEventListener('click', function () {
       abierto = !abierto;
-      pintar();
+      pintar(true);
 
       try {
         sessionStorage.setItem('mapa-abierto', abierto ? 'si' : 'no');
@@ -511,13 +583,13 @@ declare(strict_types=1);
     // Arranca abierto -es lo que hay en el HTML- y se pliega luego. Al reves
     // habria un parpadeo: el mapa aparece plegado y se abre, que es justo el
     // gesto contrario al que se quiere.
-    pintar();
+    pintar(false);
 
     // Quien ya lo cerro en esta visita no tiene que volver a verlo cinco
     // segundos en cada pagina: se le pliega en el acto.
     if (guardadoDice() === 'no') {
       abierto = false;
-      pintar();
+      pintar(false);
       return;
     }
 
@@ -532,7 +604,7 @@ declare(strict_types=1);
       }
 
       abierto = false;
-      pintar();
+      pintar(true);
     }, segundos * 1000);
   }
 

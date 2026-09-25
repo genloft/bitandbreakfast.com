@@ -332,12 +332,28 @@ un MariaDB 10.6 para la de humo.
   la banda de la portada solo después de pulsar el dibujo. Quien está bajando a
   leer noticias y pasa el ratón por encima espera que la página siga bajando, y
   un mapa que se come la rueda a la primera es un mapa que atrapa.
-- **El mapa se pliega solo a los cinco segundos.** Aparece entero —para eso
-  está arriba— y se recoge dejando su resumen y un botón. Cinco segundos es lo
-  que tarda alguien en mirar un mapa y decidir si le interesa: quien iba a leer
-  titulares recupera la pantalla sin haber hecho nada, y quien venía al mapa ya
-  lo ha visto y sabe dónde está el botón. Medido: la banda pasa de 552 px a 141
-  y el primer titular sube de 766 px a 355.
+- **El mapa se pliega solo a los cinco segundos, animado.** Aparece entero
+  —para eso está arriba— y se recoge como un desplegable; las noticias suben
+  con él, porque el hueco que deja lo ocupan ellas y no hay que mover nada más.
+  Cinco segundos es lo que tarda alguien en mirar un mapa y decidir si le
+  interesa: quien iba a leer titulares recupera la pantalla sin haber hecho
+  nada, y quien venía al mapa ya lo ha visto y sabe dónde está el botón.
+  Medido: la banda pasa de 552 px a 147 y el primer titular sube de 766 px a
+  361.
+
+  Arriba queda una barra que late muy despacio —un velo del acento al 4,5 % que
+  entra y sale cada 3,4 s—. Late el velo y no el texto: las cifras del resumen
+  tienen que poder leerse mientras tanto, y un texto que parpadea no se lee, se
+  soporta.
+
+  El tope de altura lo mide `mapa.js` en píxeles justo antes de cada plegado,
+  porque una altura automática no se puede interpolar. Se probó antes el truco
+  de la rejilla —de `1fr` a `0fr`, que no necesita medir— y **aquí no
+  colapsa**: la pista se queda con el alto del contenido aunque se le pida
+  `0fr`, `0px` o `minmax(0, 0fr)`. Queda escrito para que nadie lo intente otra
+  vez pensando que es más limpio. Y en cuanto termina de abrirse el tope se
+  suelta: si se quedara clavado, girar el teléfono dejaría el mapa recortado a
+  la altura que tenía en vertical.
 
   Abrirlo se recuerda durante la visita, y quien lo cierra no vuelve a verlo
   abierto. Volver a la portada y que se te cierre otra vez en la cara lo

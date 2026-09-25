@@ -33,6 +33,7 @@ declare(strict_types=1);
 
 $version    = $version ?? '0';
 $version_js = $version_js ?? '0';
+$version_mapa = $version_mapa ?? '0';
 $rio        = $rio ?? [];
 $dias       = $dias ?? [];
 $fuentes    = $fuentes ?? [];
@@ -183,6 +184,18 @@ require_once __DIR__ . '/iconos.php';
 </main>
 
 <?php require __DIR__ . '/pie.php'; ?>
+
+<?php // El guion del mapa. Faltaba aqui, y el fallo no se veia: la banda salia
+      // dibujada y con buen aspecto, pero muerta. En la portada no se arrastraba,
+      // no ampliaba, no enseñaba el "por que" al pasar por encima y no se plegaba
+      // a los cinco segundos, porque no habia nadie escuchando. Estaba solo en
+      // mapa.php, que es la pagina del mapa entero, y esa si funcionaba: por eso
+      // todo parecia bien al probarlo.
+      //
+      // Va aqui y no dentro de mapa_banda.php -que seria lo logico, junto a lo
+      // que lo necesita- porque esa plantilla se incrusta en mitad del <main> y
+      // un <script> ahi se ejecutaria antes de que exista la mitad de la pagina. ?>
+<script src="<?= web_e($base) ?>/mapa.js?v=<?= web_e($version_mapa) ?>" defer></script>
 
 </body>
 </html>
