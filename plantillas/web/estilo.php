@@ -1698,12 +1698,13 @@ h1 {
   --sobre-senal:  #fff;
 }
 
-.mapa-banda {
-  margin: 1.5rem 0 0;
-  border-top: 3px solid var(--filete);
-  border-bottom: 3px solid var(--filete);
-  padding: .9rem 0 .7rem;
-}
+/* Sin filete propio arriba ni abajo, y sin margen: la banda va justo debajo de
+   la cabecera -que ya cierra con un filete de 3 px- y justo encima del rio -que
+   abre con otro-. Poniendole los suyos salian dos lineas paralelas separadas
+   por el margen, que es lo que se veia publicado, y abajo dos filetes pisandose
+   en el mismo pixel, que daban una raya del doble de gruesa que las demas del
+   sitio. El filete de arriba lo pone la cabecera y el de abajo, las noticias. */
+.mapa-banda { padding: .9rem 0 .8rem; }
 
 .mapa-banda-cabeza { margin-bottom: .8rem; }
 

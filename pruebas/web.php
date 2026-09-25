@@ -362,6 +362,38 @@ foreach (glob(dirname(__DIR__) . '/plantillas/**/*.php') ?: [] as $plantilla) {
 
 comprobar('todas las plantillas abren PHP en la primera linea', [], $sin_abrir);
 
+// --- Que el mapa lleve su guion alla donde se pinte ---------------------------
+//
+// Esta prueba nace de un fallo publicado: la banda del mapa estaba en la
+// portada y mapa.js solo en /mapa.html. La portada salia perfecta -el dibujo
+// se pinta entero desde PHP- pero muerta: no se arrastraba, no ampliaba, no
+// enseñaba el "por que" al pasar por encima y no se plegaba a los cinco
+// segundos. Y no se veia probando /mapa.html, que era justo la pagina que si
+// lo tenia.
+//
+// Una pagina que pinta el mapa y no carga su guion es siempre un error, asi
+// que se comprueba aqui y no se confia en acordarse.
+$sin_guion = [];
+
+foreach (glob(dirname(__DIR__) . '/plantillas/web/*.php') ?: [] as $plantilla) {
+    $codigo = (string) file_get_contents($plantilla);
+
+    // Solo las paginas completas: los trozos que se incrustan no cargan guiones
+    // -un <script> en mitad del <main> correria antes de que exista la pagina-.
+    if (!str_contains($codigo, '<!doctype')) {
+        continue;
+    }
+
+    $pinta_mapa = str_contains($codigo, "/mapa_banda.php")
+        || str_contains($codigo, "/mapa_grafo.php");
+
+    if ($pinta_mapa && !str_contains($codigo, '/mapa.js')) {
+        $sin_guion[] = basename($plantilla);
+    }
+}
+
+comprobar('toda pagina que pinta el mapa carga mapa.js', [], $sin_guion);
+
 // --- La hora del panel ------------------------------------------------------
 //
 // El panel de la cabecera dice cuando sera la siguiente actualizacion, y para
