@@ -435,6 +435,37 @@ function stack_version(): string
 }
 
 /**
+ * Alias que no encienden un nodo por si solos.
+ *
+ * Son palabras que el nodo usa de verdad pero que el castellano usa tambien
+ * para otra cosa, y cada una de estas cuatro se cazo mirando lo publicado:
+ *
+ *   - "conectividad aerea" mandaba un destino turistico al channel manager;
+ *   - "una vulnerabilidad que los destinos tardan en reconocer" mandaba un
+ *     analisis de demanda a ciberseguridad;
+ *   - "compras" aparece en cualquier noticia que hable de comprar algo;
+ *   - "cocina" sale en sostenibilidad tanto como en restauracion.
+ *
+ * Siguen contando -si el nodo ya se ha encendido por otra cosa, suman a su
+ * confianza- pero no abren la puerta. Es la diferencia entre una palabra que
+ * identifica una pieza del stack y una que solo la roza.
+ *
+ * @return array<string, true>
+ */
+function stack_alias_debiles(): array
+{
+    return [
+        'conectividad'     => true,
+        'vulnerabilidad'   => true,
+        'vulnerabilidades' => true,
+        'compras'          => true,
+        'cocina'           => true,
+        'integracion'      => true,
+        'integraciones'    => true,
+    ];
+}
+
+/**
  * De que nodos habla un texto, del que mas lo menciona al que menos.
  *
  * Se cuenta cuantos alias distintos del nodo aparecen, no cuantas veces
@@ -453,18 +484,30 @@ function stack_menciones(string $texto): array
     $normal = ' ' . texto_normalizar($texto) . ' ';
     $cuenta = [];
 
+    $debiles = stack_alias_debiles();
+
     foreach (stack_nodos() as $id => $nodo) {
         $encontrados = 0;
+        $fuertes     = 0;
 
         foreach ($nodo['alias'] as $alias) {
             $aguja = texto_normalizar($alias);
 
-            if ($aguja !== '' && str_contains($normal, ' ' . $aguja . ' ')) {
-                $encontrados++;
+            if ($aguja === '' || !str_contains($normal, ' ' . $aguja . ' ')) {
+                continue;
+            }
+
+            $encontrados++;
+
+            if (!isset($debiles[$aguja])) {
+                $fuertes++;
             }
         }
 
-        if ($encontrados > 0) {
+        // Un nodo se enciende con un alias que lo identifique, o con dos que
+        // lo rocen. Con uno que lo roce, no: ahi es donde se colaban los
+        // falsos positivos.
+        if ($fuertes > 0 || $encontrados >= 2) {
             $cuenta[$id] = $encontrados;
         }
     }
@@ -499,7 +542,12 @@ function stack_nodo_de_categoria(string $categoria): string
         'cumplimiento'        => 'gobierno-ia',
         'operaciones-iot'     => 'accesos-iot',
         'experiencia-huesped' => 'app-huesped',
-        'ia-aplicada'         => 'mensajeria-ia',
+        // 'ia-aplicada' no esta, y estuvo. Mandaba a "mensajeria e IA" -que es
+        // el nodo de los chatbots y los agentes de voz- once noticias de las
+        // cincuenta y tres publicadas: ferias, columnas de opinion y notas
+        // sobre la adopcion de la IA en el sector. Ninguna hablaba de una
+        // pieza del stack. Un respaldo que acierta una de cada tres no es una
+        // red de seguridad, es un vertedero con nombre de nodo.
     ][$categoria] ?? '';
 }
 

@@ -14,6 +14,17 @@
  * segundos que esta semana lo que esta rojo son los pagos y a que arrastran, y
  * sigue bajando a leer titulares, que es a lo que venia.
  *
+ * Y se pliega sola. A los cinco segundos de cargar la pagina entera, el dibujo
+ * se recoge y deja una linea con el resumen y un boton para volver a abrirlo.
+ * Cinco segundos es lo que tarda alguien en mirar un mapa y decidir si le
+ * interesa: los que van a leer titulares recuperan la pantalla sin haber hecho
+ * nada, y los que venian al mapa ya lo han visto y saben donde esta el boton.
+ * Pulsarlo se recuerda durante la visita, para que no se les vuelva a cerrar
+ * en la cara al volver a la portada.
+ *
+ * Sin JavaScript no se pliega y se queda abierto, que es el estado bueno: lo
+ * que se pierde es una comodidad, no el contenido.
+ *
  * Si no hay ni un nodo encendido, la banda no se pinta. Un mapa entero en gris
  * con una nota explicando que no ha pasado nada es peor que no tener mapa: la
  * primera impresion del sitio seria un dibujo apagado.
@@ -34,7 +45,7 @@ $resumen = heatmap_resumen($mapa);
 $mapa_variante = 'banda';
 
 ?>
-<section class="mapa-banda" aria-labelledby="mapa-banda-titulo">
+<section class="mapa-banda" id="mapa-banda" data-plegar="5" aria-labelledby="mapa-banda-titulo">
 
   <header class="mapa-banda-cabeza">
     <div class="mapa-banda-rotulo">

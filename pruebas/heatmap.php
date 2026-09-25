@@ -14,6 +14,7 @@
 require_once __DIR__ . '/ayuda.php';
 require_once dirname(__DIR__) . '/lib/heatmap.php';
 require_once dirname(__DIR__) . '/lib/stack_grafo.php';
+require_once dirname(__DIR__) . '/lib/stack_lexico.php';
 
 /** Un bit de mentira con lo justo para clasificarlo y puntuarlo. */
 function bit_falso(array $campos = []): array
@@ -137,6 +138,172 @@ comprobar(
     'sin alias y sin categoria util, la noticia no entra en el mapa',
     [],
     stack_clasificar(bit_falso(['titular' => 'Una cadena presenta resultados']))
+);
+
+// --- El lexico: de donde sale ahora la senal ------------------------------------
+//
+// Estas son las pruebas que faltaban la primera vez. La rubrica anterior leia
+// bits.tipo y bits.madurez, que solo rellena una persona en el panel, y este
+// sitio publica solo: los cincuenta y tres bits vivos en produccion llevaban
+// los tres el valor por defecto y el mapa salia con los dieciseis nodos
+// identicos. Ninguna prueba lo detecto porque todas usaban bits inventados con
+// el tipo puesto a mano.
+
+comprobar(
+    'un termino fuerte, solo, ya dice que hay un problema',
+    true,
+    lexico_leer(bit_falso(['cuerpo' => 'El fabricante anuncia el fin de soporte para enero.']))['riesgo']
+);
+
+comprobar(
+    'un termino debil, solo, no basta',
+    false,
+    lexico_leer(bit_falso([
+        'cuerpo' => 'Detras de las cifras aparece una vulnerabilidad que los destinos tardan en reconocer.',
+    ]))['riesgo']
+);
+
+comprobar(
+    'pero dos debiles si',
+    true,
+    lexico_leer(bit_falso(['cuerpo' => 'La caida de reservas es un riesgo para el sector.']))['riesgo']
+);
+
+comprobar(
+    'y uno debil en una tematica que ya es de riesgo, tambien',
+    true,
+    lexico_leer(bit_falso([
+        'cuerpo'    => 'Los investigadores describen una vulnerabilidad en el sistema.',
+        'categoria' => 'ciberseguridad',
+    ]))['riesgo']
+);
+
+comprobar(
+    'un anuncio de producto normal no es riesgo',
+    'oportunidad',
+    heatmap_senal(bit_falso([
+        'titular' => 'Cloudbeds lanza un RMS con datos unificados',
+        'cuerpo'  => 'La herramienta se apoya en los datos que ya fluyen por el negocio hotelero.',
+    ]))
+);
+
+comprobar(
+    'una noticia con un problema nombrado si lo es, aunque nadie toque el panel',
+    'riesgo',
+    heatmap_senal(bit_falso([
+        'titular' => 'El proveedor anuncia una subida de precios',
+        'cuerpo'  => 'La nueva tarifa entra en vigor en enero.',
+    ]))
+);
+
+// La puntuacion tambien tiene que salir del texto, que es lo unico que varia
+// cuando publica el modo automatico.
+comprobar(
+    'un anuncio suelto se queda en el suelo de lo publicable',
+    3,
+    heatmap_puntuar(bit_falso(['cuerpo' => 'La cadena presenta su nueva herramienta.']), 1)
+);
+
+comprobar(
+    'un problema nombrado obliga a decidir',
+    4,
+    heatmap_puntuar(bit_falso(['cuerpo' => 'El proveedor anuncia el fin de soporte.']), 1)
+);
+
+comprobar(
+    'y si ademas corre, es de esta semana',
+    5,
+    heatmap_puntuar(bit_falso([
+        'cuerpo' => 'Hay explotacion activa de la brecha de seguridad detectada.',
+    ]), 1)
+);
+
+comprobar(
+    'que compren a tu proveedor sube aunque no sea ni bueno ni malo',
+    4,
+    heatmap_puntuar(bit_falso([
+        'cuerpo' => 'Guesty completa la adquisicion del PMS frances Smily.',
+    ]), 1)
+);
+
+comprobar(
+    'dos medios distintos contandolo tambien cuentan',
+    4,
+    heatmap_puntuar(bit_falso(['cuerpo' => 'La cadena presenta su nueva herramienta.']), 2)
+);
+
+// --- Alias debiles: los falsos positivos que se vieron en produccion -----------
+
+comprobar(
+    'una conectividad aerea no es un channel manager',
+    [],
+    stack_clasificar(bit_falso([
+        'titular' => 'Comodoro Rivadavia potencia atractivos y conectividad aerea',
+        'cuerpo'  => 'El destino promociona la naturaleza y una red de vuelos semanales.',
+    ]))
+);
+
+comprobar(
+    'una vulnerabilidad en sentido figurado no es ciberseguridad',
+    [],
+    stack_clasificar(bit_falso([
+        'titular' => 'La dependencia del turismo internacional',
+        'cuerpo'  => 'Aparece una vulnerabilidad que muchos destinos tardan en reconocer.',
+    ]))
+);
+
+comprobar(
+    'pero un alias debil acompanado de otro si enciende el nodo',
+    'channel-manager',
+    stack_clasificar(bit_falso([
+        'titular' => 'El channel manager amplia su conectividad con nuevos canales',
+    ]))[0]
+);
+
+comprobar(
+    'y las noticias genericas de IA ya no caen en el nodo de los chatbots',
+    '',
+    stack_nodo_de_categoria('ia-aplicada')
+);
+
+// --- Desempate: a igual puntuacion manda el riesgo -----------------------------
+
+$empate = heatmap_agregar([
+    [
+        'id' => 'bit-bueno', 'node_ids' => ['pms'], 'signal' => 'oportunidad',
+        'score' => 4, 'level' => 'alto', 'published_at' => '2026-09-22', 'encaje' => 'alias',
+    ],
+    [
+        'id' => 'bit-malo', 'node_ids' => ['pms'], 'signal' => 'riesgo',
+        'score' => 4, 'level' => 'alto', 'published_at' => '2026-09-21', 'encaje' => 'alias',
+    ],
+]);
+
+comprobar(
+    'con la misma puntuacion, el nodo se pinta del color del problema',
+    'riesgo',
+    $empate['pms']['signal']
+);
+
+comprobar(
+    'y no se pierde ninguna de las dos noticias por el camino',
+    2,
+    count($empate['pms']['brief_ids'])
+);
+
+comprobar(
+    'el volumen cuenta las que nombran la pieza, no las que caen por tematica',
+    1,
+    heatmap_agregar([
+        [
+            'id' => 'bit-1', 'node_ids' => ['pms'], 'signal' => 'oportunidad',
+            'score' => 3, 'level' => 'medio', 'published_at' => '2026-09-22', 'encaje' => 'alias',
+        ],
+        [
+            'id' => 'bit-2', 'node_ids' => ['pms'], 'signal' => 'oportunidad',
+            'score' => 3, 'level' => 'medio', 'published_at' => '2026-09-22', 'encaje' => 'categoria',
+        ],
+    ])['pms']['noticias']
 );
 
 // --- Senal --------------------------------------------------------------------
@@ -506,7 +673,7 @@ comprobar('no hay conexiones repetidas', [], $repetidas);
 // sin avisar.
 $fuera = [];
 $lienzo = grafo_lienzo();
-$radio_max = grafo_radio(['score' => 5, 'signal' => 'riesgo', 'level' => 'alto']);
+$radio_max = grafo_radio(['score' => 5, 'signal' => 'riesgo', 'level' => 'alto', 'noticias' => 999]);
 $halo = (int) round($radio_max * 2.5);
 
 foreach (grafo_posiciones() as $id => $punto) {
@@ -615,14 +782,38 @@ comprobar(
 comprobar(
     'un nodo apagado es mas pequeno que cualquiera encendido',
     true,
-    grafo_radio(null) < grafo_radio(['score' => 3, 'signal' => 'riesgo', 'level' => 'medio'])
+    grafo_radio(null) < grafo_radio(['score' => 3, 'noticias' => 1])
 );
 
 comprobar(
-    'y el que pide decision es el mas gordo de todos',
+    'a igual volumen, el que pide decision es mas gordo',
     true,
-    grafo_radio(['score' => 5, 'signal' => 'riesgo', 'level' => 'alto'])
-        > grafo_radio(['score' => 4, 'signal' => 'riesgo', 'level' => 'alto'])
+    grafo_radio(['score' => 5, 'noticias' => 1]) > grafo_radio(['score' => 4, 'noticias' => 1])
+);
+
+// El volumen es la mitad del tamano, y es la que salva el mapa en una semana
+// tranquila: si todo empata en puntuacion, esto es lo unico que sigue
+// distinguiendo doce noticias de una.
+comprobar(
+    'a igual puntuacion, doce noticias pesan mas que una',
+    true,
+    grafo_radio(['score' => 3, 'noticias' => 12]) > grafo_radio(['score' => 3, 'noticias' => 1])
+);
+
+// Y esta es la que sujeta el diseno: el volumen manda dentro de su franja,
+// nunca fuera. Un monton de notas de prensa no puede verse mas gordo que una
+// vulnerabilidad que hay que parchear esta semana.
+comprobar(
+    'ni un nodo con cien noticias adelanta a uno de mas puntuacion',
+    true,
+    grafo_radio(['score' => 3, 'noticias' => 100]) < grafo_radio(['score' => 4, 'noticias' => 1])
+        && grafo_radio(['score' => 4, 'noticias' => 100]) < grafo_radio(['score' => 5, 'noticias' => 1])
+);
+
+comprobar(
+    'y nunca pasa del tope que cabe en el lienzo',
+    24,
+    grafo_radio(['score' => 5, 'noticias' => 9999])
 );
 
 /**

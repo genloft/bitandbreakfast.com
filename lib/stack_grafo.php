@@ -191,19 +191,45 @@ function grafo_enlaces(): array
 }
 
 /**
- * El radio de un nodo segun lo caliente que este.
+ * El radio de un nodo: cuanto pesa, sumando lo urgente y lo mucho.
  *
- * El tamano es la segunda lectura del calor, despues del color y antes que la
- * etiqueta: un mapa impreso en blanco y negro sigue enseñando donde mirar
- * porque los puntos gordos siguen siendo gordos.
+ * Dos cosas engordan un punto, y hacen falta las dos.
+ *
+ * La **puntuacion** es la urgencia, y es la que manda. Pero en una semana
+ * tranquila casi todo empata en tres, y ahi el mapa se queda plano: eso es
+ * exactamente lo que se veia en produccion, dieciseis nodos del mismo tamano y
+ * del mismo color. La urgencia no varia todas las semanas; el sector no tiene
+ * una crisis cada lunes.
+ *
+ * El **volumen** si varia siempre. Doce noticias tocaron el PMS esta semana y
+ * una toco Compras, y verlos iguales era tirar la unica informacion que el
+ * mapa tenia de sobra. Sube con la raiz y con tope: la diferencia entre una
+ * noticia y cinco importa mucho mas que entre veinte y veinticinco, y sin tope
+ * un nodo popular se comeria a sus vecinos.
+ *
+ * Las dos no se mezclan: cada puntuacion tiene su franja -10 a 14, 15 a 19, 20
+ * a 24- y el volumen solo mueve dentro de la suya. Asi una vulnerabilidad que
+ * hay que parchear esta semana nunca sale mas pequena que un monton de notas de
+ * prensa, por muchas que sean. Sin esa separacion pasaba: doce noticias de tres
+ * puntos adelantaban a una de cinco, y el punto mas gordo del mapa dejaba de
+ * ser el mas urgente.
+ *
+ * El tope duro son 24 unidades porque el nodo mas alto del dibujo esta a 66 y
+ * su halo mide dos veces y media el radio: a partir de ahi se sale del lienzo.
+ * Hay una prueba que lo comprueba, y por eso este numero no se toca a ojo.
  */
 function grafo_radio(?array $estado): int
 {
     if ($estado === null) {
-        return 8;
+        return 7;
     }
 
-    return [3 => 15, 4 => 19, 5 => 23][(int) $estado['score']] ?? 15;
+    $franja = [3 => 10, 4 => 15, 5 => 20][(int) $estado['score']] ?? 10;
+    $noticias = max(0, (int) ($estado['noticias'] ?? 0) - 1);
+
+    // Con la raiz: la diferencia entre una noticia y cinco importa mucho mas
+    // que entre veinte y veinticinco.
+    return $franja + min(4, (int) round(1.4 * sqrt($noticias)));
 }
 
 /**

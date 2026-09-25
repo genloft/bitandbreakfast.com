@@ -15,7 +15,11 @@
  *      lo hace el navegador solo, con el <title> que la plantilla mete en cada
  *      nodo; cuando hay JavaScript ese <title> se retira -si no, saldrian los
  *      dos- y se pinta uno legible.
- *   3. **El panel lateral.** Al pulsar un nodo, coge su seccion -que ya esta
+ *   3. **Plegar la banda de la portada.** A los cinco segundos de cargar la
+ *      pagina entera, el mapa se recoge y deja su resumen y un boton. Es la
+ *      forma de que el mapa se vea -que para eso esta arriba- sin quedarse con
+ *      la pantalla de quien venia a leer titulares.
+ *   4. **El panel lateral.** Al pulsar un nodo, coge su seccion -que ya esta
  *      escrita en la pagina- y la mete en el panel. Al cerrar, la devuelve.
  *      Mueve la seccion en vez de copiarla: con una copia habria dos elementos
  *      con el mismo id -HTML invalido, y el lector de pantalla leeria el
@@ -450,6 +454,96 @@ declare(strict_types=1);
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('.mapa-marco'), montarMapa);
+
+  // --- Plegar la banda de la portada -------------------------------------------
+  //
+  // Cinco segundos desde que la pagina esta entera, no desde que empieza a
+  // cargar: en una conexion lenta, contar desde el principio pliega el mapa
+  // antes de que se haya llegado a ver.
+  //
+  // La decision de quien lo abre se recuerda durante la visita. Volver a la
+  // portada y que se te cierre otra vez en la cara lo convierte de comodidad en
+  // pelea, y a la tercera vez ya nadie lo abre.
+
+  function montarPlegado(banda) {
+    var segundos = Number(banda.getAttribute('data-plegar')) || 5;
+    var cabeza = banda.querySelector('.mapa-banda-cabeza');
+
+    if (!cabeza) {
+      return;
+    }
+
+    // Navegacion privada o almacenamiento bloqueado: se pliega igual, solo que
+    // sin memoria. Es una comodidad, no un requisito, asi que el fallo se traga.
+    function guardadoDice() {
+      try {
+        return sessionStorage.getItem('mapa-abierto');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    var abierto = true;
+    var boton = document.createElement('button');
+
+    boton.type = 'button';
+    boton.className = 'mapa-banda-plegar';
+    banda.appendChild(boton);
+
+    function pintar() {
+      banda.classList.toggle('mapa-banda--plegada', !abierto);
+      boton.textContent = abierto ? 'Ocultar el mapa' : 'Ver el mapa del stack';
+      boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+      boton.setAttribute('aria-controls', 'mapa-banda');
+    }
+
+    boton.addEventListener('click', function () {
+      abierto = !abierto;
+      pintar();
+
+      try {
+        sessionStorage.setItem('mapa-abierto', abierto ? 'si' : 'no');
+      } catch (e) {
+        // Igual que arriba: sin memoria, pero funcionando.
+      }
+    });
+
+    // Arranca abierto -es lo que hay en el HTML- y se pliega luego. Al reves
+    // habria un parpadeo: el mapa aparece plegado y se abre, que es justo el
+    // gesto contrario al que se quiere.
+    pintar();
+
+    // Quien ya lo cerro en esta visita no tiene que volver a verlo cinco
+    // segundos en cada pagina: se le pliega en el acto.
+    if (guardadoDice() === 'no') {
+      abierto = false;
+      pintar();
+      return;
+    }
+
+    // Y quien lo dejo abierto, abierto se queda.
+    if (guardadoDice() === 'si') {
+      return;
+    }
+
+    setTimeout(function () {
+      if (guardadoDice() !== null) {
+        return;
+      }
+
+      abierto = false;
+      pintar();
+    }, segundos * 1000);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-plegar]'), function (banda) {
+    if (document.readyState === 'complete') {
+      montarPlegado(banda);
+      return;
+    }
+
+    window.addEventListener('load', function () { montarPlegado(banda); });
+  });
 
   // --- El panel lateral -------------------------------------------------------
 

@@ -157,4 +157,36 @@ comprobar('cifras_exportar() usa la misma fecha de revision que la pagina', cifr
 comprobar('y el mismo limite de revision', cifras_limite_revision(cifras_revisado()), $exportado['limite_revision']);
 comprobar('y exporta los mismos grupos, no una copia distinta', cifras_grupos(), $exportado['grupos']);
 
+// --- Las tres cifras de la portada ---------------------------------------------
+//
+// Se eligen por el nombre del grupo. Si alguien renombra uno, la portada se
+// queda sin ese numero y no falla nada: la tira se pinta con dos, o con
+// ninguna, y nadie se entera. Estas comprobaciones son la unica alarma.
+
+$destacadas = cifras_destacadas();
+
+comprobar('la portada saca tres cifras, ni mas ni menos', 3, count($destacadas));
+
+comprobar(
+    'y las tres traen valor, rotulo y tema',
+    [],
+    array_values(array_filter(
+        $destacadas,
+        static fn (array $c): bool => ($c['valor'] ?? '') === ''
+            || ($c['rotulo'] ?? '') === ''
+            || ($c['tema'] ?? '') === ''
+    ))
+);
+
+// El valor no se copia: se lee del mismo sitio que pinta /estadisticas.html.
+// Si se copiara, la portada acabaria diciendo un numero que la propia pagina
+// de Cifras ya hubiera corregido.
+$temas_vivos = array_column(cifras_grupos(), 'tema');
+
+comprobar(
+    'los grupos que cita la portada siguen existiendo en Cifras',
+    [],
+    array_values(array_diff(array_column($destacadas, 'tema'), $temas_vivos))
+);
+
 resumen_pruebas('Pruebas de lib/cifras.php');

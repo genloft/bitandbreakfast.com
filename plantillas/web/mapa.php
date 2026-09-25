@@ -131,7 +131,11 @@ $mapa_variante = 'completo';
                     <span class="mapa-brief-marca mapa-brief-marca--<?= web_e($brief['signal']) ?>">
                       <?= $brief['signal'] === 'riesgo' ? 'Riesgo' : 'Oportunidad' ?> <?= (int) $brief['score'] ?>/5
                     </span>
-                    <?php if ($brief['confidence'] === 'baja'): ?>
+                    <?php // Solo cuando el nodo lo puso la tematica y no el texto. Antes
+                          // salia con cualquier confianza baja, que eran cuatro de cada
+                          // cinco fichas: una marca de duda que sale siempre no avisa de
+                          // nada y gasta la credibilidad de las que si deberian llevarla. ?>
+                    <?php if (($brief['encaje'] ?? 'alias') !== 'alias'): ?>
                       <span class="mapa-brief-marca mapa-brief-marca--duda" title="La noticia no nombra ninguna palabra propia de este nodo: se ha clasificado por su temática.">Encaje dudoso</span>
                     <?php endif; ?>
                     <span class="mapa-brief-fecha"><?= web_e(web_fecha_larga($brief['published_at'])) ?></span>

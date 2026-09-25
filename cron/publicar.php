@@ -989,7 +989,8 @@ function publicar_bits_medio(string $nombre): array
  */
 function publicar_medios(): array
 {
-    $sql = "SELECT f.nombre, f.url_sitio, COUNT(DISTINCT b.id) AS bits, MAX(b.dia) AS ultimo
+    $sql = "SELECT f.nombre, f.url_sitio, f.fecha_alta, COUNT(DISTINCT b.id) AS bits,
+                   MAX(b.dia) AS ultimo
               FROM bits b
               JOIN items i     ON i.id = (
                     SELECT i2.id FROM items i2
@@ -998,7 +999,7 @@ function publicar_medios(): array
                      LIMIT 1)
               JOIN fuentes f   ON f.id = i.fuente_id
              WHERE b.estado = 'publicado'
-             GROUP BY f.id, f.nombre, f.url_sitio
+             GROUP BY f.id, f.nombre, f.url_sitio, f.fecha_alta
              ORDER BY bits DESC, f.nombre ASC";
 
     $medios = bd()->query($sql)->fetchAll();
@@ -1011,6 +1012,12 @@ function publicar_medios(): array
         // El dia del bit mas reciente de ese medio, para el lastmod de su
         // ficha en sitemap.xml.
         $medios[$indice]['ultimo'] = substr((string) ($medio['ultimo'] ?? ''), 0, 10);
+        // Cuando entro en el radar. Es NULL en las fuentes que ya estaban
+        // antes de que existiera la columna, y ahi se queda en blanco: no se
+        // sabe de verdad cuando entraron, y una fecha inventada en una pagina
+        // que presume de citar sus fuentes seria justo la peor de las mentiras
+        // pequenas.
+        $medios[$indice]['alta'] = substr((string) ($medio['fecha_alta'] ?? ''), 0, 10);
     }
 
     return $medios;

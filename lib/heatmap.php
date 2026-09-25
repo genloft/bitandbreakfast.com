@@ -38,6 +38,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/stack.php';
+require_once __DIR__ . '/stack_lexico.php';
 require_once __DIR__ . '/texto.php';
 
 /**
@@ -47,24 +48,19 @@ require_once __DIR__ . '/texto.php';
  * la lee: una regulacion nueva puede ser estupenda para el sector y sigue
  * siendo trabajo obligatorio para el que la cumple.
  */
-function heatmap_senal(array $bit): string
+function heatmap_senal(array $bit, ?array $lectura = null): string
 {
-    $tipo      = (string) ($bit['tipo'] ?? 'producto');
-    $categoria = (string) ($bit['categoria'] ?? '');
+    // Si una persona lo marco en el panel, manda su criterio: sabe cosas que
+    // el texto no dice.
+    $tipo = (string) ($bit['tipo'] ?? 'producto');
 
     if ($tipo === 'incidente' || $tipo === 'regulacion') {
         return 'riesgo';
     }
 
-    // Un producto nuevo de un fabricante de antivirus sigue siendo una
-    // oportunidad; una noticia de la tematica "ciberseguridad" que no sea un
-    // producto ni una inversion, casi nunca.
-    if (in_array($categoria, ['ciberseguridad', 'cumplimiento'], true)
-        && !in_array($tipo, ['producto', 'inversion'], true)) {
-        return 'riesgo';
-    }
-
-    return 'oportunidad';
+    // Y si no hay nadie -que es el caso normal en este sitio, que publica
+    // solo-, lo dice el texto.
+    return ($lectura ?? lexico_leer($bit))['riesgo'] ? 'riesgo' : 'oportunidad';
 }
 
 /**
@@ -88,39 +84,53 @@ function heatmap_senal(array $bit): string
  *
  * @param int $medios Cuantos medios distintos cuentan la noticia.
  */
-function heatmap_puntuar(array $bit, int $medios): int
+function heatmap_puntuar(array $bit, int $medios, ?array $lectura = null): int
 {
     $tipo      = (string) ($bit['tipo'] ?? 'producto');
     $madurez   = (string) ($bit['madurez'] ?? 'anuncio');
     $categoria = (string) ($bit['categoria'] ?? '');
+    $lectura   = $lectura ?? lexico_leer($bit);
 
-    $base = [
-        'incidente'  => 4,
-        'regulacion' => 4,
-        'producto'   => 3,
-        'caso_real'  => 3,
-        'inversion'  => 2,
-    ][$tipo] ?? 2;
+    // Tres es el suelo de lo que se publica, no el techo: una noticia del
+    // sector sin nada mas es "a vigilar". De ahi solo se sube, y solo por
+    // cosas que el texto dice.
+    $base = 3;
 
-    // Una vulnerabilidad en software del sector es lo unico que se mide en
-    // semanas y no en trimestres.
+    // Hay un problema, aunque se diga a medias.
+    if ($lectura['riesgo']) {
+        $base = 4;
+    }
+
+    // Que compren a tu proveedor no es bueno ni malo, pero es de las pocas
+    // cosas que obligan a abrir un contrato este trimestre.
+    if ($lectura['movimiento'] >= 1) {
+        $base = max($base, 4);
+    }
+
+    // Y ademas corre.
+    if ($lectura['urgencia'] >= 1 && $base >= 4) {
+        $base++;
+    }
+
+    // Dos medios distintos contandolo ya es confirmacion. El umbral estaba en
+    // tres, que en este radar no pasa casi nunca: de cincuenta y tres bits
+    // vivos, dos llegaban a dos medios y ninguno a tres. Un ajuste que no se
+    // dispara nunca no es un ajuste conservador, es codigo muerto.
+    if ($medios >= 2) {
+        $base++;
+    }
+
+    // Lo editorial, cuando hay alguien que lo haya puesto.
     if ($tipo === 'incidente' && $categoria === 'ciberseguridad') {
         $base++;
     }
 
-    // Un producto que ya se puede comprar o que ya esta instalado en alguna
-    // parte es una decision; el mismo producto anunciado para el ano que viene
-    // es una nota al margen.
     if ($tipo === 'producto' && in_array($madurez, ['disponible', 'implantado'], true)) {
         $base++;
     }
 
     if ($madurez === 'rumor') {
         $base--;
-    }
-
-    if ($medios >= 3) {
-        $base++;
     }
 
     return max(1, min(5, $base));
@@ -253,15 +263,20 @@ function heatmap_nivel(int $score): string
  */
 function heatmap_confianza(string $origen, int $alias, int $medios): string
 {
+    // Que lo cuenten dos medios dice que la noticia es cierta, no que el nodo
+    // sea el suyo, y aqui se mide lo segundo. Ademas casi nunca pasa: pedirlo
+    // dejaba en "baja" a cuarenta y dos de cincuenta y tres bits, y una marca
+    // de duda que sale en cuatro de cada cinco fichas no avisa de nada, solo
+    // gasta la credibilidad de las que si deberian llevarla.
     if ($origen !== 'alias') {
         return 'baja';
     }
 
-    if ($alias >= 2 && $medios >= 2) {
+    if ($alias >= 3) {
         return 'alta';
     }
 
-    return $alias >= 2 || $medios >= 2 ? 'media' : 'baja';
+    return $alias >= 2 ? 'media' : 'baja';
 }
 
 /**
@@ -364,7 +379,11 @@ function heatmap_componer(array $bits, array $fuentes, string $corte, string $ba
 
         $medios  = max(1, count($fuentes[(int) ($bit['racimo_id'] ?? 0)] ?? []));
         $tipo    = (string) ($bit['tipo'] ?? 'producto');
-        $partida = heatmap_puntuar($bit, $medios);
+
+        // Una sola pasada del lexico por bit: la senal y la puntuacion salen
+        // de la misma lectura, y ademas asi no pueden discrepar.
+        $lectura = lexico_leer($bit);
+        $partida = heatmap_puntuar($bit, $medios, $lectura);
         $score   = heatmap_vigente($partida, $tipo, $dia, $corte);
 
         if ($score < heatmap_umbral()) {
@@ -378,11 +397,16 @@ function heatmap_componer(array $bits, array $fuentes, string $corte, string $ba
             'bit_id'      => $id,
             'headline'    => (string) ($bit['titular'] ?? ''),
             'node_ids'    => $detalle['nodos'],
-            'signal'      => heatmap_senal($bit),
+            'signal'      => heatmap_senal($bit, $lectura),
             'score'       => $score,
             'score_base'  => $partida,
             'level'       => heatmap_nivel($score),
             'confidence'  => heatmap_confianza($detalle['origen'], $detalle['alias'], $medios),
+            // Si el nodo lo dijo el texto o lo dijo la red de seguridad de la
+            // tematica. Manda en dos sitios: en la marca de "encaje dudoso" de
+            // la ficha y en el tamano del nodo, que solo cuenta lo que nombra
+            // la pieza.
+            'encaje'      => $detalle['origen'],
             'trigger'     => heatmap_disparador($bit),
             'por_que'     => trim((string) ($bit['por_que'] ?? '')),
             'tipo'        => $tipo,
@@ -452,12 +476,24 @@ function heatmap_agregar(array $briefs): array
 
             $actual = $nodos[$nodo] ?? null;
 
-            if ($actual === null || $brief['score'] > $actual['score']) {
+            // A igual puntuacion manda el riesgo. Sin esta regla, un nodo con
+            // un aviso de cumplimiento y un anuncio de producto empatados a
+            // cuatro se pintaba del color del anuncio, porque llegaba antes:
+            // el nodo quedaba en azul con el problema escondido dentro. Un
+            // aviso que no se ve cuesta mas que una oportunidad que no se ve.
+            $gana = $actual === null
+                || $brief['score'] > $actual['score']
+                || ($brief['score'] === $actual['score']
+                    && $brief['signal'] === 'riesgo'
+                    && $actual['signal'] !== 'riesgo');
+
+            if ($gana) {
                 $nodos[$nodo] = [
                     'signal'    => $brief['signal'],
                     'score'     => $brief['score'],
                     'level'     => $brief['level'],
-                    'brief_ids' => [],
+                    'brief_ids' => $actual['brief_ids'] ?? [],
+                    'noticias'  => $actual['noticias'] ?? 0,
                 ];
             }
         }
@@ -465,8 +501,18 @@ function heatmap_agregar(array $briefs): array
 
     foreach ($briefs as $brief) {
         foreach ($brief['node_ids'] as $nodo) {
-            if (isset($nodos[$nodo])) {
-                $nodos[$nodo]['brief_ids'][] = $brief['id'];
+            if (!isset($nodos[$nodo])) {
+                continue;
+            }
+
+            $nodos[$nodo]['brief_ids'][] = $brief['id'];
+
+            // 'noticias' es lo que engorda el punto en el dibujo, y solo cuenta
+            // lo que nombra la pieza. Lo que cae ahi por su tematica se lee en
+            // la ficha, pero no infla el mapa: seria dar cuerpo a una
+            // suposicion.
+            if (($brief['encaje'] ?? 'alias') === 'alias') {
+                $nodos[$nodo]['noticias']++;
             }
         }
     }
