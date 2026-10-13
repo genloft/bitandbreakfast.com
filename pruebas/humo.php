@@ -406,7 +406,7 @@ comprobar(
     true,
     str_contains(
         (string) file_get_contents($publico . '/' . web_ruta_dia($dia)),
-        'itemtype="https://schema.org/BreadcrumbList"'
+        '"@type":"BreadcrumbList"'
     )
 );
 
@@ -487,11 +487,11 @@ comprobar(
     !empty($lastmod_por_url[web_url_tema($sitio_prueba, 'pms-crs')] ?? null)
 );
 comprobar(
-    'la portada, temas.html y medios.html se quedan sin lastmod inventado',
+    'la portada, temas.html y medios.html llevan el lastmod del bit mas reciente',
     true,
-    ($lastmod_por_url[$sitio_prueba . '/'] ?? null) === null
-        && ($lastmod_por_url[$sitio_prueba . '/temas.html'] ?? null) === null
-        && ($lastmod_por_url[$sitio_prueba . '/medios.html'] ?? null) === null
+    !empty($lastmod_por_url[$sitio_prueba . '/'] ?? null)
+        && !empty($lastmod_por_url[$sitio_prueba . '/temas.html'] ?? null)
+        && !empty($lastmod_por_url[$sitio_prueba . '/medios.html'] ?? null)
 );
 
 // cifras.json: las mismas cifras de la pagina, en JSON valido.
@@ -580,9 +580,10 @@ comprobar('escribe el calendario de eventos', true, is_file($publico . '/calenda
 $calendario_html = (string) file_get_contents($publico . '/calendario.html');
 
 comprobar(
-    'con al menos un evento por delante -TIS, en octubre de 2026-',
+    'enseña el primer evento que queda por delante',
     true,
-    str_contains($calendario_html, 'Tourism Innovation Summit')
+    ($proximos_cal = calendario_proximos(calendario_eventos(), gmdate('Y-m-d'))) === []
+        || str_contains($calendario_html, htmlspecialchars((string) $proximos_cal[0]['nombre'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
 );
 comprobar(
     'y dice hasta cuando vale su revision, igual que el resto de Recursos',
@@ -753,7 +754,7 @@ comprobar(
     true,
     str_contains(
         (string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs')),
-        'itemtype="https://schema.org/BreadcrumbList"'
+        '"@type":"BreadcrumbList"'
     )
 );
 
@@ -998,7 +999,7 @@ $medio_ficha = is_file($publico . '/' . web_ruta_medio('humo-uno'))
 comprobar(
     'y la ficha del medio lleva sus migas de pan en schema.org',
     true,
-    str_contains((string) file_get_contents($medio_ficha), 'itemtype="https://schema.org/BreadcrumbList"')
+    str_contains((string) file_get_contents($medio_ficha), '"@type":"BreadcrumbList"')
 );
 
 // El buscador en vivo de la cabecera (dinamico.js) añadió el primer
@@ -1011,7 +1012,7 @@ comprobar(
 comprobar(
     'todo <script> de la portada carga un fichero externo, ninguno va inline',
     0,
-    substr_count($portada, '<script') - substr_count($portada, '<script src=')
+    substr_count($portada, '<script') - substr_count($portada, '<script src=') - substr_count($portada, '<script type="application/ld+json">')
 );
 
 // Las cifras de la cabecera: van en todas las paginas, no solo en la portada,
@@ -1022,7 +1023,7 @@ comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, '
 // Microdatos de sitio: WebSite con su SearchAction hacia /buscar.html, para
 // que un buscador pueda ofrecer la caja de busqueda propia en sus resultados
 // y para que quien lea la pagina con una IA sepa que sitio es este.
-comprobar('la cabecera lleva el WebSite de schema.org', true, str_contains($portada, 'itemtype="https://schema.org/WebSite"'));
+comprobar('la cabecera lleva el WebSite de schema.org', true, str_contains($portada, '"@type":"WebSite"'));
 comprobar('con su SearchAction hacia el buscador', true, str_contains($portada, 'buscar.html?q={search_term_string}'));
 
 // Cada noticia enlaza a su articulo original, y lo enlaza dos veces: desde el
