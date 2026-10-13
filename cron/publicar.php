@@ -151,6 +151,10 @@ function publicar_pendiente(float $limite): array
     $ficheros += publicar_escribir($publico . '/mapa.js', publicar_plantilla('mapajs', [])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/robots.txt', publicar_plantilla('robots', ['base' => $base])) ? 1 : 0;
     $ficheros += publicar_escribir($publico . '/favicon.svg', publicar_plantilla('favicon', [])) ? 1 : 0;
+    $ficheros += publicar_escribir(
+        $publico . '/llms.txt',
+        publicar_plantilla('llms', ['base' => $base, 'dias' => $dias, 'temas' => $temas])
+    ) ? 1 : 0;
 
     // La tipografia de --titular: un fichero binario, no una plantilla, asi
     // que se copia tal cual en vez de pasar por publicar_plantilla(). Vive
@@ -233,6 +237,14 @@ function publicar_pendiente(float $limite): array
     // cambiar una seria gastar el presupuesto entero en no mover nada.
     $recientes = array_column($rio, 'dia');
 
+    // Un dia antiguo solo se rehace si su pagina es mas vieja que la ultima
+    // plantilla: sin esto, un cambio de <head> -datos estructurados, canonicas,
+    // titulos- llegaba a los dias recientes y se quedaba para siempre fuera de
+    // los otros ciento setenta. Con la fecha como criterio, la puesta al dia
+    // avanza sola aunque el presupuesto de tiempo corte una pasada: lo que ya
+    // se rehizo es mas nuevo que las plantillas y no se vuelve a tocar.
+    $plantillas_mtime = publicar_plantillas_mtime();
+
     foreach ($dias as $dia) {
         if (microtime(true) >= $limite) {
             // Sin firma guardada, la proxima pasada vuelve a empezar. Se
@@ -243,7 +255,11 @@ function publicar_pendiente(float $limite): array
 
         $ruta = $publico . '/' . web_ruta_dia((string) $dia['dia']);
 
-        if (!in_array($dia['dia'], $recientes, true) && is_file($ruta)) {
+        if (
+            !in_array($dia['dia'], $recientes, true)
+            && is_file($ruta)
+            && (int) @filemtime($ruta) >= $plantillas_mtime
+        ) {
             continue;
         }
 
@@ -1376,6 +1392,9 @@ function publicar_firma(array $dias): string
 function publicar_firma_plantillas(): string
 {
     $ficheros = glob(dirname(__DIR__) . '/plantillas/web/*.php') ?: [];
+    // La libreria que pinta los datos estructurados de todas las paginas:
+    // cambiarla cambia la salida igual que cambiar una plantilla.
+    $ficheros[] = dirname(__DIR__) . '/lib/seo.php';
     sort($ficheros);
 
     $partes = [];
@@ -1385,6 +1404,24 @@ function publicar_firma_plantillas(): string
     }
 
     return sha1(implode('|', $partes));
+}
+
+/**
+ * La fecha de la plantilla -o de la libreria de SEO que pinta sus datos-
+ * modificada mas recientemente.
+ */
+function publicar_plantillas_mtime(): int
+{
+    $ficheros = glob(dirname(__DIR__) . '/plantillas/web/*.php') ?: [];
+    $ficheros[] = dirname(__DIR__) . '/lib/seo.php';
+
+    $mas_reciente = 0;
+
+    foreach ($ficheros as $fichero) {
+        $mas_reciente = max($mas_reciente, (int) @filemtime($fichero));
+    }
+
+    return $mas_reciente;
 }
 
 /**

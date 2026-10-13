@@ -38,10 +38,13 @@ foreach ($bits as $bit) {
     $palabras += texto_contar_palabras((string) $bit['cuerpo']);
 }
 
+$destacadas = array_slice(array_map(static fn (array $b): string => (string) $b['titular'], $bits), 0, 2);
+
 $descripcion = sprintf(
-    '%d noticias de tecnología hotelera descubiertas el %s.',
+    '%d noticias de tecnología hotelera del %s%s',
     count($bits),
-    $titulo
+    $titulo,
+    $destacadas ? '. Destacan: ' . implode('; ', $destacadas) . '.' : '.'
 );
 
 $enlace_activo = 'archivo';
@@ -49,27 +52,33 @@ $imagen_og     = web_url_dia($base, $fecha) . 'og.png';
 
 require_once __DIR__ . '/iconos.php';
 
+$seo = [
+    'titulo' => 'Tecnología hotelera, ' . $titulo . ' · Bit & Breakfast',
+    'titulo_social' => 'Tecnología hotelera: lo que apareció el ' . $titulo,
+    'descripcion' => texto_recortar($descripcion, 160),
+    'url' => $url,
+    'tipo' => 'article',
+    'tipo_pagina' => 'CollectionPage',
+    'theme' => '#f4f2ee',
+    'imagen' => $imagen_og,
+    'imagen_alt' => $bits ? (string) $bits[0]['titular'] : 'Bit & Breakfast, ' . $titulo,
+    'publicado' => $fecha,
+    'modificado' => $fecha,
+    'grafo' => [
+        seo_lista(
+            array_map(static fn (array $b): array => [
+                'nombre' => (string) $b['titular'],
+                'url'    => $url . '#bit-' . (int) $b['id'],
+            ], $bits),
+            'Noticias del ' . $titulo
+        ),
+    ],
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= web_e($titulo) ?> · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
-<link rel="canonical" href="<?= web_e($url) ?>">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#f4f2ee">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="<?= web_e($titulo) ?>">
-<meta property="og:description" content="<?= web_e(texto_recortar($descripcion, 160)) ?>">
-<meta property="og:type" content="article">
-<meta property="og:url" content="<?= web_e($url) ?>">
-<meta property="og:locale" content="es_ES">
-<meta property="og:image" content="<?= web_e($imagen_og) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e($imagen_og) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

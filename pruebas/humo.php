@@ -882,6 +882,75 @@ comprobar(
     )
 );
 
+// SEO y GEO: cada pagina publicada lleva su cabecera completa y unos datos
+// estructurados que son JSON valido. Se recorren todas -no solo la portada-
+// porque la divergencia entre paginas es justo el fallo que seo.php evita.
+$paginas_html = array_merge(
+    glob($publico . '/*.html') ?: [],
+    glob($publico . '/d/*/index.html') ?: [],
+    glob($publico . '/t/*/index.html') ?: [],
+    glob($publico . '/m/*/index.html') ?: []
+);
+$seo_roto = [];
+
+foreach ($paginas_html as $ruta_html) {
+    $html = (string) file_get_contents($ruta_html);
+    $nombre_html = str_replace($publico . '/', '', $ruta_html);
+
+    if (substr_count($html, '<link rel="canonical"') !== 1) {
+        $seo_roto[] = $nombre_html . ': canonica';
+    }
+    // Solo el <head>: el mapa lleva <title> dentro de su SVG, y no cuentan.
+    preg_match('~<head>(.*?)</head>~s', $html, $cabeza);
+    $cabeza = $cabeza[1] ?? '';
+
+    if (substr_count($cabeza, '<title>') !== 1 || !str_contains($cabeza, 'name="twitter:title"') || !str_contains($cabeza, 'property="og:locale"')) {
+        $seo_roto[] = $nombre_html . ': cabecera incompleta';
+    }
+    if (!str_contains($html, 'name="robots"')) {
+        $seo_roto[] = $nombre_html . ': sin robots';
+    }
+
+    preg_match_all('~<script type="application/ld\+json">(.*?)</script>~s', $html, $bloques);
+
+    foreach ($bloques[1] as $contenido) {
+        $datos = json_decode($contenido, true);
+
+        if (!is_array($datos) || ($datos['@context'] ?? '') !== 'https://schema.org' || empty($datos['@graph'])) {
+            $seo_roto[] = $nombre_html . ': JSON-LD invalido';
+        }
+    }
+
+    // legal.html no se indexa y, con ello, no lleva datos estructurados.
+    if (!str_contains($html, 'noindex') && !$bloques[1]) {
+        $seo_roto[] = $nombre_html . ': sin JSON-LD';
+    }
+}
+
+comprobar('se ha comprobado un puñado de paginas', true, count($paginas_html) >= 10);
+comprobar('todas las paginas llevan cabecera SEO completa y JSON-LD valido', [], $seo_roto);
+
+$portada_ld = (string) file_get_contents($publico . '/index.html');
+comprobar('la portada declara la organizacion', true, str_contains($portada_ld, '"@type":"Organization"'));
+comprobar('y el sitio con su buscador', true, str_contains($portada_ld, '"@type":"SearchAction"'));
+comprobar('y la lista de lo ultimo', true, str_contains($portada_ld, '"@type":"ItemList"'));
+
+$dia_ld = (string) file_get_contents($publico . '/' . web_ruta_dia($dia));
+comprobar('el dia es un article con fecha de publicacion', true, str_contains($dia_ld, 'property="article:published_time"'));
+comprobar('y lleva migas', true, str_contains($dia_ld, '"@type":"BreadcrumbList"'));
+
+$robots_txt = (string) file_get_contents($publico . '/robots.txt');
+comprobar('robots.txt recibe a los rastreadores de IA por su nombre', true, str_contains($robots_txt, 'User-agent: GPTBot') && str_contains($robots_txt, 'User-agent: ClaudeBot'));
+comprobar('y les cierra lo mismo que a todos', 2, substr_count($robots_txt, 'Disallow: /api/'));
+
+comprobar('escribe llms.txt', true, is_file($publico . '/llms.txt'));
+comprobar(
+    'y llms.txt se presenta y enlaza el sitemap',
+    true,
+    str_starts_with((string) file_get_contents($publico . '/llms.txt'), '# Bit & Breakfast')
+        && str_contains((string) file_get_contents($publico . '/llms.txt'), '/sitemap.xml')
+);
+
 $portada = (string) file_get_contents($publico . '/index.html');
 
 comprobar(

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/texto.php';
 require_once __DIR__ . '/bits.php';
+require_once __DIR__ . '/seo.php';   // datos estructurados: las paginas lo usan antes de pintar su <head>
 
 /** Meses en espanol. No se usa strftime: esta obsoleta desde PHP 8.1. */
 function web_meses(): array

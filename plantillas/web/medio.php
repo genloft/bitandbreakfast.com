@@ -24,25 +24,42 @@ require_once __DIR__ . '/iconos.php';
 
 $url = web_url_medio($base, (string) $medio['slug']);
 
+$seo = [
+    'titulo' => $medio['nombre'] . ': noticias que recoge Bit & Breakfast',
+    'titulo_social' => $medio['nombre'] . ' en Bit & Breakfast',
+    'descripcion' => sprintf(
+        '%d noticia%s de tecnología hotelera de %s recogida%s en Bit & Breakfast, con enlace al original.',
+        (int) $medio['bits'],
+        (int) $medio['bits'] === 1 ? '' : 's',
+        $medio['nombre'],
+        (int) $medio['bits'] === 1 ? '' : 's'
+    ),
+    'url' => $url,
+    'tipo_pagina' => 'CollectionPage',
+    'modificado' => (string) ($medio['ultimo'] ?? ''),
+    'grafo' => [
+        seo_lista(
+            array_map(static fn (array $b): array => [
+                'nombre' => (string) $b['titular'],
+                'url'    => web_url_dia($base, (string) $b['dia']) . '#bit-' . (int) $b['id'],
+            ], array_slice($bits, 0, 30)),
+            'Noticias de ' . $medio['nombre']
+        ),
+    ],
+    'pagina_extra' => [
+        'about' => array_filter([
+            '@type' => 'Organization',
+            'name'  => (string) $medio['nombre'],
+            'url'   => (string) ($medio['url'] ?? ''),
+        ]),
+    ],
+    'theme' => '#060a18',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= web_e($medio['nombre']) ?> · Bit &amp; Breakfast</title>
-<meta name="description" content="Lo que ha publicado Bit &amp; Breakfast a partir de <?= web_e($medio['nombre']) ?>.">
-<link rel="canonical" href="<?= web_e($url) ?>">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#060a18">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="<?= web_e($medio['nombre']) ?> en Bit &amp; Breakfast">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($url) ?>">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

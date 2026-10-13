@@ -43,25 +43,31 @@ $siglas_tema      = glosario_por_tema((string) $tema['slug']);
 $normas_tema      = cumplimiento_por_tema((string) $tema['slug']);
 $cifras_tema      = cifras_por_tema((string) $tema['slug']);
 
+$seo = [
+    'titulo' => $tema['nombre'] . ': noticias de tecnología hotelera · Bit & Breakfast',
+    'titulo_social' => $tema['nombre'] . ' en tecnología hotelera',
+    'descripcion' => $descripcion_tema !== ''
+        ? seo_primera_frase($descripcion_tema)
+        : 'Todo lo que ha publicado Bit & Breakfast sobre ' . $tema['nombre'] . ' en tecnología hotelera.',
+    'url' => $url,
+    'tipo_pagina' => 'CollectionPage',
+    'grafo' => [
+        seo_lista(
+            array_map(static fn (array $b): array => [
+                'nombre' => (string) $b['titular'],
+                'url'    => web_url_dia($base, (string) ($b['dia'] ?? '')) . '#bit-' . (int) $b['id'],
+            ], array_slice($bits, 0, 30)),
+            $tema['nombre']
+        ),
+    ],
+    'theme' => '#060a18',
+    'rss' => ['titulo' => 'Bit & Breakfast · ' . $tema['nombre'], 'url' => $url_feed],
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= web_e($tema['nombre']) ?> · Bit &amp; Breakfast</title>
-<meta name="description" content="Todo lo que ha publicado Bit &amp; Breakfast sobre <?= web_e($tema['nombre']) ?> en tecnología hotelera.">
-<link rel="canonical" href="<?= web_e($url) ?>">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast · <?= web_e($tema['nombre']) ?>" href="<?= web_e($url_feed) ?>">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#060a18">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="<?= web_e($tema['nombre']) ?> en Bit &amp; Breakfast">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($url) ?>">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

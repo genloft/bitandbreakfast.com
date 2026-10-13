@@ -13,6 +13,10 @@
 Options -Indexes
 DirectoryIndex index.html index.php
 
+# Sin esto, robots.txt, llms.txt y los JSON salen sin charset y un cliente que
+# adivina puede leer mal las tildes de un sitio entero en espanol.
+AddDefaultCharset UTF-8
+
 # --- Directorios privados ----------------------------------------------------
 RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
 
@@ -104,6 +108,10 @@ RedirectMatch 403 ^/(config|lib|cron|sql|docs|pruebas|plantillas|cache)(/|$)
     Header always set X-Frame-Options "DENY"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # El idioma del contenido, tambien como cabecera: lo leen rastreadores que
+    # no llegan a parsear el <html lang>.
+    Header always set Content-Language "es"
 
     # Politica restrictiva: la web no carga nada de terceros, salvo la
     # unica excepcion explicita -Google Analytics, y solo tras aceptar

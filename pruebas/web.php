@@ -403,4 +403,110 @@ comprobar('toda pagina que pinta el mapa carga mapa.js', [], $sin_guion);
 comprobar('la hora sale en la zona del lector', '01:05', web_hora('2026-09-17 23:05:00'));
 comprobar('y una hora invalida no rompe nada', '', web_hora('esto no es una fecha'));
 
+// --- SEO y GEO: datos estructurados -------------------------------------------
+//
+// Lo que se prueba aqui es lo que un buscador -o un modelo que resume la
+// pagina- no perdona: JSON valido, un titular que no pueda cerrar el bloque,
+// y que todas las paginas pasen por la misma cabecera en vez de volver a
+// copiarla y divergir, que es justo lo que paso antes de lib/seo.php.
+
+$bloque = seo_json([['@type' => 'WebPage', 'name' => 'Titular </script><b>x</b> & "comillas"']]);
+
+comprobar('el JSON-LD va en un bloque de datos', true, str_starts_with($bloque, '<script type="application/ld+json">'));
+comprobar(
+    'un titular con </script> no puede cerrar el bloque',
+    1,
+    substr_count($bloque, '</script>')
+);
+
+$json_interior = substr($bloque, strlen('<script type="application/ld+json">'), -strlen('</script>'));
+$decodificado  = json_decode($json_interior, true);
+
+comprobar('el JSON-LD es JSON valido', true, is_array($decodificado));
+comprobar('lleva el contexto de schema.org', 'https://schema.org', $decodificado['@context'] ?? null);
+comprobar(
+    'y el texto escapado vuelve intacto al leerlo',
+    'Titular </script><b>x</b> & "comillas"',
+    $decodificado['@graph'][0]['name'] ?? null
+);
+
+$org = seo_organizacion('https://ejemplo.test/');
+comprobar('la organizacion tiene un @id estable', 'https://ejemplo.test/#organizacion', $org['@id']);
+comprobar('y la barra final de la base no se duplica', 'https://ejemplo.test/', $org['url']);
+
+$sitio = seo_sitio('https://ejemplo.test');
+comprobar('el sitio declara quien lo publica', ['@id' => 'https://ejemplo.test/#organizacion'], $sitio['publisher']);
+comprobar(
+    'y su buscador apunta a buscar.html',
+    'https://ejemplo.test/buscar.html?q={search_term_string}',
+    $sitio['potentialAction']['target']['urlTemplate']
+);
+
+$migas_seo = seo_migas([
+    ['nombre' => 'Portada', 'url' => 'https://ejemplo.test/'],
+    ['nombre' => 'Temas', 'url' => 'https://ejemplo.test/temas.html'],
+]);
+comprobar('las migas se numeran desde 1', [1, 2], array_column($migas_seo['itemListElement'], 'position'));
+comprobar('y cada miga lleva su URL', 'https://ejemplo.test/temas.html', $migas_seo['itemListElement'][1]['item']);
+
+$pagina_seo = seo_pagina([
+    'url'         => 'https://ejemplo.test/a.html',
+    'nombre'      => 'A',
+    'descripcion' => 'Una pagina',
+    'modificado'  => '2026-10-01',
+    'extra'       => ['about' => 'algo'],
+], 'https://ejemplo.test');
+
+comprobar('la pagina cuelga del sitio', ['@id' => 'https://ejemplo.test/#sitio'], $pagina_seo['isPartOf']);
+comprobar('y lleva su fecha de revision', '2026-10-01', $pagina_seo['dateModified']);
+comprobar('y sin fecha de publicacion no se inventa una', false, isset($pagina_seo['datePublished']));
+comprobar('los campos extra se mezclan', 'algo', $pagina_seo['about']);
+
+$lista_seo = seo_lista([['nombre' => 'Uno', 'url' => 'https://ejemplo.test/1'], ['nombre' => 'Dos', 'url' => 'https://ejemplo.test/2']], 'Cosas');
+comprobar('la lista cuenta sus elementos', 2, $lista_seo['numberOfItems']);
+comprobar('y lleva nombre cuando se le da', 'Cosas', $lista_seo['name']);
+
+$glosario_seo = seo_glosario(
+    [['sigla' => 'PMS', 'nombre' => 'Property Management System', 'definicion' => 'El sistema del hotel.']],
+    'https://ejemplo.test/glosario.html'
+);
+comprobar('cada sigla del glosario tiene el ancla de su pagina', 'https://ejemplo.test/glosario.html#pms', $glosario_seo['hasDefinedTerm'][0]['@id']);
+
+comprobar(
+    'una frase se corta en el primer punto',
+    'El PMS lleva las reservas.',
+    seo_primera_frase('El PMS lleva las reservas. Y el CRS las centraliza.')
+);
+comprobar(
+    'y las siglas con punto no la cortan',
+    'Verifactu y SES.Hospedajes son obligatorios.',
+    seo_primera_frase('Verifactu y SES.Hospedajes son obligatorios. Hay plazos.')
+);
+comprobar('un texto vacio da una descripcion vacia', '', seo_primera_frase('   '));
+
+comprobar(
+    'los rastreadores de IA principales estan en la lista',
+    [],
+    array_diff(['GPTBot', 'ClaudeBot', 'PerplexityBot', 'OAI-SearchBot', 'Google-Extended'], array_keys(seo_rastreadores_ia()))
+);
+
+// Toda pagina completa pinta su <head> con seo.php. La unica excepcion es la
+// provisional -la que sale antes de que haya nada publicado, y que no
+// necesita datos estructurados de un sitio todavia vacio-.
+$sin_seo = [];
+
+foreach (glob(dirname(__DIR__) . '/plantillas/web/*.php') ?: [] as $plantilla) {
+    $codigo = (string) file_get_contents($plantilla);
+
+    if (!str_contains($codigo, '<!doctype') || basename($plantilla) === 'provisional.php') {
+        continue;
+    }
+
+    if (!str_contains($codigo, "/seo.php'") || !str_contains($codigo, '$seo = [')) {
+        $sin_seo[] = basename($plantilla);
+    }
+}
+
+comprobar('toda pagina completa declara $seo y pinta su cabecera con seo.php', [], $sin_seo);
+
 resumen_pruebas('Pruebas de la fase 4: la web generada');

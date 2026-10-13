@@ -42,26 +42,21 @@ $terminos = glosario_terminos();
 
 $descripcion = 'Las siglas de la tecnología hotelera -PMS, RMS, NDC, RevPAR y el resto-, explicadas en una frase cada una.';
 
+$seo = [
+    'titulo' => 'Glosario de tecnología hotelera (PMS, RMS, NDC…) · Bit & Breakfast',
+    'titulo_social' => 'Glosario de tecnología hotelera',
+    'descripcion' => $descripcion,
+    'url' => $base . '/glosario.html',
+    'tipo_pagina' => 'CollectionPage',
+    'grafo' => [seo_glosario($terminos, $base . '/glosario.html')],
+    'pagina_extra' => ['mainEntity' => ['@id' => $base . '/glosario.html#glosario']],
+    'theme' => '#12100d',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Glosario · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e($descripcion) ?>">
-<link rel="canonical" href="<?= web_e($base) ?>/glosario.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#12100d">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Glosario de tecnología hotelera">
-<meta property="og:description" content="<?= web_e($descripcion) ?>">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/glosario.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

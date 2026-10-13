@@ -29,26 +29,18 @@ require_once __DIR__ . '/iconos.php';
 
 $descripcion = 'Qué temas de tecnología hotelera suben y cuáles bajan: los últimos 90 días frente a los 90 anteriores.';
 
+$seo = [
+    'titulo' => 'Tendencias en tecnología hotelera: qué sube y qué baja · Bit & Breakfast',
+    'titulo_social' => 'Tendencias en tecnología hotelera',
+    'descripcion' => $descripcion,
+    'url' => $base . '/tendencias.html',
+    'theme' => '#12100d',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tendencias · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e($descripcion) ?>">
-<link rel="canonical" href="<?= web_e($base) ?>/tendencias.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#12100d">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Tendencias en tecnología hotelera">
-<meta property="og:description" content="<?= web_e($descripcion) ?>">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/tendencias.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 
