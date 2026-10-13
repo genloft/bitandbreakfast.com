@@ -38,26 +38,18 @@ $nombre_proveedor_correo = match ($proveedor_correo) {
 
 $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable, cookies, datos personales y de dónde sale el contenido que se publica.';
 
+$seo = [
+    'titulo' => 'Aviso legal · Bit & Breakfast',
+    'descripcion' => $descripcion,
+    'url' => $base . '/legal.html',
+    'theme' => '#12100d',
+    'robots' => 'noindex, follow',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aviso legal · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e($descripcion) ?>">
-<link rel="canonical" href="<?= web_e($base) ?>/legal.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#12100d">
-<meta name="robots" content="noindex, follow">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Aviso legal · Bit &amp; Breakfast">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/legal.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

@@ -34,25 +34,19 @@ $categorias    = bits_categorias();
 require_once __DIR__ . '/iconos.php';
 $alta_abierta  = $alta_abierta ?? false;
 
+$seo = [
+    'titulo' => 'Archivo · Bit & Breakfast',
+    'titulo_social' => 'Archivo de Bit & Breakfast',
+    'descripcion' => 'Todo lo publicado en Bit & Breakfast, día a día: el agregador de tecnología hotelera en español.',
+    'url' => $base . '/archivo.html',
+    'tipo_pagina' => 'CollectionPage',
+    'theme' => '#f4f2ee',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Archivo · Bit &amp; Breakfast</title>
-<meta name="description" content="Todo lo publicado en Bit &amp; Breakfast, día a día: el agregador de tecnología hotelera en español.">
-<link rel="canonical" href="<?= web_e($base) ?>/archivo.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#f4f2ee">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Archivo de Bit &amp; Breakfast">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/archivo.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

@@ -45,13 +45,11 @@
  * relleno arriba y abajo: ahora comparten alto con el panel en vez de
  * sumar el suyo aparte.
  *
- * Lleva microdatos de schema.org (WebSite, con su SearchAction hacia
- * /buscar.html), no JSON-LD -mismo motivo que en bit.php: un <script> en
- * linea cae bajo el script-src 'self' que el resto del sitio no rompe a
- * proposito-. Va aqui y no en cada plantilla de pagina porque esta cabecera
- * ya es lo unico que todas comparten. Nada de "logo": no hay ninguna imagen
- * en todo el sitio, y un schema que apunte a un fichero que no existe es
- * peor que no llevar ese campo.
+ * El WebSite -con su SearchAction hacia /buscar.html- y la Organization ya
+ * no van aqui como microdatos: viajan en el JSON-LD que pinta seo.php en el
+ * <head> de cada pagina, con @id estables a los que se refiere todo lo
+ * demas. Dos descripciones de la misma entidad, una en microdatos y otra en
+ * JSON-LD, es justo lo que un buscador resuelve mal.
  *
  * A la derecha del menu va un buscador en vivo: un campo que consulta el
  * mismo indice.json del explorador (dinamicojs.php, publico/dinamico.js) y
@@ -95,19 +93,7 @@ $enlace_activo = $enlace_activo ?? '';
   </div>
 </div>
 
-<header class="cabecera" itemscope itemtype="https://schema.org/WebSite">
-  <meta itemprop="name" content="Bit &amp; Breakfast">
-  <meta itemprop="url" content="<?= web_e($base) ?>/">
-  <meta itemprop="inLanguage" content="es">
-  <span itemprop="publisher" itemscope itemtype="https://schema.org/Organization" hidden>
-    <meta itemprop="name" content="Bit &amp; Breakfast">
-    <meta itemprop="url" content="<?= web_e($base) ?>/">
-  </span>
-  <div itemprop="potentialAction" itemscope itemtype="https://schema.org/SearchAction" hidden>
-    <meta itemprop="target" content="<?= web_e($base) ?>/buscar.html?q={search_term_string}">
-    <meta itemprop="query-input" content="required name=search_term_string">
-  </div>
-
+<header class="cabecera">
   <div class="cabecera-barra">
     <a class="sello-marca" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">B</a>
 

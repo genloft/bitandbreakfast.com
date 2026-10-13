@@ -11,10 +11,10 @@
  * Recibe $bit, $indice -su posicion, que decide cual va destacada-, $base,
  * $fuentes, $categorias, $idiomas, $ambitos y $secreto.
  *
- * Lleva microdatos de schema.org (NewsArticle), no JSON-LD: un <script> en
- * linea -aunque sea de puros datos- cae bajo el mismo script-src 'self' que
- * el resto de la pagina, y esta pagina no lleva ni uno a proposito. Los
- * atributos itemprop no son <script> y no necesitan ese permiso.
+ * Lleva microdatos de schema.org (NewsArticle) pegados al texto visible que
+ * describen -titular y cuerpo-: lo que se marca es lo que se lee. Los datos
+ * de la pagina entera -sitio, organizacion, migas, listas- van aparte, en el
+ * JSON-LD de seo.php.
  *
  * Los enlaces de "compartir" son intents por URL -wa.me, linkedin.com/
  * sharing-, no un widget de terceros: ni script, ni pixel, ni peticion
@@ -78,6 +78,10 @@ $secreto  = $secreto ?? '';
            itemscope itemtype="https://schema.org/NewsArticle">
     <link itemprop="mainEntityOfPage" href="<?= web_e($permalink) ?>">
     <meta itemprop="datePublished" content="<?= web_e(substr((string) ($bit['dia'] ?? ''), 0, 10)) ?>">
+    <meta itemprop="dateModified" content="<?= web_e(substr((string) ($bit['dia'] ?? ''), 0, 10)) ?>">
+    <meta itemprop="inLanguage" content="es-ES">
+    <meta itemprop="articleSection" content="<?= web_e((string) ($categorias[$tema] ?? $bit['categoria'])) ?>">
+    <link itemprop="image" href="<?= web_e(web_url_dia($base, (string) ($bit['dia'] ?? '')) . 'og.png') ?>">
     <?php if (!empty($bit['url'])): ?>
       <link itemprop="isBasedOn" href="<?= web_e((string) $bit['url']) ?>">
     <?php endif; ?>
@@ -86,7 +90,10 @@ $secreto  = $secreto ?? '';
     </span>
     <span itemprop="publisher" itemscope itemtype="https://schema.org/Organization" hidden>
       <meta itemprop="name" content="Bit &amp; Breakfast">
-      <meta itemprop="url" content="<?= web_e($base) ?>">
+      <meta itemprop="url" content="<?= web_e($base) ?>/">
+      <span itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
+        <link itemprop="url" href="<?= web_e($base) ?>/favicon.svg">
+      </span>
     </span>
     <div class="bit-carril" aria-hidden="true">
       <p class="numero"><?= str_pad((string) ($indice + 1), 2, '0', STR_PAD_LEFT) ?></p>

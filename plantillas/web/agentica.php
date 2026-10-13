@@ -31,26 +31,19 @@ $limite_revision = agentica_limite_revision($revisado);
 
 $descripcion = 'MCP, ACP, UCP y AP2: los protocolos que dejan reservar un hotel sin salir de un chat, explicados con fecha y fuente, y si de verdad dejan sin canal directo a un hotel.';
 
+$seo = [
+    'titulo' => 'Reserva agéntica: MCP, ACP y UCP explicados · Bit & Breakfast',
+    'titulo_social' => 'Reserva agéntica: ¿desaparece mi canal directo?',
+    'descripcion' => $descripcion,
+    'url' => $base . '/agentica.html',
+    'modificado' => agentica_revisado(),
+    'theme' => '#12100d',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reserva agéntica · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e($descripcion) ?>">
-<link rel="canonical" href="<?= web_e($base) ?>/agentica.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#12100d">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Reserva agéntica: ¿desaparece mi canal directo?">
-<meta property="og:description" content="<?= web_e($descripcion) ?>">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/agentica.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

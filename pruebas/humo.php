@@ -406,7 +406,7 @@ comprobar(
     true,
     str_contains(
         (string) file_get_contents($publico . '/' . web_ruta_dia($dia)),
-        'itemtype="https://schema.org/BreadcrumbList"'
+        '"@type":"BreadcrumbList"'
     )
 );
 
@@ -487,11 +487,11 @@ comprobar(
     !empty($lastmod_por_url[web_url_tema($sitio_prueba, 'pms-crs')] ?? null)
 );
 comprobar(
-    'la portada, temas.html y medios.html se quedan sin lastmod inventado',
+    'la portada, temas.html y medios.html llevan el lastmod del bit mas reciente',
     true,
-    ($lastmod_por_url[$sitio_prueba . '/'] ?? null) === null
-        && ($lastmod_por_url[$sitio_prueba . '/temas.html'] ?? null) === null
-        && ($lastmod_por_url[$sitio_prueba . '/medios.html'] ?? null) === null
+    !empty($lastmod_por_url[$sitio_prueba . '/'] ?? null)
+        && !empty($lastmod_por_url[$sitio_prueba . '/temas.html'] ?? null)
+        && !empty($lastmod_por_url[$sitio_prueba . '/medios.html'] ?? null)
 );
 
 // cifras.json: las mismas cifras de la pagina, en JSON valido.
@@ -580,9 +580,10 @@ comprobar('escribe el calendario de eventos', true, is_file($publico . '/calenda
 $calendario_html = (string) file_get_contents($publico . '/calendario.html');
 
 comprobar(
-    'con al menos un evento por delante -TIS, en octubre de 2026-',
+    'enseña el primer evento que queda por delante',
     true,
-    str_contains($calendario_html, 'Tourism Innovation Summit')
+    ($proximos_cal = calendario_proximos(calendario_eventos(), gmdate('Y-m-d'))) === []
+        || str_contains($calendario_html, htmlspecialchars((string) $proximos_cal[0]['nombre'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
 );
 comprobar(
     'y dice hasta cuando vale su revision, igual que el resto de Recursos',
@@ -753,7 +754,7 @@ comprobar(
     true,
     str_contains(
         (string) file_get_contents($publico . '/' . web_ruta_tema('pms-crs')),
-        'itemtype="https://schema.org/BreadcrumbList"'
+        '"@type":"BreadcrumbList"'
     )
 );
 
@@ -882,6 +883,75 @@ comprobar(
     )
 );
 
+// SEO y GEO: cada pagina publicada lleva su cabecera completa y unos datos
+// estructurados que son JSON valido. Se recorren todas -no solo la portada-
+// porque la divergencia entre paginas es justo el fallo que seo.php evita.
+$paginas_html = array_merge(
+    glob($publico . '/*.html') ?: [],
+    glob($publico . '/d/*/index.html') ?: [],
+    glob($publico . '/t/*/index.html') ?: [],
+    glob($publico . '/m/*/index.html') ?: []
+);
+$seo_roto = [];
+
+foreach ($paginas_html as $ruta_html) {
+    $html = (string) file_get_contents($ruta_html);
+    $nombre_html = str_replace($publico . '/', '', $ruta_html);
+
+    if (substr_count($html, '<link rel="canonical"') !== 1) {
+        $seo_roto[] = $nombre_html . ': canonica';
+    }
+    // Solo el <head>: el mapa lleva <title> dentro de su SVG, y no cuentan.
+    preg_match('~<head>(.*?)</head>~s', $html, $cabeza);
+    $cabeza = $cabeza[1] ?? '';
+
+    if (substr_count($cabeza, '<title>') !== 1 || !str_contains($cabeza, 'name="twitter:title"') || !str_contains($cabeza, 'property="og:locale"')) {
+        $seo_roto[] = $nombre_html . ': cabecera incompleta';
+    }
+    if (!str_contains($html, 'name="robots"')) {
+        $seo_roto[] = $nombre_html . ': sin robots';
+    }
+
+    preg_match_all('~<script type="application/ld\+json">(.*?)</script>~s', $html, $bloques);
+
+    foreach ($bloques[1] as $contenido) {
+        $datos = json_decode($contenido, true);
+
+        if (!is_array($datos) || ($datos['@context'] ?? '') !== 'https://schema.org' || empty($datos['@graph'])) {
+            $seo_roto[] = $nombre_html . ': JSON-LD invalido';
+        }
+    }
+
+    // legal.html no se indexa y, con ello, no lleva datos estructurados.
+    if (!str_contains($html, 'noindex') && !$bloques[1]) {
+        $seo_roto[] = $nombre_html . ': sin JSON-LD';
+    }
+}
+
+comprobar('se ha comprobado un puñado de paginas', true, count($paginas_html) >= 10);
+comprobar('todas las paginas llevan cabecera SEO completa y JSON-LD valido', [], $seo_roto);
+
+$portada_ld = (string) file_get_contents($publico . '/index.html');
+comprobar('la portada declara la organizacion', true, str_contains($portada_ld, '"@type":"Organization"'));
+comprobar('y el sitio con su buscador', true, str_contains($portada_ld, '"@type":"SearchAction"'));
+comprobar('y la lista de lo ultimo', true, str_contains($portada_ld, '"@type":"ItemList"'));
+
+$dia_ld = (string) file_get_contents($publico . '/' . web_ruta_dia($dia));
+comprobar('el dia es un article con fecha de publicacion', true, str_contains($dia_ld, 'property="article:published_time"'));
+comprobar('y lleva migas', true, str_contains($dia_ld, '"@type":"BreadcrumbList"'));
+
+$robots_txt = (string) file_get_contents($publico . '/robots.txt');
+comprobar('robots.txt recibe a los rastreadores de IA por su nombre', true, str_contains($robots_txt, 'User-agent: GPTBot') && str_contains($robots_txt, 'User-agent: ClaudeBot'));
+comprobar('y les cierra lo mismo que a todos', 2, substr_count($robots_txt, 'Disallow: /api/'));
+
+comprobar('escribe llms.txt', true, is_file($publico . '/llms.txt'));
+comprobar(
+    'y llms.txt se presenta y enlaza el sitemap',
+    true,
+    str_starts_with((string) file_get_contents($publico . '/llms.txt'), '# Bit & Breakfast')
+        && str_contains((string) file_get_contents($publico . '/llms.txt'), '/sitemap.xml')
+);
+
 $portada = (string) file_get_contents($publico . '/index.html');
 
 comprobar(
@@ -929,7 +999,7 @@ $medio_ficha = is_file($publico . '/' . web_ruta_medio('humo-uno'))
 comprobar(
     'y la ficha del medio lleva sus migas de pan en schema.org',
     true,
-    str_contains((string) file_get_contents($medio_ficha), 'itemtype="https://schema.org/BreadcrumbList"')
+    str_contains((string) file_get_contents($medio_ficha), '"@type":"BreadcrumbList"')
 );
 
 // El buscador en vivo de la cabecera (dinamico.js) añadió el primer
@@ -942,7 +1012,7 @@ comprobar(
 comprobar(
     'todo <script> de la portada carga un fichero externo, ninguno va inline',
     0,
-    substr_count($portada, '<script') - substr_count($portada, '<script src=')
+    substr_count($portada, '<script') - substr_count($portada, '<script src=') - substr_count($portada, '<script type="application/ld+json">')
 );
 
 // Las cifras de la cabecera: van en todas las paginas, no solo en la portada,
@@ -953,7 +1023,7 @@ comprobar('la cabecera lleva el panel de cifras', true, str_contains($portada, '
 // Microdatos de sitio: WebSite con su SearchAction hacia /buscar.html, para
 // que un buscador pueda ofrecer la caja de busqueda propia en sus resultados
 // y para que quien lea la pagina con una IA sepa que sitio es este.
-comprobar('la cabecera lleva el WebSite de schema.org', true, str_contains($portada, 'itemtype="https://schema.org/WebSite"'));
+comprobar('la cabecera lleva el WebSite de schema.org', true, str_contains($portada, '"@type":"WebSite"'));
 comprobar('con su SearchAction hacia el buscador', true, str_contains($portada, 'buscar.html?q={search_term_string}'));
 
 // Cada noticia enlaza a su articulo original, y lo enlaza dos veces: desde el

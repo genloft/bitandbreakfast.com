@@ -12,9 +12,10 @@
  *
  * Cada URL lleva <lastmod> cuando hay una fecha real que darle -el dia de
  * un bit, la revision a mano de una pagina de Recursos-. Las paginas sin
- * una fecha propia que contar -portada, temas.html, medios.html, sobre.html,
- * buscar.html, archivo.html- se quedan sin el campo: inventar una fecha
- * seria peor que no darla.
+ * una fecha propia que contar -sobre.html, buscar.html- se quedan sin el
+ * campo: inventar una fecha seria peor que no darla. La portada, el archivo,
+ * temas.html y medios.html llevan la del bit mas reciente: cambian cuando
+ * entra uno.
  */
 
 declare(strict_types=1);
@@ -40,9 +41,19 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc><?= web_e($base) ?>/</loc>
+    <?php if ($tendencias_lastmod !== ''): ?>
+    <lastmod><?= web_e($tendencias_lastmod) ?></lastmod>
+    <?php endif; ?>
     <changefreq>hourly</changefreq>
   </url>
-  <url><loc><?= web_e($base) ?>/archivo.html</loc></url>
+  <?php // Portada, archivo, temas y medios cambian cuando entra un bit nuevo:
+        // su fecha real es la del bit mas reciente, igual que Tendencias. ?>
+  <url>
+    <loc><?= web_e($base) ?>/archivo.html</loc>
+    <?php if ($tendencias_lastmod !== ''): ?>
+    <lastmod><?= web_e($tendencias_lastmod) ?></lastmod>
+    <?php endif; ?>
+  </url>
   <url><loc><?= web_e($base) ?>/buscar.html</loc></url>
   <?php // El mapa se recalcula solo, como Tendencias: su fecha real es la del
         // bit mas reciente, porque el decay lo cambia aunque no se publique
@@ -56,8 +67,14 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
   <?php else: ?>
   <url><loc><?= web_e($base) ?>/mapa.html</loc></url>
   <?php endif; ?>
-  <url><loc><?= web_e($base) ?>/temas.html</loc></url>
-  <url><loc><?= web_e($base) ?>/medios.html</loc></url>
+  <?php foreach (['temas.html', 'medios.html'] as $pagina): ?>
+  <url>
+    <loc><?= web_e($base) ?>/<?= $pagina ?></loc>
+    <?php if ($tendencias_lastmod !== ''): ?>
+    <lastmod><?= web_e($tendencias_lastmod) ?></lastmod>
+    <?php endif; ?>
+  </url>
+  <?php endforeach; ?>
   <url><loc><?= web_e($base) ?>/sobre.html</loc></url>
   <url>
     <loc><?= web_e($base) ?>/estadisticas.html</loc>

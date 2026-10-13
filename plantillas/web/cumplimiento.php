@@ -35,26 +35,19 @@ $limite_revision = cumplimiento_limite_revision(cumplimiento_fechas(), $hoy, $re
 
 $descripcion = 'El calendario normativo de la tecnología hotelera en España: Verifactu, SES.Hospedajes, accesibilidad digital, NIS2, el AI Act y el alquiler de corta duración, con fecha y fuente en cada norma.';
 
+$seo = [
+    'titulo' => 'Normativa hotelera: Verifactu, NIS2 y AI Act · Bit & Breakfast',
+    'titulo_social' => 'Cumplimiento: el calendario normativo del sector hotelero',
+    'descripcion' => $descripcion,
+    'url' => $base . '/cumplimiento.html',
+    'modificado' => cumplimiento_revisado(),
+    'theme' => '#12100d',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cumplimiento · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e($descripcion) ?>">
-<link rel="canonical" href="<?= web_e($base) ?>/cumplimiento.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#12100d">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Cumplimiento: el calendario normativo del sector hotelero">
-<meta property="og:description" content="<?= web_e($descripcion) ?>">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/cumplimiento.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 

@@ -1,22 +1,25 @@
 <?php
 /**
- * Migas de pan invisibles: BreadcrumbList de schema.org.
+ * Migas de pan invisibles: BreadcrumbList de schema.org, en JSON-LD.
  *
- * Solo microdatos, sin ningun <ol> visible: estas paginas ya tienen menu y
- * un enlace de "volver", y una fila mas de navegacion no anadiria nada para
+ * Solo datos, sin ningun <ol> visible: estas paginas ya tienen menu y un
+ * enlace de "volver", y una fila mas de navegacion no anadiria nada para
  * quien lee. Lo que si anade es contexto para quien no lee la pagina como
  * una persona -un buscador, o una IA que la resuma-: que esta ficha de tema
  * cuelga de Temas, y Temas de la portada, no solo cual es su URL.
  *
- * Mismo criterio que el resto del sitio: itemprop, no JSON-LD, porque un
- * <script> en linea rompe el script-src 'self' que el sitio respeta a
- * proposito.
+ * Antes eran microdatos dentro de un <ol hidden>. Un <script
+ * type="application/ld+json"> es un bloque de datos, no se ejecuta, y por
+ * eso el script-src 'self' del sitio no lo toca; y no depende de marcado
+ * oculto, que es lo que los buscadores miran con mas recelo.
  *
  * Recibe $migas: lista ordenada de ['nombre' => .., 'url' => ..], desde la
  * portada hasta la pagina actual inclusive.
  */
 
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/lib/seo.php';
 
 $migas = $migas ?? [];
 
@@ -25,12 +28,4 @@ if (!$migas) {
 }
 
 ?>
-<ol itemscope itemtype="https://schema.org/BreadcrumbList" hidden>
-  <?php foreach ($migas as $indice => $miga): ?>
-    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-      <link itemprop="item" href="<?= web_e($miga['url']) ?>">
-      <meta itemprop="name" content="<?= web_e($miga['nombre']) ?>">
-      <meta itemprop="position" content="<?= (int) ($indice + 1) ?>">
-    </li>
-  <?php endforeach; ?>
-</ol>
+<?= seo_json([['@id' => end($migas)['url'] . '#migas'] + seo_migas($migas)]) . "\n" ?>

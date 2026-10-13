@@ -122,26 +122,30 @@ $grupos = cifras_grupos();
 
 $descripcion = 'IA, turismo, inversión, empleo y rendimiento hotelero: España frente al dato global, con fuente y fecha en cada cifra.';
 
+$seo = [
+    'titulo' => 'Cifras de tecnología hotelera: España frente al mundo · Bit & Breakfast',
+    'titulo_social' => 'Cifras de la tecnología hotelera, España frente al mundo',
+    'descripcion' => $descripcion,
+    'url' => $base . '/estadisticas.html',
+    'modificado' => cifras_revisado(),
+    'grafo' => [
+        seo_dataset(
+            $base . '/estadisticas.html',
+            'Cifras de la tecnología hotelera: España frente al mundo',
+            $descripcion,
+            cifras_revisado(),
+            [['url' => $base . '/cifras.json', 'formato' => 'application/json']],
+            $base
+        ),
+    ],
+    'pagina_extra' => ['mainEntity' => ['@id' => $base . '/estadisticas.html#datos']],
+    'theme' => '#12100d',
+];
+
 ?><!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cifras · Bit &amp; Breakfast</title>
-<meta name="description" content="<?= web_e($descripcion) ?>">
-<link rel="canonical" href="<?= web_e($base) ?>/estadisticas.html">
-<link rel="alternate" type="application/rss+xml" title="Bit &amp; Breakfast" href="<?= web_e($base) ?>/feed.xml">
-<link rel="icon" href="<?= web_e($base) ?>/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="<?= web_e($base) ?>/estilo.css?v=<?= web_e($version) ?>">
-<meta name="theme-color" content="#12100d">
-<meta property="og:site_name" content="Bit &amp; Breakfast">
-<meta property="og:title" content="Cifras de la tecnología hotelera, España frente al mundo">
-<meta property="og:description" content="<?= web_e($descripcion) ?>">
-<meta property="og:type" content="website">
-<meta property="og:url" content="<?= web_e($base) ?>/estadisticas.html">
-<meta property="og:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?= web_e(web_url_imagen_generica($base)) ?>">
+<?php require __DIR__ . '/seo.php'; ?>
 </head>
 <body>
 
