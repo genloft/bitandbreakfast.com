@@ -266,17 +266,29 @@ function publicar_pendiente(float $limite): array
         $bits    = publicar_bits((string) $dia['dia'], 500);
         $racimos = array_map(static fn (array $b): int => (int) ($b['racimo_id'] ?? 0), $bits);
 
-        $ficheros += publicar_escribir($ruta, publicar_plantilla('dia', $comunes + [
+        $escrito = publicar_escribir($ruta, publicar_plantilla('dia', $comunes + [
             'dia'     => $dia,
             'bits'    => $bits,
             'fuentes' => publicar_fuentes($racimos),
-        ])) ? 1 : 0;
+        ]));
+
+        if ($escrito) {
+            $ficheros++;
+        } else {
+            // Mismo contenido: no se reescribe, pero se marca como al dia.
+            // Sin esto, un cambio de plantilla que no afecta a esta pagina la
+            // dejaba mas vieja que la plantilla y se rehacia en cada pasada.
+            @touch($ruta);
+        }
 
         // La tarjeta de ese dia, con su titular de cabeza: es la que ve
-        // quien recibe un enlace a /d/<fecha>/ por WhatsApp o LinkedIn.
-        if ($bits) {
+        // quien recibe un enlace a /d/<fecha>/ por WhatsApp o LinkedIn. Un dia
+        // antiguo que ya la tiene no la rehace: dibujarla con GD es lo caro.
+        $tarjeta = dirname($ruta) . '/og.png';
+
+        if ($bits && (in_array($dia['dia'], $recientes, true) || !is_file($tarjeta))) {
             $ficheros += publicar_escribir(
-                dirname($ruta) . '/og.png',
+                $tarjeta,
                 imagen_social_png((string) $bits[0]['titular'], web_fecha_larga(substr((string) $dia['dia'], 0, 10)))
             ) ? 1 : 0;
         }
