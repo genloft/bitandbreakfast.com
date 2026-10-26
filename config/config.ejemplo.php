@@ -80,6 +80,12 @@ return [
         'doi_plantilla' => 0,
         'remitente'     => 'hola@bitandbreakfast.com',
         'nombre_remitente' => 'Bit & Breakfast',
+
+        // Copia de cada alta confirmada a una lista de Brevo, en paralelo al
+        // buzon propio (que sigue confirmando y enviando). Vacio = sin copia.
+        // La clave solo se escribe aqui, en el servidor: no va al repositorio.
+        'brevo_clave'   => '',
+        'brevo_lista'   => 0,   // ID numerico de la lista en Brevo
     ],
 
     // true muestra los errores por pantalla. En produccion, siempre false.

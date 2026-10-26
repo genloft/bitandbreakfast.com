@@ -199,6 +199,17 @@ function lista_confirmar(int $id, string $testigo): bool
 }
 
 /**
+ * La direccion de un suscriptor confirmado, o cadena vacia si no lo esta.
+ */
+function lista_email_confirmado(int $id): string
+{
+    $st = bd()->prepare("SELECT email FROM suscriptores WHERE id = ? AND estado = 'confirmado' LIMIT 1");
+    $st->execute([$id]);
+
+    return (string) ($st->fetchColumn() ?: '');
+}
+
+/**
  * Firma del enlace de baja.
  *
  * Permanente a proposito, al reves que el testigo de confirmacion: el enlace

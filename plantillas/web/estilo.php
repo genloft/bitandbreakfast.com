@@ -1512,6 +1512,11 @@ h1 {
 }
 
 .alta p { margin: 0 0 1rem; color: #b9b4ac; max-width: var(--lectura); }
+
+/* La del principio de la portada: mas baja, para no apartar el mapa. */
+.alta-inicial { margin: 0 0 1.5rem; padding: 1.1rem 1.4rem; }
+.alta-inicial h2 { font-size: clamp(1.3rem, 4.5vw, 1.8rem); margin-bottom: .4rem; }
+.alta-inicial .letra-pequena { margin: .6rem 0 0; }
 .alta a { color: var(--papel); }
 .alta-formulario label { display: block; margin-bottom: .45rem; font-size: .66rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #b9b4ac; }
 .alta-fila { display: flex; flex-wrap: wrap; gap: .5rem; max-width: 30rem; }

@@ -25,6 +25,11 @@ $id      = (int) ($_GET['s'] ?? 0);
 $testigo = (string) ($_GET['t'] ?? '');
 
 if (lista_confirmar($id, $testigo)) {
+    // Copia a la lista de Brevo, si esta configurada. Tras confirmar y sin
+    // depender del resultado: el lector ya esta dentro pase lo que pase.
+    require_once dirname(__DIR__) . '/lib/correo.php';
+    correo_copiar_a_brevo(lista_email_confirmado($id));
+
     api_responder(
         $base,
         'Ya estás dentro',

@@ -124,6 +124,17 @@ comprobar('y el estado sin confirmar', 'unconfirmed', $cuerpo['status']);
 
 comprobar('y el grupo de destino', ['123456789'], $cuerpo['groups']);
 
+// --- Copia a la lista de Brevo ----------------------------------------------
+
+$carga  = correo_carga_copia_brevo('juan@hotel.com', 'clave-secreta', 3);
+$cuerpo = json_decode($carga['cuerpo'], true);
+
+comprobar('la copia crea el contacto en Brevo', 'https://api.brevo.com/v3/contacts', $carga['url']);
+comprobar('con la clave en su cabecera', true, in_array('api-key: clave-secreta', $carga['cabeceras'], true));
+comprobar('la direccion viaja tal cual', 'juan@hotel.com', $cuerpo['email']);
+comprobar('la lista como entero en un array', [3], $cuerpo['listIds']);
+comprobar('repetirla actualiza en vez de fallar', true, $cuerpo['updateEnabled']);
+
 // --- Carga util de Brevo ----------------------------------------------------
 
 $carga = correo_carga_alta('juan@hotel.com', $brevo, 'https://bitandbreakfast.com/');
