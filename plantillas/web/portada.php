@@ -127,6 +127,8 @@ $seo = [
 
 <main id="contenido">
 
+  <?php require __DIR__ . '/suscribir_inicial.php'; ?>
+
   <?php // El mapa del stack va aqui y no mas abajo por una razon y su
         // contraria a la vez: tiene que verse lo primero -es lo unico de esta
         // portada que dice algo del conjunto y no de una noticia suelta- y no

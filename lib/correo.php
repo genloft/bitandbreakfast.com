@@ -397,6 +397,70 @@ function correo_peticion(array $carga): array
 }
 
 /**
+ * Carga util de la copia a Brevo. Funcion pura: no toca la red.
+ *
+ * Es una copia, no el alta: la doble confirmacion ya la ha hecho el sitio con
+ * su buzon, asi que aqui se crea el contacto directamente en la lista, sin
+ * plantilla ni correo de Brevo. updateEnabled hace que repetirla no falle.
+ *
+ * @return array ['url' => string, 'cabeceras' => string[], 'cuerpo' => string]
+ */
+function correo_carga_copia_brevo(string $email, string $api_key, int $lista): array
+{
+    return [
+        'url' => 'https://api.brevo.com/v3/contacts',
+        'cabeceras' => [
+            'api-key: ' . $api_key,
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ],
+        'cuerpo' => (string) json_encode([
+            'email'         => $email,
+            'listIds'       => [$lista],
+            'updateEnabled' => true,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+    ];
+}
+
+/**
+ * Copia un alta ya confirmada a la lista de Brevo, si esta configurada.
+ *
+ * Va aparte de 'correo.api_key', que es el proveedor que manda el alta: esta
+ * es la lista de captacion, y el buzon propio sigue haciendo la confirmacion y
+ * el envio. Se configura con correo.brevo_clave y correo.brevo_lista.
+ *
+ * Nunca falla hacia fuera: el lector ya esta confirmado en el sitio, y que
+ * Brevo este caido no es motivo para decirle que algo ha ido mal. Si la copia
+ * no sale, queda en el registro de errores.
+ */
+function correo_copiar_a_brevo(string $email): bool
+{
+    $clave = trim((string) config_opcional('correo.brevo_clave', ''));
+    $lista = (int) config_opcional('correo.brevo_lista', 0);
+
+    if ($clave === '' || $lista <= 0 || !correo_valido($email)) {
+        return false;
+    }
+
+    try {
+        [$codigo] = correo_peticion(correo_carga_copia_brevo($email, $clave, $lista));
+    } catch (Throwable $e) {
+        error_log('Bit & Breakfast, copia a Brevo: ' . $e->getMessage());
+
+        return false;
+    }
+
+    // 201 contacto creado, 204 ya existia y se ha actualizado.
+    if ($codigo !== 201 && $codigo !== 204) {
+        error_log('Bit & Breakfast, copia a Brevo: respuesta ' . $codigo);
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Da de alta una direccion. Es la unica funcion que usa api/suscribir.php.
  *
  * $temas -slugs de bits_categorias() separados por comas, vacio para todos-
