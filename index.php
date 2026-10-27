@@ -294,7 +294,16 @@ function arranque_hay_que_generar(string $raiz, string $huella): bool
         }
     }
 
-    return false;
+    // Una firma vacia es la senal de "regenera": la deja el panel al guardar el
+    // buzon de correo, para que aparezcan las cajas de alta. Sin esto, solo el
+    // cron la leia y, si el cron se atascaba, el cambio no se veia nunca.
+    try {
+        require_once $raiz . '/lib/db.php';
+
+        return (string) ajuste('publicar_firma', '') === '';
+    } catch (Throwable $e) {
+        return false;
+    }
 }
 
 /**
