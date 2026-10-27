@@ -128,7 +128,11 @@ $enlace_activo = $enlace_activo ?? '';
     </div>
 
     <a class="logo" href="<?= web_e($base) ?>/" aria-label="Bit &amp; Breakfast, portada">
-      <span class="logo-bloque">Bit<span class="logo-amp">&amp;</span>Breakfast</span>
+      <?php // La portada no tenia ningun h1: el nombre era un span. El resto de
+            // paginas ya traen el suyo, asi que el rol solo se pone aqui. Con
+            // role y no cambiando la etiqueta, porque un h1 hereda las reglas
+            // de titular de la hoja y cambiaria como se ve el nombre. ?>
+      <span class="logo-bloque"<?= $enlace_activo === 'portada' ? ' role="heading" aria-level="1"' : '' ?>>Bit<span class="logo-amp">&amp;</span>Breakfast</span>
     </a>
 
     <?php require __DIR__ . '/panel.php'; ?>
