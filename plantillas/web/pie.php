@@ -56,13 +56,13 @@ $alta_abierta = $alta_abierta ?? false;
 <?php if ($alta_abierta): ?>
   <div class="flotante-alta" id="flotante-alta" hidden>
     <button type="button" class="flotante-alta-cerrar" aria-label="Cerrar este aviso">&times;</button>
-    <p class="flotante-alta-titulo">Recíbelo cada mañana</p>
+    <p class="flotante-alta-titulo">Únete a la red</p>
     <form class="alta-formulario" method="post" action="<?= web_e($base) ?>/api/suscribir.php">
       <label for="flotante-email">Tu correo</label>
       <div class="alta-fila">
         <input id="flotante-email" name="email" type="email" inputmode="email"
                autocomplete="email" placeholder="tu@hotel.com" required>
-        <button type="submit">Suscribirme</button>
+        <button type="submit">Unirme</button>
       </div>
 
       <?php /* Trampa para robots: un campo que nadie ve y que nadie rellena. */ ?>

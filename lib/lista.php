@@ -273,7 +273,7 @@ function lista_cuentas(): array
  */
 function lista_texto_confirmacion(string $enlace, string $base): string
 {
-    return "Has pedido recibir Bit & Breakfast, el radar semanal de tecnología hotelera.\n\n"
+    return "Has pedido unirte a la red de Bit & Breakfast, para que te avisemos de lo importante en tecnología hotelera.\n\n"
          . "Confirma el alta pulsando aquí:\n"
          . $enlace . "\n\n"
          . "Si no has sido tú, no hagas nada: sin ese clic no te apuntamos y esta\n"
@@ -300,8 +300,8 @@ function lista_html_confirmacion(string $enlace, string $base): string
          . 'font-family:Georgia,\'Times New Roman\',serif;font-size:16px;line-height:1.6">'
          . '<div style="max-width:32rem;margin:0 auto">'
          . '<p style="font-size:28px;margin:0 0 24px">Bit<span style="color:#c9a66b">&amp;</span>Breakfast</p>'
-         . '<p>Has pedido recibir <strong>Bit &amp; Breakfast</strong>, el radar semanal de '
-         . 'tecnología hotelera.</p>'
+         . '<p>Has pedido unirte a la red de <strong>Bit &amp; Breakfast</strong>, para que '
+         . 'te avisemos de lo importante en tecnología hotelera.</p>'
          . '<p style="margin:28px 0"><a href="' . $e($enlace) . '" '
          . 'style="display:inline-block;padding:12px 20px;border:1px solid #c9a66b;'
          . 'color:#c9a66b;text-decoration:none">Confirmar el alta</a></p>'
