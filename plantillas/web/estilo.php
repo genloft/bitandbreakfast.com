@@ -81,6 +81,8 @@ declare(strict_types=1);
 
   /* El acento, rojo de tinta, para la ultima hora y lo que esta activo. */
   --acento:  #d02b1f;
+  /* Rojo para fondos con texto blanco encima (boton de alta). */
+  --acento-boton: #c42d1c;
 
   /* Condensada para rotulos y titulares: es la letra de los periodicos
      precisamente porque cabe mas en menos sitio. BB Titular -autoalojada,
@@ -916,6 +918,14 @@ h1 {
   color: var(--suave);
 }
 
+/* Objetivo tactil minimo de 24 px (WCAG 2.2, 2.5.8): estas etiquetas medían
+   unos 14 px de alto y hay mas de cien en la portada, pegadas unas a otras. */
+a.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
 .etiqueta-categoria {
   padding: .12rem .4rem;
   background: var(--tinta);
@@ -1031,6 +1041,7 @@ h1 {
 .bit-multifuente .menciona,
 .bit-multifuente .menciona a,
 .bit-multifuente .pie-bit .datos,
+.bit-multifuente .fuentes-bit .datos,
 .bit-multifuente .fuentes-bit summary,
 .bit-multifuente .titular-fuente { color: var(--filete-fino); }
 .bit-multifuente .pie-bit { border-top-color: rgba(244, 242, 238, .3); }
@@ -1529,7 +1540,9 @@ h1 {
 .alta-fila button {
   padding: .7rem 1.3rem;
   border: 0;
-  background: var(--acento);
+  /* Fondo propio y no --acento: en modo oscuro el acento se aclara para
+     leerse sobre fondo negro, y con texto blanco encima se quedaba en 3,9:1. */
+  background: var(--acento-boton);
   color: #fff;
   font-family: var(--ui);
   font-size: .74rem;
@@ -1605,7 +1618,7 @@ h1 {
   place-items: center;
   border: none;
   background: transparent;
-  color: #b9b4ac;
+  color: var(--filete-fino);
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
@@ -1663,7 +1676,9 @@ h1 {
   place-items: center;
   border: none;
   background: transparent;
-  color: #b9b4ac;
+  /* --filete-fino y no un gris fijo: el aviso lleva fondo --tinta, que en modo
+     oscuro es claro, y un gris claro fijo sobre claro daba 1,8:1. */
+  color: var(--filete-fino);
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
