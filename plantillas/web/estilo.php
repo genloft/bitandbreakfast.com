@@ -100,7 +100,7 @@ declare(strict_types=1);
              Roboto, Inter, Helvetica, Arial, sans-serif;
   --lectura-serif: Georgia, Charter, "Iowan Old Style", "Times New Roman", serif;
 
-  --ancho:   80rem;
+  --ancho:   120rem;
   /* Subido de 38rem: en un monitor ancho una columna de lectura tan
      estrecha se quedaba a media pagina, con todo el hueco de al lado vacio
      -en la pagina de "Que es" sobre todo, que es texto de principio a fin y
@@ -2480,6 +2480,28 @@ h1 {
 
   .rejilla-fichas { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
   .logo-bloque { letter-spacing: -.025em; }
+}
+
+/* --- Portada en pantalla ancha: titulares y columna lateral -----------------
+   Con el tope en 120rem, una sola columna de tres fichas se queda corta de
+   contenido y larga de hueco. A partir de aqui lo que va despues de las
+   noticias -cifras, lo mas util, lo mas leido- sube a una columna a su lado.
+   Por debajo de 90rem no hay columna: el aside se apila detras de las noticias,
+   en el mismo orden que tenia antes. */
+
+@media (min-width: 90rem) {
+  .portada-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    gap: 0 2.5rem;
+    align-items: start;
+  }
+
+  .portada-lateral > :first-child { margin-top: 0; }
+
+  /* La tira de cifras son tres columnas pensadas para el ancho entero; en la
+     columna lateral caben en una. */
+  .portada-lateral .cifras-tira-lista { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Modo oscuro: invertir papel y tinta, no reescribir la hoja. Las variables

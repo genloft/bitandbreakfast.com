@@ -138,6 +138,7 @@ $seo = [
         // peor que abrirlo sin mapa. ?>
   <?php require __DIR__ . '/mapa_banda.php'; ?>
 
+  <div class="portada-cuerpo">
   <article class="edicion">
 
     <?php
@@ -170,17 +171,23 @@ $seo = [
 
   </article>
 
-  <?php // Tres cifras del sector, para el que ha terminado de leer. Van aqui
-        // abajo y no arriba: el mapa ya ocupa la cabecera, y dos bloques de
-        // contexto por delante del primer titular convierten un agregador de
-        // noticias en un cuadro de mandos con noticias al fondo. ?>
-  <?php require __DIR__ . '/cifras_tira.php'; ?>
+  <?php // Columna lateral en pantalla ancha, y a continuacion de las noticias en
+        // el resto: el mismo orden de siempre. En pantalla ancha va a la derecha
+        // de las noticias y no debajo, para que no quede un agujero a su lado. ?>
+  <aside class="portada-lateral" aria-label="Cifras y lo más leído">
+    <?php // Tres cifras del sector, para el que ha terminado de leer. Van aqui
+          // abajo y no arriba: el mapa ya ocupa la cabecera, y dos bloques de
+          // contexto por delante del primer titular convierten un agregador de
+          // noticias en un cuadro de mandos con noticias al fondo. ?>
+    <?php require __DIR__ . '/cifras_tira.php'; ?>
 
-  <?php // El voto pesa mas que el clic -es la opinion de quien ya ha leido
-        // el bit entero, no solo el titular-, por eso va primero. ?>
-  <?php require __DIR__ . '/mas_votado.php'; ?>
+    <?php // El voto pesa mas que el clic -es la opinion de quien ya ha leido
+          // el bit entero, no solo el titular-, por eso va primero. ?>
+    <?php require __DIR__ . '/mas_votado.php'; ?>
 
-  <?php require __DIR__ . '/mas_leido.php'; ?>
+    <?php require __DIR__ . '/mas_leido.php'; ?>
+  </aside>
+  </div>
 
   <?php require __DIR__ . '/explorar.php'; ?>
 
