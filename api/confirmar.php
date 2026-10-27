@@ -33,7 +33,7 @@ if (lista_confirmar($id, $testigo)) {
     api_responder(
         $base,
         'Ya estás dentro',
-        'Confirmado. El próximo martes te llega la edición, y en cada envío tienes un enlace para darte de baja en un clic.'
+        'Confirmado. Ya formas parte de la red: te avisaremos cuando haya algo importante en el sector, y en cada correo tienes un enlace para darte de baja en un clic.'
     );
 }
 

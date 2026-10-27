@@ -21,19 +21,20 @@ $alta_temas = $alta_temas ?? false;
 
 ?>
 <section class="alta" aria-labelledby="alta-titulo">
-  <h2 id="alta-titulo">Recíbelo cada mañana</h2>
+  <h2 id="alta-titulo">Únete a la red</h2>
 
   <?php if ($alta_abierta): ?>
 
-    <p>Un correo al día con lo que de verdad ha pasado en tecnología
-    hotelera. Sin publirreportajes y sin resúmenes de resúmenes.</p>
+    <p>Te avisamos cuando pasa algo importante en tecnología hotelera. Sin
+    calendario fijo: solo cuando merece la pena, sin publirreportajes y sin
+    resúmenes de resúmenes.</p>
 
     <form class="alta-formulario" method="post" action="<?= web_e($base) ?>/api/suscribir.php">
       <label for="alta-email">Tu correo</label>
       <div class="alta-fila">
         <input id="alta-email" name="email" type="email" inputmode="email"
                autocomplete="email" placeholder="tu@hotel.com" required>
-        <button type="submit">Suscribirme</button>
+        <button type="submit">Unirme</button>
       </div>
 
       <?php if ($alta_temas): ?>
@@ -42,7 +43,7 @@ $alta_temas = $alta_temas ?? false;
               // marcar nada se recibe todo, exactamente como hasta ahora. ?>
         <details class="alta-temas">
           <summary>Elegir temas (opcional)</summary>
-          <p class="letra-pequena">Sin marcar nada, recibes todos los temas cada día. Marca solo los que te interesan.</p>
+          <p class="letra-pequena">Sin marcar nada, te avisamos de todos los temas. Marca solo los que te interesan.</p>
           <div class="alta-temas-lista">
             <?php foreach (bits_categorias() as $slug => $nombre): ?>
               <label class="alta-tema">
