@@ -2010,6 +2010,10 @@ a.etiqueta {
   --papel:   #060a0d;
   --tarjeta: #07111a;
   --tinta:   #e6eef2;
+  /* El texto seguido: el "por que" al pasar por un nodo lo usa. Sin redefinirlo
+     aqui heredaba el gris oscuro de la pagina en modo claro, sobre el fondo
+     negro de la ventana: texto ilegible. */
+  --texto:   #d7e3e8;
   --apagado: #9fb0b8;
   --suave:   #7d929c;
   --filete-fino: #2a3f48;
@@ -2087,7 +2091,7 @@ a.etiqueta {
 @media print {
   .mapa-banda,
   .mapa-pagina .mapa-marco {
-    --papel: #fff; --tarjeta: #fff; --tinta: #000; --apagado: #333; --suave: #555;
+    --papel: #fff; --tarjeta: #fff; --tinta: #000; --texto: #000; --apagado: #333; --suave: #555;
     --filete-fino: #ccc; --realce: #eee; --acento: #000;
     --riesgo-alto: #c22a1c; --riesgo-medio: #a8500b; --oport-alto: #1a4f9c; --oport-medio: #1a6347;
     --sobre-senal: #fff; --barrido: #000;
