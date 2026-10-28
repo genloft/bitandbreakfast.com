@@ -28,7 +28,11 @@ if (lista_confirmar($id, $testigo)) {
     // Copia a la lista de Brevo, si esta configurada. Tras confirmar y sin
     // depender del resultado: el lector ya esta dentro pase lo que pase.
     require_once dirname(__DIR__) . '/lib/correo.php';
-    correo_copiar_a_brevo(lista_email_confirmado($id));
+    $ficha = lista_ficha($id);
+
+    if ($ficha !== null) {
+        correo_copiar_a_brevo($ficha['email'], $ficha['cargo'], $ficha['empresa']);
+    }
 
     api_responder(
         $base,

@@ -135,6 +135,21 @@ comprobar('la direccion viaja tal cual', 'juan@hotel.com', $cuerpo['email']);
 comprobar('la lista como entero en un array', [3], $cuerpo['listIds']);
 comprobar('repetirla actualiza en vez de fallar', true, $cuerpo['updateEnabled']);
 
+// Sin cargo ni empresa no hay claves vacias en el JSON: Brevo no las necesita y
+// un atributo que no exista en la cuenta tumba el alta entera.
+comprobar('sin atributos no viaja el campo', false, array_key_exists('attributes', $cuerpo));
+
+$carga  = correo_carga_copia_brevo('juan@hotel.com', 'clave-secreta', 3, ['CARGO' => 'Director de operaciones', 'EMPRESA' => '']);
+$cuerpo = json_decode($carga['cuerpo'], true);
+
+comprobar('el cargo viaja como atributo', 'Director de operaciones', $cuerpo['attributes']['CARGO'] ?? null);
+comprobar('un atributo vacio no viaja', false, array_key_exists('EMPRESA', $cuerpo['attributes'] ?? []));
+
+$carga  = correo_carga_copia_brevo('juan@hotel.com', 'clave-secreta', 3, ['CARGO' => '', 'EMPRESA' => '']);
+$cuerpo = json_decode($carga['cuerpo'], true);
+
+comprobar('con todos vacios no hay bloque de atributos', false, array_key_exists('attributes', $cuerpo));
+
 // --- Carga util de Brevo ----------------------------------------------------
 
 $carga = correo_carga_alta('juan@hotel.com', $brevo, 'https://bitandbreakfast.com/');

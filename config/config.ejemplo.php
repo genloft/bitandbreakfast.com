@@ -86,6 +86,11 @@ return [
         // La clave solo se escribe aqui, en el servidor: no va al repositorio.
         'brevo_clave'   => '',
         'brevo_lista'   => 0,   // ID numerico de la lista en Brevo
+        // Mandar tambien cargo y empresa a Brevo. Ponlo a true SOLO despues de
+        // crear los atributos CARGO y EMPRESA en Brevo (Contactos > Ajustes >
+        // Atributos de contacto, tipo texto): si no existen, Brevo rechaza el
+        // contacto entero.
+        'brevo_atributos' => false,
     ],
 
     // true muestra los errores por pantalla. En produccion, siempre false.

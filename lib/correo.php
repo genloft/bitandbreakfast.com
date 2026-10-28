@@ -405,8 +405,21 @@ function correo_peticion(array $carga): array
  *
  * @return array ['url' => string, 'cabeceras' => string[], 'cuerpo' => string]
  */
-function correo_carga_copia_brevo(string $email, string $api_key, int $lista): array
+function correo_carga_copia_brevo(string $email, string $api_key, int $lista, array $atributos = []): array
 {
+    $cuerpo = [
+        'email'         => $email,
+        'listIds'       => [$lista],
+        'updateEnabled' => true,
+    ];
+
+    // Solo los que traen algo: Brevo no necesita atributos vacios.
+    $atributos = array_filter($atributos, static fn ($v): bool => $v !== '');
+
+    if ($atributos) {
+        $cuerpo['attributes'] = $atributos;
+    }
+
     return [
         'url' => 'https://api.brevo.com/v3/contacts',
         'cabeceras' => [
@@ -414,11 +427,7 @@ function correo_carga_copia_brevo(string $email, string $api_key, int $lista): a
             'Content-Type: application/json',
             'Accept: application/json',
         ],
-        'cuerpo' => (string) json_encode([
-            'email'         => $email,
-            'listIds'       => [$lista],
-            'updateEnabled' => true,
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+        'cuerpo' => (string) json_encode($cuerpo, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     ];
 }
 
@@ -433,7 +442,7 @@ function correo_carga_copia_brevo(string $email, string $api_key, int $lista): a
  * Brevo este caido no es motivo para decirle que algo ha ido mal. Si la copia
  * no sale, queda en el registro de errores.
  */
-function correo_copiar_a_brevo(string $email): bool
+function correo_copiar_a_brevo(string $email, string $cargo = '', string $empresa = ''): bool
 {
     $clave = trim((string) config_opcional('correo.brevo_clave', ''));
     $lista = (int) config_opcional('correo.brevo_lista', 0);
@@ -442,8 +451,17 @@ function correo_copiar_a_brevo(string $email): bool
         return false;
     }
 
+    // Cargo y empresa solo viajan si correo.brevo_atributos esta activo: Brevo
+    // rechaza con un 400 el alta entera si un atributo no existe en la cuenta,
+    // y perder el contacto por un campo opcional seria el peor intercambio. Se
+    // activa despues de crear CARGO y EMPRESA en Brevo -Contactos > Ajustes >
+    // Atributos de contacto-.
+    $atributos = config_opcional('correo.brevo_atributos', false)
+        ? ['CARGO' => $cargo, 'EMPRESA' => $empresa]
+        : [];
+
     try {
-        [$codigo] = correo_peticion(correo_carga_copia_brevo($email, $clave, $lista));
+        [$codigo] = correo_peticion(correo_carga_copia_brevo($email, $clave, $lista, $atributos));
     } catch (Throwable $e) {
         error_log('Bit & Breakfast, copia a Brevo: ' . $e->getMessage());
 
@@ -470,7 +488,7 @@ function correo_copiar_a_brevo(string $email): bool
  *
  * @return array ['ok' => bool, 'mensaje' => string]
  */
-function correo_alta(string $email, string $url_vuelta = '', string $temas = '', string $alerta = ''): array
+function correo_alta(string $email, string $url_vuelta = '', string $temas = '', string $alerta = '', string $cargo = '', string $empresa = ''): array
 {
     $conf = correo_conf();
 
@@ -479,7 +497,7 @@ function correo_alta(string $email, string $url_vuelta = '', string $temas = '',
     }
 
     if ($conf['proveedor'] === 'propio') {
-        return correo_alta_propia($email, $conf, $url_vuelta, $temas, $alerta);
+        return correo_alta_propia($email, $conf, $url_vuelta, $temas, $alerta, $cargo, $empresa);
     }
 
     [$codigo, $cuerpo] = correo_peticion(correo_carga_alta($email, $conf, $url_vuelta));

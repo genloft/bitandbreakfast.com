@@ -146,7 +146,21 @@ $terminos = array_filter(array_map(
 ), static fn (string $termino): bool => $termino !== '');
 $alerta   = mb_substr(implode(',', array_slice(array_values($terminos), 0, 10)), 0, 300);
 
-$resultado = correo_alta($email, $base . '/', $temas, $alerta);
+// Cargo y empresa, opcionales. Texto libre de una linea: se quitan los
+// caracteres de control -un salto de linea no pinta nada en una columna, y en
+// un correo es el primer paso de una inyeccion de cabeceras-, se juntan los
+// espacios y se recortan al ancho de la columna. Vacio es lo normal.
+$limpiar_campo = static function (string $valor, int $largo): string {
+    $valor = (string) preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $valor);
+    $valor = trim((string) preg_replace('/\s+/u', ' ', $valor));
+
+    return mb_substr($valor, 0, $largo);
+};
+
+$cargo   = $limpiar_campo((string) ($_POST['cargo'] ?? ''), 80);
+$empresa = $limpiar_campo((string) ($_POST['empresa'] ?? ''), 100);
+
+$resultado = correo_alta($email, $base . '/', $temas, $alerta, $cargo, $empresa);
 
 if (!$resultado['ok']) {
     api_responder($base, 'No ha podido ser', $resultado['mensaje'], 502);

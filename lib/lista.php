@@ -32,7 +32,7 @@ const LISTA_TESTIGO_HORAS = 72;
  *
  * @return array ['ok' => bool, 'mensaje' => string]
  */
-function correo_alta_propia(string $email, array $conf, string $url_vuelta = '', string $temas = '', string $alerta = ''): array
+function correo_alta_propia(string $email, array $conf, string $url_vuelta = '', string $temas = '', string $alerta = '', string $cargo = '', string $empresa = ''): array
 {
     if (!correo_valido($email)) {
         return ['ok' => false, 'mensaje' => 'Esa dirección no parece válida.'];
@@ -51,7 +51,7 @@ function correo_alta_propia(string $email, array $conf, string $url_vuelta = '',
     }
 
     $testigo = bin2hex(random_bytes(32));
-    $id      = lista_guardar_pendiente($email, $testigo, $temas, $alerta);
+    $id      = lista_guardar_pendiente($email, $testigo, $temas, $alerta, $cargo, $empresa);
 
     if ($id <= 0) {
         return ['ok' => false, 'mensaje' => 'No se ha podido registrar el alta. Inténtalo más tarde.'];
@@ -109,21 +109,29 @@ function lista_buscar(string $email): ?array
  *
  * @return int Id del suscriptor, o 0 si no se ha podido.
  */
-function lista_guardar_pendiente(string $email, string $testigo, string $temas = '', string $alerta = ''): int
+function lista_guardar_pendiente(string $email, string $testigo, string $temas = '', string $alerta = '', string $cargo = '', string $empresa = ''): int
 {
     try {
-        $sql = "INSERT INTO suscriptores (email, estado, testigo, huella, temas, alerta, pedido)
-                VALUES (?, 'pendiente', ?, ?, ?, ?, UTC_TIMESTAMP())
+        // Cargo y empresa son opcionales y llegan ya recortados -api/suscribir.php
+        // los limpia-, pero se recortan otra vez aqui al ancho de la columna: un
+        // alta nunca debe fallar por un campo de mas, pase lo que pase fuera.
+        $cargo   = mb_substr($cargo, 0, 80);
+        $empresa = mb_substr($empresa, 0, 100);
+
+        $sql = "INSERT INTO suscriptores (email, estado, testigo, huella, temas, alerta, cargo, empresa, pedido)
+                VALUES (?, 'pendiente', ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())
                 ON DUPLICATE KEY UPDATE
                     estado    = 'pendiente',
                     testigo   = VALUES(testigo),
                     huella    = VALUES(huella),
                     temas     = VALUES(temas),
                     alerta    = VALUES(alerta),
+                    cargo     = VALUES(cargo),
+                    empresa   = VALUES(empresa),
                     pedido    = UTC_TIMESTAMP(),
                     dado_baja = NULL";
 
-        bd()->prepare($sql)->execute([$email, $testigo, lista_huella(), $temas, $alerta]);
+        bd()->prepare($sql)->execute([$email, $testigo, lista_huella(), $temas, $alerta, $cargo, $empresa]);
 
         $st = bd()->prepare('SELECT id FROM suscriptores WHERE email = ? LIMIT 1');
         $st->execute([$email]);
@@ -207,6 +215,25 @@ function lista_email_confirmado(int $id): string
     $st->execute([$id]);
 
     return (string) ($st->fetchColumn() ?: '');
+}
+
+/**
+ * La ficha de un suscriptor confirmado: direccion, cargo y empresa.
+ *
+ * @return array{email: string, cargo: string, empresa: string}|null  null si no esta confirmado.
+ */
+function lista_ficha(int $id): ?array
+{
+    $st = bd()->prepare("SELECT email, cargo, empresa FROM suscriptores WHERE id = ? AND estado = 'confirmado' LIMIT 1");
+    $st->execute([$id]);
+
+    $fila = $st->fetch();
+
+    return $fila === false ? null : [
+        'email'   => (string) $fila['email'],
+        'cargo'   => (string) $fila['cargo'],
+        'empresa' => (string) $fila['empresa'],
+    ];
 }
 
 /**
