@@ -1995,6 +1995,113 @@ a.etiqueta {
 
 .mapa-senal-icono { width: .8rem; height: .8rem; flex: none; }
 
+/* --- El mapa como centro de mando ---------------------------------------------
+   Una piel y no un dibujo nuevo: el SVG, los nodos accesibles y el guion que
+   arrastra, amplia y pliega siguen siendo los mismos. Aqui solo cambia lo que
+   se ve. El mapa es una sala de control oscura -en modo claro y en oscuro-, y
+   para eso se redefinen las variables dentro del propio mapa: todo lo que ya
+   tira de ellas se repinta solo, sin tocar una regla de arriba.
+
+   El riesgo y la oportunidad siguen sin depender del color: el simbolo del
+   nodo y la palabra del nivel no se han movido. */
+
+.mapa-banda,
+.mapa-pagina .mapa-marco {
+  --papel:   #060a0d;
+  --tarjeta: #07111a;
+  --tinta:   #e6eef2;
+  --apagado: #9fb0b8;
+  --suave:   #7d929c;
+  --filete-fino: #2a3f48;
+  --realce:  #0e1a20;
+  --acento:  #7fe9ff;
+  --riesgo-alto:  #ff4d3a;
+  --riesgo-medio: #ff9a3d;
+  --oport-alto:   #4da3ff;
+  --oport-medio:  #39d98a;
+  --sobre-senal:  #060a0d;
+  --barrido: #7fe9ff;
+
+  position: relative;
+  color: var(--tinta);
+  background:
+    linear-gradient(rgba(127, 233, 255, .045) 1px, transparent 1px) 0 0 / 50px 50px,
+    linear-gradient(90deg, rgba(127, 233, 255, .045) 1px, transparent 1px) 0 0 / 50px 50px,
+    radial-gradient(ellipse at 50% 40%, #0c161c 0%, #060a0d 72%);
+  border: 1px solid #16262e;
+}
+
+/* Las esquinas del visor. */
+.mapa-banda::before,
+.mapa-banda::after,
+.mapa-pagina .mapa-marco::before,
+.mapa-pagina .mapa-marco::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--barrido);
+  opacity: .7;
+  pointer-events: none;
+  z-index: 2;
+}
+.mapa-banda::before, .mapa-pagina .mapa-marco::before { top: 7px; left: 7px; border-right: 0; border-bottom: 0; }
+.mapa-banda::after, .mapa-pagina .mapa-marco::after { right: 7px; bottom: 7px; border-left: 0; border-top: 0; }
+
+.mapa-banda { margin: 1rem 0 1.2rem; padding: 1rem 1.4rem .9rem; }
+.mapa-pagina .mapa-marco { padding: .6rem; }
+
+.mapa-banda .sello { color: var(--barrido); letter-spacing: .18em; }
+.mapa-banda-rotulo h2 { color: #fff; }
+.mapa-banda-cifra strong { text-shadow: 0 0 16px rgba(127, 233, 255, .35); }
+.mapa-banda-cifra--alta strong { text-shadow: 0 0 16px rgba(255, 77, 58, .5); }
+
+.mapa-region { fill: rgba(127, 233, 255, .04); stroke: rgba(127, 233, 255, .16); stroke-width: 1; stroke-dasharray: 3 6; opacity: 1; }
+.mapa-region-nombre { fill: #4f8794; letter-spacing: 3px; }
+
+.mapa-arista--viva { opacity: .65; }
+
+/* El calor late: rapido el riesgo, despacio la oportunidad. El halo ya es el
+   circulo que se derrama, asi que basta con moverlo. */
+.mapa-halo { transform-box: fill-box; transform-origin: center; }
+.mapa-nodo-enlace--riesgo .mapa-halo { animation: mapa-pulso 1.8s ease-out infinite; }
+.mapa-nodo-enlace--oportunidad .mapa-halo { animation: mapa-pulso 3.4s ease-out infinite; }
+
+@keyframes mapa-pulso {
+  0%   { transform: scale(1);    opacity: .28; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* Los pone mapa.js. */
+.mapa-particula { fill: var(--barrido); }
+.mapa-particula--riesgo { fill: var(--riesgo-alto); }
+.mapa-barrido { pointer-events: none; }
+.mapa-nodo--barrido .mapa-punto { stroke: var(--barrido); stroke-width: 5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mapa-halo { animation: none !important; }
+}
+
+/* Al imprimir, el mapa vuelve a papel y tinta: una sala de control negra
+   gasta un cartucho y no se lee en blanco y negro. */
+@media print {
+  .mapa-banda,
+  .mapa-pagina .mapa-marco {
+    --papel: #fff; --tarjeta: #fff; --tinta: #000; --apagado: #333; --suave: #555;
+    --filete-fino: #ccc; --realce: #eee; --acento: #000;
+    --riesgo-alto: #c22a1c; --riesgo-medio: #a8500b; --oport-alto: #1a4f9c; --oport-medio: #1a6347;
+    --sobre-senal: #fff; --barrido: #000;
+    background: none;
+    border: 0;
+    color: #000;
+  }
+  .mapa-banda::before, .mapa-banda::after,
+  .mapa-pagina .mapa-marco::before, .mapa-pagina .mapa-marco::after { display: none; }
+  .mapa-banda-rotulo h2 { color: #000; }
+  .mapa-region { fill: #eee; stroke: none; }
+  .mapa-particula, .mapa-barrido { display: none; }
+}
+
 .mapa-banda-pie {
   display: flex;
   flex-wrap: wrap;
