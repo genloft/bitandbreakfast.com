@@ -741,3 +741,159 @@ declare(strict_types=1);
     abrir(inicial);
   }
 })();
+
+/* Los efectos del centro de mando: un barrido que recorre el mapa, puntos de
+   luz que viajan por las conexiones y las cifras que suben al cargar.
+
+   Va en su propio bloque y no mezclado con el de arriba: es adorno puro, no
+   toca el viewBox, los enlaces ni el panel, y si se quitara el mapa seguiria
+   funcionando igual. Con "reducir movimiento" no se arranca nada. */
+(function () {
+  'use strict';
+
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return;
+  }
+
+  var NS = 'http://www.w3.org/2000/svg';
+
+  // El ancho del lienzo, en unidades de dibujo: grafo_lienzo() en
+  // lib/stack_grafo.php. El barrido solo tiene que cruzarlo de lado a lado.
+  var ANCHO = 1400;
+  var ESTELA = 160;
+
+  function crear(tag, atributos) {
+    var e = document.createElementNS(NS, tag);
+
+    Object.keys(atributos).forEach(function (k) { e.setAttribute(k, atributos[k]); });
+
+    return e;
+  }
+
+  function montarEfectos(marco) {
+    var svg = marco.querySelector('.mapa-svg');
+    var nodos = svg && svg.querySelector('.mapa-nodos');
+
+    if (!svg || !nodos) { return; }
+
+    // La estela del barrido: un degradado que se apaga hacia atras.
+    var defs = crear('defs', {});
+    var id = 'mapa-barrido-' + Math.random().toString(36).slice(2, 8);
+    var grad = crear('linearGradient', { id: id, x1: '0', x2: '1', y1: '0', y2: '0' });
+
+    [['0', '0'], ['.85', '.14'], ['1', '.6']].forEach(function (p) {
+      grad.appendChild(crear('stop', { offset: p[0], 'stop-color': '#7fe9ff', 'stop-opacity': p[1] }));
+    });
+
+    defs.appendChild(grad);
+    svg.insertBefore(defs, svg.firstChild);
+
+    var barrido = crear('rect', {
+      'class': 'mapa-barrido', 'aria-hidden': 'true',
+      x: -ESTELA, y: -2000, width: ESTELA, height: 5000, fill: 'url(#' + id + ')'
+    });
+
+    svg.insertBefore(barrido, nodos);
+
+    // Las particulas viajan por las conexiones que tocan un nodo encendido y
+    // por una de cada tres de las demas: todas a la vez seria ruido.
+    var capa = crear('g', { 'class': 'mapa-particulas', 'aria-hidden': 'true' });
+    svg.insertBefore(capa, nodos);
+
+    var viajeras = [];
+
+    Array.prototype.forEach.call(svg.querySelectorAll('.mapa-aristas path'), function (camino, i) {
+      var viva = camino.getAttribute('class').indexOf('--viva') >= 0;
+
+      if (!viva && i % 3 !== 0) { return; }
+
+      var riesgo = camino.getAttribute('class').indexOf('--riesgo') >= 0;
+      var punto = crear('circle', {
+        r: viva ? 2.8 : 1.9,
+        'class': 'mapa-particula' + (riesgo ? ' mapa-particula--riesgo' : '')
+      });
+
+      capa.appendChild(punto);
+      viajeras.push({
+        punto: punto,
+        camino: camino,
+        largo: camino.getTotalLength(),
+        duracion: (viva ? 2.6 : 5.5) + (i % 5) * 0.45,
+        desfase: (i % 7) * 0.4
+      });
+    });
+
+    // Los nodos que el barrido puede encender: solo los que tienen novedades.
+    var tocables = [];
+
+    Array.prototype.forEach.call(nodos.querySelectorAll('a.mapa-nodo-enlace:not(.mapa-nodo-enlace--apagado)'), function (a) {
+      var punto = a.querySelector('.mapa-punto');
+
+      if (punto) { tocables.push({ a: a, x: parseFloat(punto.getAttribute('cx')), encendido: false }); }
+    });
+
+    var pos = -ESTELA;
+    var ultimo = 0;
+    var visible = true;
+
+    function fotograma(t) {
+      var dt = Math.min(64, t - ultimo);
+      ultimo = t;
+
+      if (visible) {
+        pos += dt * 0.16;
+
+        if (pos > ANCHO + ESTELA) { pos = -ESTELA; }
+
+        barrido.setAttribute('x', pos - ESTELA);
+
+        tocables.forEach(function (n) {
+          var toca = Math.abs(n.x - pos) < 22;
+
+          if (toca !== n.encendido) {
+            n.encendido = toca;
+            n.a.classList.toggle('mapa-nodo--barrido', toca);
+          }
+        });
+
+        viajeras.forEach(function (v) {
+          var f = (((t / 1000) + v.desfase) / v.duracion) % 1;
+          var p = v.camino.getPointAtLength(f * v.largo);
+
+          v.punto.setAttribute('cx', p.x.toFixed(1));
+          v.punto.setAttribute('cy', p.y.toFixed(1));
+        });
+      }
+
+      window.requestAnimationFrame(fotograma);
+    }
+
+    // Fuera de pantalla, o con la banda plegada, no se pinta nada: el mapa
+    // plegado no ocupa sitio y no hay por que gastar bateria en lo que no se ve.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entradas) {
+        visible = entradas[entradas.length - 1].isIntersecting;
+      }).observe(marco);
+    }
+
+    window.requestAnimationFrame(function (t) { ultimo = t; fotograma(t); });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.mapa-marco'), montarEfectos);
+
+  // Las cifras de la cabecera suben de cero al cargar.
+  Array.prototype.forEach.call(document.querySelectorAll('.mapa-banda-cifra strong'), function (e) {
+    var fin = parseInt(e.textContent, 10);
+    var ini = window.performance.now();
+
+    if (isNaN(fin) || fin < 1) { return; }
+
+    (function subir(t) {
+      var p = Math.min(1, (t - ini) / 1100);
+
+      e.textContent = String(Math.round(fin * (1 - Math.pow(1 - p, 3))));
+
+      if (p < 1) { window.requestAnimationFrame(subir); }
+    })(ini);
+  });
+})();
