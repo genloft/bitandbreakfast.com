@@ -1599,6 +1599,19 @@ a.etiqueta {
 
 .flotante-alta[hidden] { display: none; }
 
+/* Con cargo y empresa desplegados la caja crece: que nunca pase del alto de la
+   ventana, y se desplace dentro si hace falta. */
+.flotante-alta { max-height: calc(100vh - 2.4rem); overflow-y: auto; }
+
+.flotante-alta-texto { margin: 0 1.2rem .8rem 0; font-size: .82rem; line-height: 1.4; color: var(--filete-fino); }
+
+/* Cargo y empresa: los dos campos van uno debajo del otro, a todo el ancho.
+   .alta-fila reparte en fila y da a cada input una base de 14rem, que en
+   columna seria 14rem de alto. */
+.alta-extra .alta-fila { flex-direction: column; flex-wrap: nowrap; gap: .35rem; }
+.alta-extra .alta-fila input { flex: none; width: 100%; padding: .55rem .7rem; font-size: .92rem; }
+.alta-extra .alta-fila label { margin: .35rem 0 0; }
+
 .flotante-alta-titulo {
   margin: 0 1.6rem .7rem 0;
   font-family: var(--titular);

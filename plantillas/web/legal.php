@@ -36,6 +36,12 @@ $nombre_proveedor_correo = match ($proveedor_correo) {
     default      => 'el proveedor de correo configurado',
 };
 
+// Con buzon propio la lista vive en la base de datos de este sitio, y lo que
+// el aviso legal cuenta es distinto de cuando la guarda un proveedor externo.
+$propio      = function_exists('correo_conf') && correo_conf()['proveedor'] === 'propio';
+$copia_brevo = trim((string) config_opcional('correo.brevo_clave', '')) !== ''
+            && (int) config_opcional('correo.brevo_lista', 0) > 0;
+
 $descripcion = 'Aviso legal de Bit & Breakfast: identificación del responsable, cookies, datos personales y de dónde sale el contenido que se publica.';
 
 $seo = [
@@ -147,12 +153,31 @@ $seo = [
 
     <h2>Datos personales</h2>
 
-    <p>Al suscribirte al boletín, tu correo se envía directamente a
-    <?= web_e($nombre_proveedor_correo) ?>, que es quien manda los envíos y
-    gestiona la baja; este sitio no guarda tu dirección en su propia base de
-    datos. Antes de entrar en la lista tienes que confirmar desde un correo
-    aparte -doble confirmación-, y puedes darte de baja desde cualquier
-    envío.</p>
+    <?php if ($propio): ?>
+      <p>Al unirte a la red, tu correo se guarda en la base de datos de este
+      sitio, junto con la fecha en que lo pediste y la de su confirmación, el
+      estado del alta y, si los has elegido, los temas o las palabras de aviso.
+      Puedes añadir además, solo si quieres, tu cargo y tu empresa: son
+      opcionales, no hacen falta para unirte y los usamos únicamente para saber
+      a quién escribimos. Guardamos también una huella cifrada del origen de la
+      petición, nunca la dirección IP. Antes de entrar en la lista tienes que
+      confirmar desde un correo aparte -doble confirmación-, los avisos salen
+      desde el buzón de este dominio y puedes darte de baja desde cualquier
+      correo.</p>
+
+      <?php if ($copia_brevo): ?>
+        <p>Una vez confirmada el alta, tu dirección -y tu cargo y tu empresa,
+        si los diste- se copian a Brevo, que la gestiona como encargado del
+        tratamiento para mantener la lista de la red.</p>
+      <?php endif; ?>
+    <?php else: ?>
+      <p>Al suscribirte al boletín, tu correo se envía directamente a
+      <?= web_e($nombre_proveedor_correo) ?>, que es quien manda los envíos y
+      gestiona la baja; este sitio no guarda tu dirección en su propia base de
+      datos. Antes de entrar en la lista tienes que confirmar desde un correo
+      aparte -doble confirmación-, y puedes darte de baja desde cualquier
+      envío.</p>
+    <?php endif; ?>
 
     <p>Para evitar altas automáticas, el formulario cuenta los intentos por
     dirección de origen durante la última hora a partir de una huella -un
@@ -169,7 +194,7 @@ $seo = [
     <p>Puedes pedir en cualquier momento, escribiendo a la dirección de
     contacto de arriba, qué se sabe de ti o que se borre: dado lo anterior,
     lo habitual es que la respuesta sea que no hay nada que buscar más allá
-    de tu alta en <?= web_e($nombre_proveedor_correo) ?>.</p>
+    de tu alta<?= $propio ? ' y, si los diste, tu cargo y tu empresa' : ' en ' . web_e($nombre_proveedor_correo) ?>.</p>
 
     <h2>Enlaces externos</h2>
 

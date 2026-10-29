@@ -57,6 +57,7 @@ $alta_abierta = $alta_abierta ?? false;
   <div class="flotante-alta" id="flotante-alta" hidden>
     <button type="button" class="flotante-alta-cerrar" aria-label="Cerrar este aviso">&times;</button>
     <p class="flotante-alta-titulo">Únete a la red</p>
+    <p class="flotante-alta-texto">Te avisamos cuando pasa algo importante en tecnología hotelera. Sin calendario fijo.</p>
     <form class="alta-formulario" method="post" action="<?= web_e($base) ?>/api/suscribir.php">
       <label for="flotante-email">Tu correo</label>
       <div class="alta-fila">
@@ -64,6 +65,12 @@ $alta_abierta = $alta_abierta ?? false;
                autocomplete="email" placeholder="tu@hotel.com" required>
         <button type="submit">Unirme</button>
       </div>
+
+      <?php // Cargo y empresa, plegados y opcionales. Solo con el buzon propio,
+            // que es quien los guarda: $alta_temas lo dice. ?>
+      <?php if ($alta_temas ?? false): ?>
+        <?php $alta_id = 'flotante'; require __DIR__ . '/alta_extra.php'; ?>
+      <?php endif; ?>
 
       <?php /* Trampa para robots: un campo que nadie ve y que nadie rellena. */ ?>
       <div class="trampa" aria-hidden="true">

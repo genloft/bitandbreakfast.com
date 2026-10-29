@@ -62,6 +62,8 @@ $alta_temas = $alta_temas ?? false;
             <input id="alta-alerta" name="alerta" type="text" placeholder="Mews, ransomware">
           </div>
         </details>
+
+        <?php $alta_id = 'alta'; require __DIR__ . '/alta_extra.php'; ?>
       <?php endif; ?>
 
       <?php /* Trampa para robots: un campo que nadie ve y que nadie rellena. */ ?>
